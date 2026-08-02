@@ -87,13 +87,17 @@ Saat mengirim `FormData`, **jangan** menyetel header `Content-Type` — browser 
 
 `createdAt`, `startDate`, `date`, dan sejenisnya bertipe `string`, bukan `Date`. Bungkus sendiri kalau perlu diolah.
 
-## Referensi di repo ini
+## Referensi
 
-| Berkas | Isi |
-|--------|-----|
-| `FRONTEND_GUIDE.md` | Panduan lengkap: kontrak API, resep komponen per halaman, detail pedoman mobile-first |
-| `types/api.ts` | Tipe TypeScript semua model — **pakai ini, jangan tulis ulang atau menebak nama field** |
-| `openapi.json` | Kontrak API lengkap, bisa dibaca tanpa menjalankan backend |
+| Berkas | Isi | |
+|--------|-----|---|
+| `types/api.ts` | Tipe TypeScript semua model — **pakai ini, jangan tulis ulang atau menebak nama field** | di repo |
+| `openapi.json` | Kontrak API lengkap, bisa dibaca tanpa menjalankan backend | di repo |
+| `FRONTEND_GUIDE.md` | Panduan lengkap: kontrak API, resep komponen per halaman, detail pedoman mobile-first | internal |
+| `LAPORAN-BACKEND.md` | Keterbatasan backend yang ditemukan saat implementasi, beserta usulan perbaikannya | internal |
+
+Dua berkas terakhir **sengaja tidak ikut di repo publik ini** (lihat `.gitignore`) dan
+dibagikan lewat jalur internal. Keduanya tetap ada di komputer masing-masing anggota tim.
 
 Kalau butuh tahu bentuk data suatu endpoint, baca `types/api.ts` lebih dulu sebelum menebak. Kalau backend sedang jalan, Swagger tersedia di http://localhost:3000/docs.
 
@@ -174,7 +178,9 @@ Jangan "memperbaiki" hal-hal berikut tanpa membaca alasannya dulu:
 
 ## Keterbatasan backend yang ditemukan saat implementasi
 
-Rinciannya beserta usulan perbaikan ada di **`LAPORAN-BACKEND.md`**. Ringkasnya:
+Rinciannya beserta usulan perbaikan ada di `LAPORAN-BACKEND.md` — dokumen internal, tidak
+ikut di repo publik ini. Yang dicatat di bawah hanya yang berpengaruh langsung pada cara
+frontend ditulis:
 
 - `GET /news` dan `GET /potential/active` **tidak menerima filter kategori** — parameternya
   dibuang backend tanpa galat (`whitelist: true`). Kedua halaman itu karena itu tidak punya
@@ -182,9 +188,10 @@ Rinciannya beserta usulan perbaikan ada di **`LAPORAN-BACKEND.md`**. Ringkasnya:
 - `GET /news` **mencampur draf dengan berita terbit**. Frontend menyaring sendiri sebagai
   pengaman sementara di `services/news.ts` dan `app/berita/[slug]/page.tsx`.
   **Hapus penyaring itu setelah backend diperbaiki.** (Butir B-2)
-- Endpoint list versi lengkap (`/news`, `/announcement`, `/monography`, `/umkm`, …)
-  **terbuka tanpa login** dan memuat record yang belum dipublikasikan. Frontend tidak
-  memakainya, tapi ini perlu diperbaiki di backend. (Butir A-1)
+- Kalau sebuah modul menyediakan endpoint versi tersaring (`/potential/active`,
+  `/maps/marker/active`), **halaman publik wajib memakai yang itu**, bukan endpoint list
+  versi lengkapnya. Jangan menukarnya "supaya datanya lebih lengkap" — ada alasan di sisi
+  backend, tercatat sebagai butir A-1 di laporan internal.
 - `employmentData` pada monografi bertipe JSON bebas yang strukturnya belum dibakukan,
   jadi belum ditampilkan. (Butir B-4)
 - Agenda tidak punya endpoint berbasis slug, hanya `GET /agenda/:id`, sehingga agenda tidak

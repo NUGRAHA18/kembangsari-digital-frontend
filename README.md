@@ -78,6 +78,8 @@ mengakses portal ini hampir seluruhnya dari ponsel, sering dengan sinyal seadany
 | Berkas | Isi |
 |--------|-----|
 | `CLAUDE.md` | Konteks project, token desain, keputusan arsitektur beserta alasannya |
-| `FRONTEND_GUIDE.md` | Kontrak API lengkap dan pedoman mobile-first |
 | `types/api.ts` | Tipe TypeScript seluruh model backend |
 | `openapi.json` | Kontrak API, bisa dibaca tanpa menjalankan backend |
+
+`FRONTEND_GUIDE.md` (kontrak API lengkap dan pedoman mobile-first) adalah dokumen internal
+dan tidak ikut di repo publik ini — hubungi pemelihara repo kalau membutuhkannya.
