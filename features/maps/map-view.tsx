@@ -1,0 +1,131 @@
+"use client";
+
+import "leaflet/dist/leaflet.css";
+
+import { useEffect } from "react";
+import L from "leaflet";
+import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
+import type { MapMarker } from "@/types/api";
+
+/**
+ * Peta OpenStreetMap.
+ *
+ * Berkas ini hanya boleh dimuat di browser — Leaflet menyentuh `window` saat
+ * diimpor, jadi pemanggilnya (map-canvas.tsx) memuatnya lewat dynamic import
+ * dengan `ssr: false`.
+ */
+
+/** Warna pin per kategori; diulang kalau kategorinya lebih banyak dari palet. */
+const PIN_COLORS = ["#15803d", "#f59e0b", "#0ea5e9", "#a855f7", "#ef4444", "#0d9488", "#e11d48"];
+
+export function colorForCategory(categoryId: string, categoryIds: string[]): string {
+  const index = categoryIds.indexOf(categoryId);
+  return PIN_COLORS[(index < 0 ? 0 : index) % PIN_COLORS.length];
+}
+
+/**
+ * Ikon dibuat sebagai divIcon berisi SVG, bukan gambar bawaan Leaflet.
+ * Ikon bawaan merujuk berkas PNG lewat jalur relatif yang rusak setelah
+ * di-bundle, dan pendekatan ini sekaligus memungkinkan pin diwarnai per kategori.
+ */
+function createPinIcon(color: string, isActive: boolean) {
+  return L.divIcon({
+    className: "",
+    html: `<svg width="${isActive ? 40 : 30}" height="${isActive ? 40 : 30}" viewBox="0 0 24 24" fill="${color}" stroke="white" stroke-width="1.5" aria-hidden="true" style="filter:drop-shadow(0 1px 2px rgba(0,0,0,.4))">
+        <path d="M12 22s7-6.5 7-12A7 7 0 0 0 5 10c0 5.5 7 12 7 12z"/>
+        <circle cx="12" cy="10" r="2.6" fill="white" stroke="none"/>
+      </svg>`,
+    iconSize: isActive ? [40, 40] : [30, 30],
+    iconAnchor: isActive ? [20, 40] : [15, 30],
+    popupAnchor: [0, isActive ? -38 : -28],
+  });
+}
+
+/**
+ * Peta yang menangkap gestur akan menjebak pengguna saat menggulir halaman di
+ * ponsel. Interaksi baru dinyalakan setelah peta diketuk sekali.
+ */
+function InteractionGate({ enabled }: { enabled: boolean }) {
+  const map = useMap();
+
+  useEffect(() => {
+    const handlers = [map.dragging, map.scrollWheelZoom, map.touchZoom, map.doubleClickZoom];
+    for (const handler of handlers) {
+      if (enabled) handler.enable();
+      else handler.disable();
+    }
+  }, [enabled, map]);
+
+  return null;
+}
+
+/** Menggeser peta ke marker yang dipilih dari daftar di samping/bawah peta. */
+function FocusMarker({ marker }: { marker: MapMarker | null }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (marker) map.flyTo([marker.latitude, marker.longitude], 17, { duration: 0.6 });
+  }, [marker, map]);
+
+  return null;
+}
+
+export default function MapView({
+  markers,
+  categoryIds,
+  center,
+  zoom,
+  interactive,
+  focusedMarker,
+  onMarkerSelect,
+}: {
+  markers: MapMarker[];
+  categoryIds: string[];
+  center: [number, number];
+  zoom: number;
+  interactive: boolean;
+  focusedMarker: MapMarker | null;
+  onMarkerSelect?: (marker: MapMarker) => void;
+}) {
+  return (
+    <MapContainer
+      center={center}
+      zoom={zoom}
+      scrollWheelZoom={false}
+      dragging={false}
+      className="size-full"
+      // Peta murni visual bagi pembaca layar; informasi yang sama tersedia
+      // sebagai daftar teks di bawahnya.
+      aria-hidden="true"
+    >
+      <TileLayer
+        attribution='&copy; kontributor <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        maxZoom={19}
+      />
+
+      <InteractionGate enabled={interactive} />
+      <FocusMarker marker={focusedMarker} />
+
+      {markers.map((marker) => (
+        <Marker
+          key={marker.id}
+          position={[marker.latitude, marker.longitude]}
+          icon={createPinIcon(
+            colorForCategory(marker.categoryId, categoryIds),
+            focusedMarker?.id === marker.id,
+          )}
+          eventHandlers={{ click: () => onMarkerSelect?.(marker) }}
+        >
+          <Popup>
+            <span className="block font-semibold">{marker.name}</span>
+            {marker.category ? (
+              <span className="block text-slate-500">{marker.category.name}</span>
+            ) : null}
+            {marker.address ? <span className="mt-1 block">{marker.address}</span> : null}
+          </Popup>
+        </Marker>
+      ))}
+    </MapContainer>
+  );
+}
