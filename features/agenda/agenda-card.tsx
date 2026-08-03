@@ -1,12 +1,16 @@
+import Link from "next/link";
 import { Clock, MapPin } from "lucide-react";
 import { Card, CardBody } from "@/components/ui/card";
-import { formatDateRange, getDateParts } from "@/lib/format";
+import { excerpt, formatDateRange, getDateParts } from "@/lib/format";
 import type { Agenda } from "@/types/api";
 
 /**
  * Kartu agenda dengan penanda tanggal bergaya kalender di sisi kiri.
- * Agenda tidak punya halaman detail sendiri di API (hanya `GET /agenda/:id`
- * tanpa slug), jadi seluruh keterangan ditampilkan langsung di kartu ini.
+ *
+ * Judulnya menjadi tautan ke `/agenda/<slug>`. Seluruh kartu sengaja tidak
+ * dibungkus satu tautan besar supaya teks di dalamnya tetap bisa disorot dan
+ * disalin — yang sering dilakukan warga saat meneruskan jadwal ke grup WhatsApp.
+ * Keterangan panjang dipotong di kartu dan ditampilkan utuh di halaman detail.
  */
 export function AgendaCard({ agenda }: { agenda: Agenda }) {
   const { day, month } = getDateParts(agenda.startDate);
@@ -23,7 +27,14 @@ export function AgendaCard({ agenda }: { agenda: Agenda }) {
         </div>
 
         <div className="min-w-0 flex-1">
-          <h3 className="font-semibold text-pretty">{agenda.title}</h3>
+          <h3 className="font-semibold text-pretty">
+            <Link
+              href={`/agenda/${agenda.slug}`}
+              className="hover:text-accent hover:underline focus-visible:text-accent"
+            >
+              {agenda.title}
+            </Link>
+          </h3>
 
           <p className="mt-1 flex items-start gap-1.5 text-sm text-muted">
             <Clock className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
@@ -40,7 +51,7 @@ export function AgendaCard({ agenda }: { agenda: Agenda }) {
           ) : null}
 
           {agenda.description ? (
-            <p className="mt-2 text-muted text-pretty">{agenda.description}</p>
+            <p className="mt-2 text-muted text-pretty">{excerpt(agenda.description, 140)}</p>
           ) : null}
         </div>
       </CardBody>

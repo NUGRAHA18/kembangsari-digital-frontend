@@ -1,1 +1,3497 @@
-{"openapi":"3.0.0","paths":{"/api/v1/auth/login":{"post":{"operationId":"AuthController_login_v1","parameters":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/LoginDto"}}}},"responses":{"201":{"description":""}},"tags":["Auth"]}},"/api/v1/health":{"get":{"operationId":"HealthController_check_v1","parameters":[],"responses":{"200":{"description":""}},"tags":["Health"]}},"/api/v1/profile":{"post":{"operationId":"ProfileController_create_v1","parameters":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/CreateProfileDto"}}}},"responses":{"201":{"description":""}},"security":[{"bearer":[]}],"tags":["Profile"]},"get":{"operationId":"ProfileController_findAll_v1","parameters":[],"responses":{"200":{"description":""}},"tags":["Profile"]}},"/api/v1/profile/{slug}":{"get":{"operationId":"ProfileController_findBySlug_v1","parameters":[{"name":"slug","required":true,"in":"path","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"tags":["Profile"]}},"/api/v1/profile/{id}":{"patch":{"operationId":"ProfileController_update_v1","parameters":[{"name":"id","required":true,"in":"path","schema":{"type":"string"}}],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpdateProfileDto"}}}},"responses":{"200":{"description":""}},"security":[{"bearer":[]}],"tags":["Profile"]},"delete":{"operationId":"ProfileController_remove_v1","parameters":[{"name":"id","required":true,"in":"path","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"security":[{"bearer":[]}],"tags":["Profile"]}},"/api/v1/news":{"post":{"operationId":"NewsController_createNews_v1","parameters":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/CreateNewsDto"}}}},"responses":{"201":{"description":""}},"security":[{"bearer":[]}],"tags":["News"]},"get":{"operationId":"NewsController_findAllNews_v1","parameters":[{"name":"page","required":false,"in":"query","description":"Halaman yang diminta, dimulai dari 1","schema":{"minimum":1,"default":1,"type":"number"}},{"name":"limit","required":false,"in":"query","description":"Jumlah data per halaman (maksimal 100)","schema":{"minimum":1,"maximum":100,"default":10,"type":"number"}},{"name":"search","required":false,"in":"query","description":"Kata kunci pencarian (tidak membedakan huruf besar/kecil)","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"tags":["News"]}},"/api/v1/news/{slug}":{"get":{"operationId":"NewsController_findNewsBySlug_v1","parameters":[{"name":"slug","required":true,"in":"path","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"tags":["News"]}},"/api/v1/news/{id}":{"patch":{"operationId":"NewsController_updateNews_v1","parameters":[{"name":"id","required":true,"in":"path","schema":{"type":"string"}}],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpdateNewsDto"}}}},"responses":{"200":{"description":""}},"security":[{"bearer":[]}],"tags":["News"]},"delete":{"operationId":"NewsController_removeNews_v1","parameters":[{"name":"id","required":true,"in":"path","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"security":[{"bearer":[]}],"tags":["News"]}},"/api/v1/news/category":{"post":{"operationId":"NewsController_createCategory_v1","parameters":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/CreateCategoryDto"}}}},"responses":{"201":{"description":""}},"security":[{"bearer":[]}],"tags":["News"]}},"/api/v1/news/category/all":{"get":{"operationId":"NewsController_findAllCategories_v1","parameters":[],"responses":{"200":{"description":""}},"tags":["News"]}},"/api/v1/news/category/{id}":{"get":{"operationId":"NewsController_findCategoryById_v1","parameters":[{"name":"id","required":true,"in":"path","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"tags":["News"]},"patch":{"operationId":"NewsController_updateCategory_v1","parameters":[{"name":"id","required":true,"in":"path","schema":{"type":"string"}}],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpdateCategoryDto"}}}},"responses":{"200":{"description":""}},"security":[{"bearer":[]}],"tags":["News"]},"delete":{"operationId":"NewsController_removeCategory_v1","parameters":[{"name":"id","required":true,"in":"path","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"security":[{"bearer":[]}],"tags":["News"]}},"/api/v1/agenda":{"post":{"operationId":"AgendaController_create_v1","parameters":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/CreateAgendaDto"}}}},"responses":{"201":{"description":""}},"security":[{"bearer":[]}],"tags":["Agenda"]},"get":{"operationId":"AgendaController_findAll_v1","parameters":[{"name":"page","required":false,"in":"query","description":"Halaman yang diminta, dimulai dari 1","schema":{"minimum":1,"default":1,"type":"number"}},{"name":"limit","required":false,"in":"query","description":"Jumlah data per halaman (maksimal 100)","schema":{"minimum":1,"maximum":100,"default":10,"type":"number"}},{"name":"search","required":false,"in":"query","description":"Kata kunci pencarian (tidak membedakan huruf besar/kecil)","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"tags":["Agenda"]}},"/api/v1/agenda/upcoming":{"get":{"operationId":"AgendaController_findUpcoming_v1","parameters":[{"name":"page","required":false,"in":"query","description":"Halaman yang diminta, dimulai dari 1","schema":{"minimum":1,"default":1,"type":"number"}},{"name":"limit","required":false,"in":"query","description":"Jumlah data per halaman (maksimal 100)","schema":{"minimum":1,"maximum":100,"default":10,"type":"number"}},{"name":"search","required":false,"in":"query","description":"Kata kunci pencarian (tidak membedakan huruf besar/kecil)","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"tags":["Agenda"]}},"/api/v1/agenda/{id}":{"get":{"operationId":"AgendaController_findById_v1","parameters":[{"name":"id","required":true,"in":"path","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"tags":["Agenda"]},"patch":{"operationId":"AgendaController_update_v1","parameters":[{"name":"id","required":true,"in":"path","schema":{"type":"string"}}],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpdateAgendaDto"}}}},"responses":{"200":{"description":""}},"security":[{"bearer":[]}],"tags":["Agenda"]},"delete":{"operationId":"AgendaController_remove_v1","parameters":[{"name":"id","required":true,"in":"path","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"security":[{"bearer":[]}],"tags":["Agenda"]}},"/api/v1/announcement":{"post":{"operationId":"AnnouncementController_create_v1","parameters":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/CreateAnnouncementDto"}}}},"responses":{"201":{"description":""}},"security":[{"bearer":[]}],"tags":["Announcement"]},"get":{"operationId":"AnnouncementController_findAll_v1","parameters":[{"name":"page","required":false,"in":"query","description":"Halaman yang diminta, dimulai dari 1","schema":{"minimum":1,"default":1,"type":"number"}},{"name":"limit","required":false,"in":"query","description":"Jumlah data per halaman (maksimal 100)","schema":{"minimum":1,"maximum":100,"default":10,"type":"number"}},{"name":"search","required":false,"in":"query","description":"Kata kunci pencarian (tidak membedakan huruf besar/kecil)","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"tags":["Announcement"]}},"/api/v1/announcement/active":{"get":{"operationId":"AnnouncementController_findActive_v1","parameters":[{"name":"page","required":false,"in":"query","description":"Halaman yang diminta, dimulai dari 1","schema":{"minimum":1,"default":1,"type":"number"}},{"name":"limit","required":false,"in":"query","description":"Jumlah data per halaman (maksimal 100)","schema":{"minimum":1,"maximum":100,"default":10,"type":"number"}},{"name":"search","required":false,"in":"query","description":"Kata kunci pencarian (tidak membedakan huruf besar/kecil)","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"tags":["Announcement"]}},"/api/v1/announcement/{id}":{"get":{"operationId":"AnnouncementController_findById_v1","parameters":[{"name":"id","required":true,"in":"path","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"tags":["Announcement"]},"patch":{"operationId":"AnnouncementController_update_v1","parameters":[{"name":"id","required":true,"in":"path","schema":{"type":"string"}}],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpdateAnnouncementDto"}}}},"responses":{"200":{"description":""}},"security":[{"bearer":[]}],"tags":["Announcement"]},"delete":{"operationId":"AnnouncementController_remove_v1","parameters":[{"name":"id","required":true,"in":"path","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"security":[{"bearer":[]}],"tags":["Announcement"]}},"/api/v1/monography":{"post":{"operationId":"MonographyController_create_v1","parameters":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/CreatePopulationStatDto"}}}},"responses":{"201":{"description":""}},"security":[{"bearer":[]}],"tags":["Monography"]},"get":{"operationId":"MonographyController_findAll_v1","parameters":[{"name":"page","required":false,"in":"query","description":"Halaman yang diminta, dimulai dari 1","schema":{"minimum":1,"default":1,"type":"number"}},{"name":"limit","required":false,"in":"query","description":"Jumlah data per halaman (maksimal 100)","schema":{"minimum":1,"maximum":100,"default":10,"type":"number"}},{"name":"search","required":false,"in":"query","description":"Kata kunci pencarian (tidak membedakan huruf besar/kecil)","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"tags":["Monography"]}},"/api/v1/monography/published":{"get":{"operationId":"MonographyController_findPublished_v1","parameters":[{"name":"page","required":false,"in":"query","description":"Halaman yang diminta, dimulai dari 1","schema":{"minimum":1,"default":1,"type":"number"}},{"name":"limit","required":false,"in":"query","description":"Jumlah data per halaman (maksimal 100)","schema":{"minimum":1,"maximum":100,"default":10,"type":"number"}},{"name":"search","required":false,"in":"query","description":"Kata kunci pencarian (tidak membedakan huruf besar/kecil)","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"tags":["Monography"]}},"/api/v1/monography/year/{year}":{"get":{"operationId":"MonographyController_findByYear_v1","parameters":[{"name":"year","required":true,"in":"path","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"tags":["Monography"]}},"/api/v1/monography/{id}":{"get":{"operationId":"MonographyController_findById_v1","parameters":[{"name":"id","required":true,"in":"path","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"tags":["Monography"]},"patch":{"operationId":"MonographyController_update_v1","parameters":[{"name":"id","required":true,"in":"path","schema":{"type":"string"}}],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpdatePopulationStatDto"}}}},"responses":{"200":{"description":""}},"security":[{"bearer":[]}],"tags":["Monography"]},"delete":{"operationId":"MonographyController_remove_v1","parameters":[{"name":"id","required":true,"in":"path","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"security":[{"bearer":[]}],"tags":["Monography"]}},"/api/v1/maps/category":{"post":{"operationId":"MapsController_createCategory_v1","parameters":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/CreateMapCategoryDto"}}}},"responses":{"201":{"description":""}},"security":[{"bearer":[]}],"tags":["Maps"]},"get":{"operationId":"MapsController_findAllCategories_v1","parameters":[],"responses":{"200":{"description":""}},"tags":["Maps"]}},"/api/v1/maps/category/{id}":{"get":{"operationId":"MapsController_findCategoryById_v1","parameters":[{"name":"id","required":true,"in":"path","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"tags":["Maps"]},"patch":{"operationId":"MapsController_updateCategory_v1","parameters":[{"name":"id","required":true,"in":"path","schema":{"type":"string"}}],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpdateMapCategoryDto"}}}},"responses":{"200":{"description":""}},"security":[{"bearer":[]}],"tags":["Maps"]},"delete":{"operationId":"MapsController_removeCategory_v1","parameters":[{"name":"id","required":true,"in":"path","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"security":[{"bearer":[]}],"tags":["Maps"]}},"/api/v1/maps/marker":{"post":{"operationId":"MapsController_createMarker_v1","parameters":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/CreateMarkerDto"}}}},"responses":{"201":{"description":""}},"security":[{"bearer":[]}],"tags":["Maps"]},"get":{"operationId":"MapsController_findAllMarkers_v1","parameters":[{"name":"page","required":false,"in":"query","description":"Halaman yang diminta, dimulai dari 1","schema":{"minimum":1,"default":1,"type":"number"}},{"name":"limit","required":false,"in":"query","description":"Jumlah data per halaman (maksimal 100)","schema":{"minimum":1,"maximum":100,"default":10,"type":"number"}},{"name":"search","required":false,"in":"query","description":"Kata kunci pencarian (tidak membedakan huruf besar/kecil)","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"tags":["Maps"]}},"/api/v1/maps/marker/active":{"get":{"operationId":"MapsController_findActiveMarkers_v1","parameters":[],"responses":{"200":{"description":""}},"tags":["Maps"]}},"/api/v1/maps/marker/category/{categoryId}":{"get":{"operationId":"MapsController_findMarkersByCategory_v1","parameters":[{"name":"categoryId","required":true,"in":"path","schema":{"type":"string"}},{"name":"page","required":false,"in":"query","description":"Halaman yang diminta, dimulai dari 1","schema":{"minimum":1,"default":1,"type":"number"}},{"name":"limit","required":false,"in":"query","description":"Jumlah data per halaman (maksimal 100)","schema":{"minimum":1,"maximum":100,"default":10,"type":"number"}},{"name":"search","required":false,"in":"query","description":"Kata kunci pencarian (tidak membedakan huruf besar/kecil)","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"tags":["Maps"]}},"/api/v1/maps/marker/{id}":{"get":{"operationId":"MapsController_findMarkerById_v1","parameters":[{"name":"id","required":true,"in":"path","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"tags":["Maps"]},"patch":{"operationId":"MapsController_updateMarker_v1","parameters":[{"name":"id","required":true,"in":"path","schema":{"type":"string"}}],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpdateMarkerDto"}}}},"responses":{"200":{"description":""}},"security":[{"bearer":[]}],"tags":["Maps"]},"delete":{"operationId":"MapsController_removeMarker_v1","parameters":[{"name":"id","required":true,"in":"path","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"security":[{"bearer":[]}],"tags":["Maps"]}},"/api/v1/gallery/album":{"post":{"operationId":"GalleryController_createAlbum_v1","parameters":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/CreateAlbumDto"}}}},"responses":{"201":{"description":""}},"security":[{"bearer":[]}],"tags":["Gallery"]},"get":{"operationId":"GalleryController_findAllAlbums_v1","parameters":[{"name":"page","required":false,"in":"query","description":"Halaman yang diminta, dimulai dari 1","schema":{"minimum":1,"default":1,"type":"number"}},{"name":"limit","required":false,"in":"query","description":"Jumlah data per halaman (maksimal 100)","schema":{"minimum":1,"maximum":100,"default":10,"type":"number"}},{"name":"search","required":false,"in":"query","description":"Kata kunci pencarian (tidak membedakan huruf besar/kecil)","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"tags":["Gallery"]}},"/api/v1/gallery/album/{slug}":{"get":{"operationId":"GalleryController_findAlbumBySlug_v1","parameters":[{"name":"slug","required":true,"in":"path","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"tags":["Gallery"]}},"/api/v1/gallery/album/{id}":{"patch":{"operationId":"GalleryController_updateAlbum_v1","parameters":[{"name":"id","required":true,"in":"path","schema":{"type":"string"}}],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpdateAlbumDto"}}}},"responses":{"200":{"description":""}},"security":[{"bearer":[]}],"tags":["Gallery"]},"delete":{"operationId":"GalleryController_removeAlbum_v1","parameters":[{"name":"id","required":true,"in":"path","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"security":[{"bearer":[]}],"tags":["Gallery"]}},"/api/v1/gallery/item":{"post":{"operationId":"GalleryController_createItem_v1","parameters":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/CreateItemDto"}}}},"responses":{"201":{"description":""}},"security":[{"bearer":[]}],"tags":["Gallery"]}},"/api/v1/gallery/item/featured":{"get":{"operationId":"GalleryController_findFeaturedItems_v1","parameters":[{"name":"page","required":false,"in":"query","description":"Halaman yang diminta, dimulai dari 1","schema":{"minimum":1,"default":1,"type":"number"}},{"name":"limit","required":false,"in":"query","description":"Jumlah data per halaman (maksimal 100)","schema":{"minimum":1,"maximum":100,"default":10,"type":"number"}},{"name":"search","required":false,"in":"query","description":"Kata kunci pencarian (tidak membedakan huruf besar/kecil)","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"tags":["Gallery"]}},"/api/v1/gallery/item/album/{albumId}":{"get":{"operationId":"GalleryController_findItemsByAlbum_v1","parameters":[{"name":"albumId","required":true,"in":"path","schema":{"type":"string"}},{"name":"page","required":false,"in":"query","description":"Halaman yang diminta, dimulai dari 1","schema":{"minimum":1,"default":1,"type":"number"}},{"name":"limit","required":false,"in":"query","description":"Jumlah data per halaman (maksimal 100)","schema":{"minimum":1,"maximum":100,"default":10,"type":"number"}},{"name":"search","required":false,"in":"query","description":"Kata kunci pencarian (tidak membedakan huruf besar/kecil)","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"tags":["Gallery"]}},"/api/v1/gallery/item/{id}":{"get":{"operationId":"GalleryController_findItemById_v1","parameters":[{"name":"id","required":true,"in":"path","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"tags":["Gallery"]},"patch":{"operationId":"GalleryController_updateItem_v1","parameters":[{"name":"id","required":true,"in":"path","schema":{"type":"string"}}],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpdateItemDto"}}}},"responses":{"200":{"description":""}},"security":[{"bearer":[]}],"tags":["Gallery"]},"delete":{"operationId":"GalleryController_removeItem_v1","parameters":[{"name":"id","required":true,"in":"path","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"security":[{"bearer":[]}],"tags":["Gallery"]}},"/api/v1/umkm":{"post":{"operationId":"UmkmController_create_v1","parameters":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/CreateUmkmDto"}}}},"responses":{"201":{"description":""}},"security":[{"bearer":[]}],"tags":["UMKM"]},"get":{"operationId":"UmkmController_findAll_v1","parameters":[{"name":"page","required":false,"in":"query","description":"Halaman yang diminta, dimulai dari 1","schema":{"minimum":1,"default":1,"type":"number"}},{"name":"limit","required":false,"in":"query","description":"Jumlah data per halaman (maksimal 100)","schema":{"minimum":1,"maximum":100,"default":10,"type":"number"}},{"name":"search","required":false,"in":"query","description":"Kata kunci pencarian (tidak membedakan huruf besar/kecil)","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"tags":["UMKM"]}},"/api/v1/umkm/active":{"get":{"operationId":"UmkmController_findActive_v1","parameters":[{"name":"page","required":false,"in":"query","description":"Halaman yang diminta, dimulai dari 1","schema":{"minimum":1,"default":1,"type":"number"}},{"name":"limit","required":false,"in":"query","description":"Jumlah data per halaman (maksimal 100)","schema":{"minimum":1,"maximum":100,"default":10,"type":"number"}},{"name":"search","required":false,"in":"query","description":"Kata kunci pencarian (tidak membedakan huruf besar/kecil)","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"tags":["UMKM"]}},"/api/v1/umkm/{slug}":{"get":{"operationId":"UmkmController_findBySlug_v1","parameters":[{"name":"slug","required":true,"in":"path","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"tags":["UMKM"]}},"/api/v1/umkm/{id}":{"patch":{"operationId":"UmkmController_update_v1","parameters":[{"name":"id","required":true,"in":"path","schema":{"type":"string"}}],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpdateUmkmDto"}}}},"responses":{"200":{"description":""}},"security":[{"bearer":[]}],"tags":["UMKM"]},"delete":{"operationId":"UmkmController_remove_v1","parameters":[{"name":"id","required":true,"in":"path","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"security":[{"bearer":[]}],"tags":["UMKM"]}},"/api/v1/umkm/image":{"post":{"operationId":"UmkmController_createImage_v1","parameters":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/CreateUmkmImageDto"}}}},"responses":{"201":{"description":""}},"security":[{"bearer":[]}],"tags":["UMKM"]}},"/api/v1/umkm/image/umkm/{umkmId}":{"get":{"operationId":"UmkmController_findImagesByUmkm_v1","parameters":[{"name":"umkmId","required":true,"in":"path","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"tags":["UMKM"]}},"/api/v1/umkm/image/{id}":{"get":{"operationId":"UmkmController_findImageById_v1","parameters":[{"name":"id","required":true,"in":"path","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"tags":["UMKM"]},"patch":{"operationId":"UmkmController_updateImage_v1","parameters":[{"name":"id","required":true,"in":"path","schema":{"type":"string"}}],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpdateUmkmImageDto"}}}},"responses":{"200":{"description":""}},"security":[{"bearer":[]}],"tags":["UMKM"]},"delete":{"operationId":"UmkmController_removeImage_v1","parameters":[{"name":"id","required":true,"in":"path","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"security":[{"bearer":[]}],"tags":["UMKM"]}},"/api/v1/potential":{"post":{"operationId":"PotentialController_create_v1","parameters":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/CreatePotentialDto"}}}},"responses":{"201":{"description":""}},"security":[{"bearer":[]}],"tags":["Potential"]},"get":{"operationId":"PotentialController_findAll_v1","parameters":[{"name":"page","required":false,"in":"query","description":"Halaman yang diminta, dimulai dari 1","schema":{"minimum":1,"default":1,"type":"number"}},{"name":"limit","required":false,"in":"query","description":"Jumlah data per halaman (maksimal 100)","schema":{"minimum":1,"maximum":100,"default":10,"type":"number"}},{"name":"search","required":false,"in":"query","description":"Kata kunci pencarian (tidak membedakan huruf besar/kecil)","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"tags":["Potential"]}},"/api/v1/potential/active":{"get":{"operationId":"PotentialController_findActive_v1","parameters":[{"name":"page","required":false,"in":"query","description":"Halaman yang diminta, dimulai dari 1","schema":{"minimum":1,"default":1,"type":"number"}},{"name":"limit","required":false,"in":"query","description":"Jumlah data per halaman (maksimal 100)","schema":{"minimum":1,"maximum":100,"default":10,"type":"number"}},{"name":"search","required":false,"in":"query","description":"Kata kunci pencarian (tidak membedakan huruf besar/kecil)","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"tags":["Potential"]}},"/api/v1/potential/{slug}":{"get":{"operationId":"PotentialController_findBySlug_v1","parameters":[{"name":"slug","required":true,"in":"path","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"tags":["Potential"]}},"/api/v1/potential/{id}":{"patch":{"operationId":"PotentialController_update_v1","parameters":[{"name":"id","required":true,"in":"path","schema":{"type":"string"}}],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpdatePotentialDto"}}}},"responses":{"200":{"description":""}},"security":[{"bearer":[]}],"tags":["Potential"]},"delete":{"operationId":"PotentialController_remove_v1","parameters":[{"name":"id","required":true,"in":"path","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"security":[{"bearer":[]}],"tags":["Potential"]}},"/api/v1/potential/image":{"post":{"operationId":"PotentialController_createImage_v1","parameters":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/CreatePotentialImageDto"}}}},"responses":{"201":{"description":""}},"security":[{"bearer":[]}],"tags":["Potential"]}},"/api/v1/potential/image/potential/{potentialId}":{"get":{"operationId":"PotentialController_findImagesByPotential_v1","parameters":[{"name":"potentialId","required":true,"in":"path","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"tags":["Potential"]}},"/api/v1/potential/image/{id}":{"get":{"operationId":"PotentialController_findImageById_v1","parameters":[{"name":"id","required":true,"in":"path","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"tags":["Potential"]},"patch":{"operationId":"PotentialController_updateImage_v1","parameters":[{"name":"id","required":true,"in":"path","schema":{"type":"string"}}],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpdatePotentialImageDto"}}}},"responses":{"200":{"description":""}},"security":[{"bearer":[]}],"tags":["Potential"]},"delete":{"operationId":"PotentialController_removeImage_v1","parameters":[{"name":"id","required":true,"in":"path","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"security":[{"bearer":[]}],"tags":["Potential"]}},"/api/v1/settings":{"get":{"operationId":"SettingsController_findAll_v1","parameters":[],"responses":{"200":{"description":""}},"tags":["Settings"]}},"/api/v1/settings/{key}":{"get":{"operationId":"SettingsController_findByKey_v1","parameters":[{"name":"key","required":true,"in":"path","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"tags":["Settings"]},"patch":{"operationId":"SettingsController_update_v1","parameters":[{"name":"key","required":true,"in":"path","schema":{"type":"string"}}],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpdateSettingDto"}}}},"responses":{"200":{"description":""}},"security":[{"bearer":[]}],"tags":["Settings"]}},"/api/v1/kkn/program":{"post":{"operationId":"KknController_createProgram_v1","parameters":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/CreateKknProgramDto"}}}},"responses":{"201":{"description":""}},"security":[{"bearer":[]}],"tags":["KKN"]},"get":{"operationId":"KknController_findAllPrograms_v1","parameters":[{"name":"page","required":false,"in":"query","description":"Halaman yang diminta, dimulai dari 1","schema":{"minimum":1,"default":1,"type":"number"}},{"name":"limit","required":false,"in":"query","description":"Jumlah data per halaman (maksimal 100)","schema":{"minimum":1,"maximum":100,"default":10,"type":"number"}},{"name":"search","required":false,"in":"query","description":"Kata kunci pencarian (tidak membedakan huruf besar/kecil)","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"tags":["KKN"]}},"/api/v1/kkn/program/active":{"get":{"operationId":"KknController_findActivePrograms_v1","parameters":[{"name":"page","required":false,"in":"query","description":"Halaman yang diminta, dimulai dari 1","schema":{"minimum":1,"default":1,"type":"number"}},{"name":"limit","required":false,"in":"query","description":"Jumlah data per halaman (maksimal 100)","schema":{"minimum":1,"maximum":100,"default":10,"type":"number"}},{"name":"search","required":false,"in":"query","description":"Kata kunci pencarian (tidak membedakan huruf besar/kecil)","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"tags":["KKN"]}},"/api/v1/kkn/program/sub/{subProgram}":{"get":{"operationId":"KknController_findProgramsBySubProgram_v1","parameters":[{"name":"subProgram","required":true,"in":"path","schema":{"type":"string"}},{"name":"page","required":false,"in":"query","description":"Halaman yang diminta, dimulai dari 1","schema":{"minimum":1,"default":1,"type":"number"}},{"name":"limit","required":false,"in":"query","description":"Jumlah data per halaman (maksimal 100)","schema":{"minimum":1,"maximum":100,"default":10,"type":"number"}},{"name":"search","required":false,"in":"query","description":"Kata kunci pencarian (tidak membedakan huruf besar/kecil)","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"tags":["KKN"]}},"/api/v1/kkn/program/{slug}":{"get":{"operationId":"KknController_findProgramBySlug_v1","parameters":[{"name":"slug","required":true,"in":"path","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"tags":["KKN"]}},"/api/v1/kkn/program/{id}":{"patch":{"operationId":"KknController_updateProgram_v1","parameters":[{"name":"id","required":true,"in":"path","schema":{"type":"string"}}],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpdateKknProgramDto"}}}},"responses":{"200":{"description":""}},"security":[{"bearer":[]}],"tags":["KKN"]},"delete":{"operationId":"KknController_removeProgram_v1","parameters":[{"name":"id","required":true,"in":"path","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"security":[{"bearer":[]}],"tags":["KKN"]}},"/api/v1/kkn/activity":{"post":{"operationId":"KknController_createActivity_v1","parameters":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/CreateKknActivityDto"}}}},"responses":{"201":{"description":""}},"security":[{"bearer":[]}],"tags":["KKN"]}},"/api/v1/kkn/activity/program/{programId}":{"get":{"operationId":"KknController_findActivitiesByProgram_v1","parameters":[{"name":"programId","required":true,"in":"path","schema":{"type":"string"}},{"name":"page","required":false,"in":"query","description":"Halaman yang diminta, dimulai dari 1","schema":{"minimum":1,"default":1,"type":"number"}},{"name":"limit","required":false,"in":"query","description":"Jumlah data per halaman (maksimal 100)","schema":{"minimum":1,"maximum":100,"default":10,"type":"number"}},{"name":"search","required":false,"in":"query","description":"Kata kunci pencarian (tidak membedakan huruf besar/kecil)","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"tags":["KKN"]}},"/api/v1/kkn/activity/{id}":{"get":{"operationId":"KknController_findActivityById_v1","parameters":[{"name":"id","required":true,"in":"path","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"tags":["KKN"]},"patch":{"operationId":"KknController_updateActivity_v1","parameters":[{"name":"id","required":true,"in":"path","schema":{"type":"string"}}],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpdateKknActivityDto"}}}},"responses":{"200":{"description":""}},"security":[{"bearer":[]}],"tags":["KKN"]},"delete":{"operationId":"KknController_removeActivity_v1","parameters":[{"name":"id","required":true,"in":"path","schema":{"type":"string"}}],"responses":{"200":{"description":""}},"security":[{"bearer":[]}],"tags":["KKN"]}},"/api/v1/upload":{"post":{"operationId":"UploadController_uploadSingle_v1","parameters":[{"name":"folder","required":false,"in":"query","description":"Folder tujuan di dalam bucket (default: umum)","schema":{"enum":["berita","galeri","umkm","potensi","kkn","peta","profil","pengaturan","umum"],"type":"string"}}],"requestBody":{"required":true,"content":{"multipart/form-data":{"schema":{"type":"object","required":["file"],"properties":{"file":{"type":"string","format":"binary","description":"Berkas gambar, maksimal 5 MB"}}}}}},"responses":{"201":{"description":""}},"security":[{"bearer":[]}],"tags":["Upload"]},"delete":{"operationId":"UploadController_remove_v1","parameters":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/DeleteFileDto"}}}},"responses":{"200":{"description":""}},"security":[{"bearer":[]}],"tags":["Upload"]}},"/api/v1/upload/multiple":{"post":{"operationId":"UploadController_uploadMultiple_v1","parameters":[{"name":"folder","required":false,"in":"query","description":"Folder tujuan di dalam bucket (default: umum)","schema":{"enum":["berita","galeri","umkm","potensi","kkn","peta","profil","pengaturan","umum"],"type":"string"}}],"requestBody":{"required":true,"content":{"multipart/form-data":{"schema":{"type":"object","required":["files"],"properties":{"files":{"type":"array","items":{"type":"string","format":"binary"},"description":"Maksimal 10 berkas per permintaan"}}}}}},"responses":{"201":{"description":""}},"security":[{"bearer":[]}],"tags":["Upload"]}}},"info":{"title":"Kembangsari Digital API","description":"REST API Padukuhan Kembangsari","version":"1.0","contact":{}},"tags":[],"servers":[],"components":{"securitySchemes":{"bearer":{"scheme":"bearer","bearerFormat":"JWT","type":"http"}},"schemas":{"LoginDto":{"type":"object","properties":{}},"CreateProfileDto":{"type":"object","properties":{}},"UpdateProfileDto":{"type":"object","properties":{}},"CreateNewsDto":{"type":"object","properties":{}},"UpdateNewsDto":{"type":"object","properties":{}},"CreateCategoryDto":{"type":"object","properties":{}},"UpdateCategoryDto":{"type":"object","properties":{}},"CreateAgendaDto":{"type":"object","properties":{}},"UpdateAgendaDto":{"type":"object","properties":{}},"CreateAnnouncementDto":{"type":"object","properties":{}},"UpdateAnnouncementDto":{"type":"object","properties":{}},"CreatePopulationStatDto":{"type":"object","properties":{}},"UpdatePopulationStatDto":{"type":"object","properties":{}},"CreateMapCategoryDto":{"type":"object","properties":{}},"UpdateMapCategoryDto":{"type":"object","properties":{}},"CreateMarkerDto":{"type":"object","properties":{}},"UpdateMarkerDto":{"type":"object","properties":{}},"CreateAlbumDto":{"type":"object","properties":{}},"UpdateAlbumDto":{"type":"object","properties":{}},"CreateItemDto":{"type":"object","properties":{}},"UpdateItemDto":{"type":"object","properties":{}},"CreateUmkmDto":{"type":"object","properties":{}},"UpdateUmkmDto":{"type":"object","properties":{}},"CreateUmkmImageDto":{"type":"object","properties":{}},"UpdateUmkmImageDto":{"type":"object","properties":{}},"CreatePotentialDto":{"type":"object","properties":{}},"UpdatePotentialDto":{"type":"object","properties":{}},"CreatePotentialImageDto":{"type":"object","properties":{}},"UpdatePotentialImageDto":{"type":"object","properties":{}},"UpdateSettingDto":{"type":"object","properties":{}},"CreateKknProgramDto":{"type":"object","properties":{}},"UpdateKknProgramDto":{"type":"object","properties":{}},"CreateKknActivityDto":{"type":"object","properties":{}},"UpdateKknActivityDto":{"type":"object","properties":{}},"DeleteFileDto":{"type":"object","properties":{"path":{"type":"string","description":"Path objek di dalam bucket, atau URL publik lengkap yang dikembalikan saat upload","example":"berita/6f1c2f4e-1f0a-4c33-9c2f-2f1c2f4e1f0a.webp"}},"required":["path"]}}}}
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/v1/auth/login": {
+      "post": {
+        "operationId": "AuthController_login_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/health": {
+      "get": {
+        "operationId": "HealthController_check_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Health"
+        ]
+      }
+    },
+    "/api/v1/profile": {
+      "post": {
+        "operationId": "ProfileController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProfileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Profile"
+        ]
+      },
+      "get": {
+        "operationId": "ProfileController_findAll_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Profile"
+        ]
+      }
+    },
+    "/api/v1/profile/{slug}": {
+      "get": {
+        "operationId": "ProfileController_findBySlug_v1",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Profile"
+        ]
+      }
+    },
+    "/api/v1/profile/{id}": {
+      "patch": {
+        "operationId": "ProfileController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProfileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Profile"
+        ]
+      },
+      "delete": {
+        "operationId": "ProfileController_remove_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Profile"
+        ]
+      }
+    },
+    "/api/v1/news": {
+      "post": {
+        "operationId": "NewsController_createNews_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateNewsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "News"
+        ]
+      },
+      "get": {
+        "operationId": "NewsController_findAllNews_v1",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Halaman yang diminta, dimulai dari 1",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Jumlah data per halaman (maksimal 100)",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Kata kunci pencarian (tidak membedakan huruf besar/kecil)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "categoryId",
+            "required": false,
+            "in": "query",
+            "description": "Saring berdasarkan id kategori berita",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "News"
+        ]
+      }
+    },
+    "/api/v1/news/published": {
+      "get": {
+        "operationId": "NewsController_findAllPublished_v1",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Halaman yang diminta, dimulai dari 1",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Jumlah data per halaman (maksimal 100)",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Kata kunci pencarian (tidak membedakan huruf besar/kecil)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "categoryId",
+            "required": false,
+            "in": "query",
+            "description": "Saring berdasarkan id kategori berita",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "News"
+        ]
+      }
+    },
+    "/api/v1/news/{slug}": {
+      "get": {
+        "operationId": "NewsController_findNewsBySlug_v1",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "News"
+        ]
+      }
+    },
+    "/api/v1/news/{id}": {
+      "patch": {
+        "operationId": "NewsController_updateNews_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateNewsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "News"
+        ]
+      },
+      "delete": {
+        "operationId": "NewsController_removeNews_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "News"
+        ]
+      }
+    },
+    "/api/v1/news/category": {
+      "post": {
+        "operationId": "NewsController_createCategory_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "News"
+        ]
+      }
+    },
+    "/api/v1/news/category/all": {
+      "get": {
+        "operationId": "NewsController_findAllCategories_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "News"
+        ]
+      }
+    },
+    "/api/v1/news/category/{id}": {
+      "get": {
+        "operationId": "NewsController_findCategoryById_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "News"
+        ]
+      },
+      "patch": {
+        "operationId": "NewsController_updateCategory_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "News"
+        ]
+      },
+      "delete": {
+        "operationId": "NewsController_removeCategory_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "News"
+        ]
+      }
+    },
+    "/api/v1/agenda": {
+      "post": {
+        "operationId": "AgendaController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAgendaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Agenda"
+        ]
+      },
+      "get": {
+        "operationId": "AgendaController_findAll_v1",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Halaman yang diminta, dimulai dari 1",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Jumlah data per halaman (maksimal 100)",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Kata kunci pencarian (tidak membedakan huruf besar/kecil)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Agenda"
+        ]
+      }
+    },
+    "/api/v1/agenda/upcoming": {
+      "get": {
+        "operationId": "AgendaController_findUpcoming_v1",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Halaman yang diminta, dimulai dari 1",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Jumlah data per halaman (maksimal 100)",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Kata kunci pencarian (tidak membedakan huruf besar/kecil)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Agenda"
+        ]
+      }
+    },
+    "/api/v1/agenda/{idOrSlug}": {
+      "get": {
+        "operationId": "AgendaController_findByIdOrSlug_v1",
+        "parameters": [
+          {
+            "name": "idOrSlug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Agenda"
+        ]
+      }
+    },
+    "/api/v1/agenda/{id}": {
+      "patch": {
+        "operationId": "AgendaController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAgendaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Agenda"
+        ]
+      },
+      "delete": {
+        "operationId": "AgendaController_remove_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Agenda"
+        ]
+      }
+    },
+    "/api/v1/announcement": {
+      "post": {
+        "operationId": "AnnouncementController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAnnouncementDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Announcement"
+        ]
+      },
+      "get": {
+        "operationId": "AnnouncementController_findAll_v1",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Halaman yang diminta, dimulai dari 1",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Jumlah data per halaman (maksimal 100)",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Kata kunci pencarian (tidak membedakan huruf besar/kecil)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Announcement"
+        ]
+      }
+    },
+    "/api/v1/announcement/active": {
+      "get": {
+        "operationId": "AnnouncementController_findActive_v1",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Halaman yang diminta, dimulai dari 1",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Jumlah data per halaman (maksimal 100)",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Kata kunci pencarian (tidak membedakan huruf besar/kecil)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Announcement"
+        ]
+      }
+    },
+    "/api/v1/announcement/{id}": {
+      "get": {
+        "operationId": "AnnouncementController_findById_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Announcement"
+        ]
+      },
+      "patch": {
+        "operationId": "AnnouncementController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAnnouncementDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Announcement"
+        ]
+      },
+      "delete": {
+        "operationId": "AnnouncementController_remove_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Announcement"
+        ]
+      }
+    },
+    "/api/v1/monography": {
+      "post": {
+        "operationId": "MonographyController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePopulationStatDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Monography"
+        ]
+      },
+      "get": {
+        "operationId": "MonographyController_findAll_v1",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Halaman yang diminta, dimulai dari 1",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Jumlah data per halaman (maksimal 100)",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Kata kunci pencarian (tidak membedakan huruf besar/kecil)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Monography"
+        ]
+      }
+    },
+    "/api/v1/monography/published": {
+      "get": {
+        "operationId": "MonographyController_findPublished_v1",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Halaman yang diminta, dimulai dari 1",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Jumlah data per halaman (maksimal 100)",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Kata kunci pencarian (tidak membedakan huruf besar/kecil)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Monography"
+        ]
+      }
+    },
+    "/api/v1/monography/year/{year}": {
+      "get": {
+        "operationId": "MonographyController_findByYear_v1",
+        "parameters": [
+          {
+            "name": "year",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Monography"
+        ]
+      }
+    },
+    "/api/v1/monography/{id}": {
+      "get": {
+        "operationId": "MonographyController_findById_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Monography"
+        ]
+      },
+      "patch": {
+        "operationId": "MonographyController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePopulationStatDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Monography"
+        ]
+      },
+      "delete": {
+        "operationId": "MonographyController_remove_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Monography"
+        ]
+      }
+    },
+    "/api/v1/maps/category": {
+      "post": {
+        "operationId": "MapsController_createCategory_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMapCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Maps"
+        ]
+      },
+      "get": {
+        "operationId": "MapsController_findAllCategories_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Maps"
+        ]
+      }
+    },
+    "/api/v1/maps/category/{id}": {
+      "get": {
+        "operationId": "MapsController_findCategoryById_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Maps"
+        ]
+      },
+      "patch": {
+        "operationId": "MapsController_updateCategory_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMapCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Maps"
+        ]
+      },
+      "delete": {
+        "operationId": "MapsController_removeCategory_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Maps"
+        ]
+      }
+    },
+    "/api/v1/maps/marker": {
+      "post": {
+        "operationId": "MapsController_createMarker_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMarkerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Maps"
+        ]
+      },
+      "get": {
+        "operationId": "MapsController_findAllMarkers_v1",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Halaman yang diminta, dimulai dari 1",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Jumlah data per halaman (maksimal 100)",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Kata kunci pencarian (tidak membedakan huruf besar/kecil)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Maps"
+        ]
+      }
+    },
+    "/api/v1/maps/marker/active": {
+      "get": {
+        "operationId": "MapsController_findActiveMarkers_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Maps"
+        ]
+      }
+    },
+    "/api/v1/maps/marker/category/{categoryId}": {
+      "get": {
+        "operationId": "MapsController_findMarkersByCategory_v1",
+        "parameters": [
+          {
+            "name": "categoryId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Halaman yang diminta, dimulai dari 1",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Jumlah data per halaman (maksimal 100)",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Kata kunci pencarian (tidak membedakan huruf besar/kecil)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Maps"
+        ]
+      }
+    },
+    "/api/v1/maps/marker/{id}": {
+      "get": {
+        "operationId": "MapsController_findMarkerById_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Maps"
+        ]
+      },
+      "patch": {
+        "operationId": "MapsController_updateMarker_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMarkerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Maps"
+        ]
+      },
+      "delete": {
+        "operationId": "MapsController_removeMarker_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Maps"
+        ]
+      }
+    },
+    "/api/v1/gallery/album": {
+      "post": {
+        "operationId": "GalleryController_createAlbum_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAlbumDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Gallery"
+        ]
+      },
+      "get": {
+        "operationId": "GalleryController_findAllAlbums_v1",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Halaman yang diminta, dimulai dari 1",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Jumlah data per halaman (maksimal 100)",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Kata kunci pencarian (tidak membedakan huruf besar/kecil)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Gallery"
+        ]
+      }
+    },
+    "/api/v1/gallery/album/{slug}": {
+      "get": {
+        "operationId": "GalleryController_findAlbumBySlug_v1",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Gallery"
+        ]
+      }
+    },
+    "/api/v1/gallery/album/{id}": {
+      "patch": {
+        "operationId": "GalleryController_updateAlbum_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAlbumDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Gallery"
+        ]
+      },
+      "delete": {
+        "operationId": "GalleryController_removeAlbum_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Gallery"
+        ]
+      }
+    },
+    "/api/v1/gallery/item": {
+      "post": {
+        "operationId": "GalleryController_createItem_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateItemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Gallery"
+        ]
+      }
+    },
+    "/api/v1/gallery/item/featured": {
+      "get": {
+        "operationId": "GalleryController_findFeaturedItems_v1",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Halaman yang diminta, dimulai dari 1",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Jumlah data per halaman (maksimal 100)",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Kata kunci pencarian (tidak membedakan huruf besar/kecil)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Gallery"
+        ]
+      }
+    },
+    "/api/v1/gallery/item/album/{albumId}": {
+      "get": {
+        "operationId": "GalleryController_findItemsByAlbum_v1",
+        "parameters": [
+          {
+            "name": "albumId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Halaman yang diminta, dimulai dari 1",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Jumlah data per halaman (maksimal 100)",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Kata kunci pencarian (tidak membedakan huruf besar/kecil)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Gallery"
+        ]
+      }
+    },
+    "/api/v1/gallery/item/{id}": {
+      "get": {
+        "operationId": "GalleryController_findItemById_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Gallery"
+        ]
+      },
+      "patch": {
+        "operationId": "GalleryController_updateItem_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateItemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Gallery"
+        ]
+      },
+      "delete": {
+        "operationId": "GalleryController_removeItem_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Gallery"
+        ]
+      }
+    },
+    "/api/v1/umkm": {
+      "post": {
+        "operationId": "UmkmController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUmkmDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "UMKM"
+        ]
+      },
+      "get": {
+        "operationId": "UmkmController_findAll_v1",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Halaman yang diminta, dimulai dari 1",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Jumlah data per halaman (maksimal 100)",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Kata kunci pencarian (tidak membedakan huruf besar/kecil)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "UMKM"
+        ]
+      }
+    },
+    "/api/v1/umkm/active": {
+      "get": {
+        "operationId": "UmkmController_findActive_v1",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Halaman yang diminta, dimulai dari 1",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Jumlah data per halaman (maksimal 100)",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Kata kunci pencarian (tidak membedakan huruf besar/kecil)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "UMKM"
+        ]
+      }
+    },
+    "/api/v1/umkm/{slug}": {
+      "get": {
+        "operationId": "UmkmController_findBySlug_v1",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "UMKM"
+        ]
+      }
+    },
+    "/api/v1/umkm/{id}": {
+      "patch": {
+        "operationId": "UmkmController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUmkmDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "UMKM"
+        ]
+      },
+      "delete": {
+        "operationId": "UmkmController_remove_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "UMKM"
+        ]
+      }
+    },
+    "/api/v1/umkm/image": {
+      "post": {
+        "operationId": "UmkmController_createImage_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUmkmImageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "UMKM"
+        ]
+      }
+    },
+    "/api/v1/umkm/image/umkm/{umkmId}": {
+      "get": {
+        "operationId": "UmkmController_findImagesByUmkm_v1",
+        "parameters": [
+          {
+            "name": "umkmId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "UMKM"
+        ]
+      }
+    },
+    "/api/v1/umkm/image/{id}": {
+      "get": {
+        "operationId": "UmkmController_findImageById_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "UMKM"
+        ]
+      },
+      "patch": {
+        "operationId": "UmkmController_updateImage_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUmkmImageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "UMKM"
+        ]
+      },
+      "delete": {
+        "operationId": "UmkmController_removeImage_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "UMKM"
+        ]
+      }
+    },
+    "/api/v1/potential": {
+      "post": {
+        "operationId": "PotentialController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePotentialDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Potential"
+        ]
+      },
+      "get": {
+        "operationId": "PotentialController_findAll_v1",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Halaman yang diminta, dimulai dari 1",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Jumlah data per halaman (maksimal 100)",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Kata kunci pencarian (tidak membedakan huruf besar/kecil)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "category",
+            "required": false,
+            "in": "query",
+            "description": "Saring berdasarkan kategori potensi",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PERTANIAN",
+                "PETERNAKAN",
+                "PERKEBUNAN",
+                "PERIKANAN",
+                "KERAJINAN",
+                "WISATA",
+                "KULINER",
+                "LAINNYA"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Potential"
+        ]
+      }
+    },
+    "/api/v1/potential/active": {
+      "get": {
+        "operationId": "PotentialController_findActive_v1",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Halaman yang diminta, dimulai dari 1",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Jumlah data per halaman (maksimal 100)",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Kata kunci pencarian (tidak membedakan huruf besar/kecil)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "category",
+            "required": false,
+            "in": "query",
+            "description": "Saring berdasarkan kategori potensi",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PERTANIAN",
+                "PETERNAKAN",
+                "PERKEBUNAN",
+                "PERIKANAN",
+                "KERAJINAN",
+                "WISATA",
+                "KULINER",
+                "LAINNYA"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Potential"
+        ]
+      }
+    },
+    "/api/v1/potential/{slug}": {
+      "get": {
+        "operationId": "PotentialController_findBySlug_v1",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Potential"
+        ]
+      }
+    },
+    "/api/v1/potential/{id}": {
+      "patch": {
+        "operationId": "PotentialController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePotentialDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Potential"
+        ]
+      },
+      "delete": {
+        "operationId": "PotentialController_remove_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Potential"
+        ]
+      }
+    },
+    "/api/v1/potential/image": {
+      "post": {
+        "operationId": "PotentialController_createImage_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePotentialImageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Potential"
+        ]
+      }
+    },
+    "/api/v1/potential/image/potential/{potentialId}": {
+      "get": {
+        "operationId": "PotentialController_findImagesByPotential_v1",
+        "parameters": [
+          {
+            "name": "potentialId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Potential"
+        ]
+      }
+    },
+    "/api/v1/potential/image/{id}": {
+      "get": {
+        "operationId": "PotentialController_findImageById_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Potential"
+        ]
+      },
+      "patch": {
+        "operationId": "PotentialController_updateImage_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePotentialImageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Potential"
+        ]
+      },
+      "delete": {
+        "operationId": "PotentialController_removeImage_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Potential"
+        ]
+      }
+    },
+    "/api/v1/settings": {
+      "get": {
+        "operationId": "SettingsController_findAll_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Settings"
+        ]
+      }
+    },
+    "/api/v1/settings/{key}": {
+      "get": {
+        "operationId": "SettingsController_findByKey_v1",
+        "parameters": [
+          {
+            "name": "key",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Settings"
+        ]
+      },
+      "patch": {
+        "operationId": "SettingsController_update_v1",
+        "parameters": [
+          {
+            "name": "key",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSettingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Settings"
+        ]
+      }
+    },
+    "/api/v1/kkn/program": {
+      "post": {
+        "operationId": "KknController_createProgram_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateKknProgramDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "KKN"
+        ]
+      },
+      "get": {
+        "operationId": "KknController_findAllPrograms_v1",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Halaman yang diminta, dimulai dari 1",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Jumlah data per halaman (maksimal 100)",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Kata kunci pencarian (tidak membedakan huruf besar/kecil)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "KKN"
+        ]
+      }
+    },
+    "/api/v1/kkn/program/active": {
+      "get": {
+        "operationId": "KknController_findActivePrograms_v1",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Halaman yang diminta, dimulai dari 1",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Jumlah data per halaman (maksimal 100)",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Kata kunci pencarian (tidak membedakan huruf besar/kecil)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "KKN"
+        ]
+      }
+    },
+    "/api/v1/kkn/program/sub/{subProgram}": {
+      "get": {
+        "operationId": "KknController_findProgramsBySubProgram_v1",
+        "parameters": [
+          {
+            "name": "subProgram",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Halaman yang diminta, dimulai dari 1",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Jumlah data per halaman (maksimal 100)",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Kata kunci pencarian (tidak membedakan huruf besar/kecil)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "KKN"
+        ]
+      }
+    },
+    "/api/v1/kkn/program/{slug}": {
+      "get": {
+        "operationId": "KknController_findProgramBySlug_v1",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "KKN"
+        ]
+      }
+    },
+    "/api/v1/kkn/program/{id}": {
+      "patch": {
+        "operationId": "KknController_updateProgram_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateKknProgramDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "KKN"
+        ]
+      },
+      "delete": {
+        "operationId": "KknController_removeProgram_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "KKN"
+        ]
+      }
+    },
+    "/api/v1/kkn/activity": {
+      "post": {
+        "operationId": "KknController_createActivity_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateKknActivityDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "KKN"
+        ]
+      }
+    },
+    "/api/v1/kkn/activity/program/{programId}": {
+      "get": {
+        "operationId": "KknController_findActivitiesByProgram_v1",
+        "parameters": [
+          {
+            "name": "programId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Halaman yang diminta, dimulai dari 1",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Jumlah data per halaman (maksimal 100)",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Kata kunci pencarian (tidak membedakan huruf besar/kecil)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "KKN"
+        ]
+      }
+    },
+    "/api/v1/kkn/activity/{id}": {
+      "get": {
+        "operationId": "KknController_findActivityById_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "KKN"
+        ]
+      },
+      "patch": {
+        "operationId": "KknController_updateActivity_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateKknActivityDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "KKN"
+        ]
+      },
+      "delete": {
+        "operationId": "KknController_removeActivity_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "KKN"
+        ]
+      }
+    },
+    "/api/v1/upload": {
+      "post": {
+        "operationId": "UploadController_uploadSingle_v1",
+        "parameters": [
+          {
+            "name": "folder",
+            "required": false,
+            "in": "query",
+            "description": "Folder tujuan di dalam bucket (default: umum)",
+            "schema": {
+              "enum": [
+                "berita",
+                "galeri",
+                "umkm",
+                "potensi",
+                "kkn",
+                "peta",
+                "profil",
+                "pengaturan",
+                "umum"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Berkas gambar, maksimal 5 MB"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Upload"
+        ]
+      },
+      "delete": {
+        "operationId": "UploadController_remove_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteFileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Upload"
+        ]
+      }
+    },
+    "/api/v1/upload/multiple": {
+      "post": {
+        "operationId": "UploadController_uploadMultiple_v1",
+        "parameters": [
+          {
+            "name": "folder",
+            "required": false,
+            "in": "query",
+            "description": "Folder tujuan di dalam bucket (default: umum)",
+            "schema": {
+              "enum": [
+                "berita",
+                "galeri",
+                "umkm",
+                "potensi",
+                "kkn",
+                "peta",
+                "profil",
+                "pengaturan",
+                "umum"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "files"
+                ],
+                "properties": {
+                  "files": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    },
+                    "description": "Maksimal 10 berkas per permintaan"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Upload"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Kembangsari Digital API",
+    "description": "REST API Padukuhan Kembangsari",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      }
+    },
+    "schemas": {
+      "LoginDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateProfileDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateProfileDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateNewsDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateNewsDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateCategoryDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateCategoryDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateAgendaDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "description": "Slug untuk URL halaman detail. Bila dikosongkan, dibuat otomatis dari judul.",
+            "example": "posyandu-balita-melati"
+          }
+        }
+      },
+      "UpdateAgendaDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "description": "Slug untuk URL halaman detail. Bila dikosongkan, dibuat otomatis dari judul.",
+            "example": "posyandu-balita-melati"
+          }
+        }
+      },
+      "CreateAnnouncementDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateAnnouncementDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreatePopulationStatDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdatePopulationStatDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateMapCategoryDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateMapCategoryDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateMarkerDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateMarkerDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateAlbumDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateAlbumDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateItemDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateItemDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateUmkmDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateUmkmDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateUmkmImageDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateUmkmImageDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreatePotentialDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdatePotentialDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreatePotentialImageDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdatePotentialImageDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateSettingDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateKknProgramDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateKknProgramDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateKknActivityDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateKknActivityDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "DeleteFileDto": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Path objek di dalam bucket, atau URL publik lengkap yang dikembalikan saat upload",
+            "example": "berita/6f1c2f4e-1f0a-4c33-9c2f-2f1c2f4e1f0a.webp"
+          }
+        },
+        "required": [
+          "path"
+        ]
+      }
+    }
+  }
+}

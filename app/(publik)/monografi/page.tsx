@@ -5,6 +5,7 @@ import { Container } from "@/components/ui/container";
 import { FilterChips } from "@/components/ui/filter-chips";
 import { PageHeader } from "@/components/ui/page-header";
 import { EmptyState, ErrorState } from "@/components/ui/states";
+import { toEmploymentItems } from "@/features/monography/employment";
 import { StatBars } from "@/features/monography/stat-bars";
 import { StatTable } from "@/features/monography/stat-table";
 import { safeFetch } from "@/lib/api";
@@ -82,6 +83,7 @@ function MonographyContent({ stat }: { stat: PopulationStat }) {
   ].filter((item) => item.value !== null && item.value !== undefined);
 
   const genderTotal = stat.maleCount + stat.femaleCount;
+  const employment = toEmploymentItems(stat.employmentData);
 
   return (
     <div className="mt-8 flex flex-col gap-10 md:gap-14">
@@ -167,6 +169,23 @@ function MonographyContent({ stat }: { stat: PopulationStat }) {
         </Card>
       </section>
 
+      <section aria-labelledby="pekerjaan">
+        <h2 id="pekerjaan" className="mb-4 text-xl font-semibold tracking-tight md:text-2xl">
+          Mata Pencaharian
+        </h2>
+        <Card>
+          <CardBody>
+            <StatBars tone="secondary" items={employment} />
+            {employment.length > 0 ? (
+              <p className="mt-4 text-sm text-muted">
+                Persentase dihitung dari jumlah warga yang mata pencahariannya terdata. Kategori
+                yang belum didata tidak ditampilkan.
+              </p>
+            ) : null}
+          </CardBody>
+        </Card>
+      </section>
+
       <section aria-labelledby="agama">
         <h2 id="agama" className="mb-4 text-xl font-semibold tracking-tight md:text-2xl">
           Pemeluk Agama
@@ -212,10 +231,6 @@ function MonographyContent({ stat }: { stat: PopulationStat }) {
             ]}
           />
         </div>
-
-        {/* `employmentData` bertipe JSON bebas dan strukturnya belum dibakukan
-            di backend, jadi belum ditampilkan — menebak bentuknya berisiko
-            menampilkan angka yang keliru. */}
       </section>
     </div>
   );

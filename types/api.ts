@@ -50,6 +50,21 @@ export interface PaginationQuery {
   search?: string;
 }
 
+/**
+ * Query untuk GET /news/published dan GET /news.
+ * Catatan: sejak backend memakai forbidNonWhitelisted, parameter di luar
+ * daftar ini dijawab 400, bukan diabaikan diam-diam.
+ */
+export interface NewsQuery extends PaginationQuery {
+  /** Saring berdasarkan id kategori (ambil dari GET /news/category/all). */
+  categoryId?: string;
+}
+
+/** Query untuk GET /potential/active dan GET /potential. */
+export interface PotentialQuery extends PaginationQuery {
+  category?: PotentialCategory;
+}
+
 // ============================================================
 // ENUM
 // ============================================================
@@ -57,6 +72,30 @@ export interface PaginationQuery {
 export type Role = 'ADMIN' | 'EDITOR';
 
 export type GalleryType = 'FOTO' | 'VIDEO';
+
+/** Kategori pekerjaan pada `PopulationStat.employmentData`. */
+export type EmploymentStatus =
+  | 'PETANI'
+  | 'NELAYAN'
+  | 'PNS'
+  | 'TNI_POLRI'
+  | 'KARYAWAN_SWASTA'
+  | 'WIRASWASTA'
+  | 'BURUH'
+  | 'PEDAGANG'
+  | 'GURU_DOSEN'
+  | 'TENAGA_KESEHATAN'
+  | 'PENSIUNAN'
+  | 'SERABUTAN'
+  | 'IBU_RUMAH_TANGGA'
+  | 'TIDAK_BEKERJA'
+  | 'LAINNYA';
+
+/**
+ * Bentuk `employmentData`, mis. { PETANI: 180, BURUH: 95 }.
+ * Cocok langsung untuk StatBars seperti bagian pendidikan dan agama.
+ */
+export type EmploymentData = Partial<Record<EmploymentStatus, number>>;
 
 export type PotentialCategory =
   | 'PERTANIAN'
@@ -142,6 +181,8 @@ export interface News {
 export interface Agenda {
   id: string;
   title: string;
+  /** Dipakai pada URL halaman detail: GET /agenda/{slug}. */
+  slug: string;
   description: string | null;
   location: string | null;
   startDate: string;
@@ -197,8 +238,12 @@ export interface PopulationStat {
   educationS3: number | null;
   educationNoSchool: number | null;
 
-  /** JSON bebas untuk data pekerjaan — strukturnya belum dibakukan. */
-  employmentData: unknown | null;
+  /**
+   * Data pekerjaan. Seluruh kunci opsional — kategori yang tidak ada
+   * berarti tidak didata, bukan bernilai nol. Backend menolak kunci di
+   * luar daftar ini dan nilai yang bukan bilangan bulat >= 0.
+   */
+  employmentData: EmploymentData | null;
 
   // Agama
   religionIslam: number | null;

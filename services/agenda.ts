@@ -11,6 +11,11 @@ export function getUpcomingAgenda(query: PaginationQuery = {}) {
   return getPaginated<Agenda>("/agenda/upcoming", query, { revalidate: 300 });
 }
 
-export function getAgendaById(id: string) {
-  return getOne<Agenda>(`/agenda/${id}`, { revalidate: 300 });
+/**
+ * Detail agenda. `GET /agenda/:idOrSlug` menerima keduanya — halaman publik
+ * memakai slug supaya tautannya enak dibagikan ke grup WhatsApp, sementara id
+ * tetap bekerja untuk dashboard admin.
+ */
+export function getAgendaBySlug(slug: string) {
+  return getOne<Agenda>(`/agenda/${slug}`, { revalidate: 300 });
 }

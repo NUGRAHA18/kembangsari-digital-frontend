@@ -1,11 +1,18 @@
 import type { Metadata } from "next";
 import { Container } from "@/components/ui/container";
+import { FilterChips } from "@/components/ui/filter-chips";
 import { PageHeader } from "@/components/ui/page-header";
 import { Pagination } from "@/components/ui/pagination";
 import { SearchInput } from "@/components/ui/search-input";
 import { EmptyState, ErrorState } from "@/components/ui/states";
+import {
+  POTENTIAL_CATEGORIES,
+  potentialCategorySlug,
+  readPotentialCategory,
+} from "@/features/potential/categories";
 import { PotentialCard } from "@/features/potential/potential-card";
 import { safeFetch } from "@/lib/api";
+import { humanizeEnum } from "@/lib/format";
 import { readPage, readParam, type RawSearchParams } from "@/lib/page-params";
 import { getActivePotentials } from "@/services/potential";
 
@@ -25,9 +32,18 @@ export default async function PotentialListPage({
   const params = await searchParams;
   const page = readPage(params);
   const search = readParam(params, "search");
+  // Nilai asing dibuang di sini, bukan diteruskan: backend menjawabnya `400`.
+  const category = readPotentialCategory(readParam(params, "kategori"));
 
-  const potentials = await safeFetch(getActivePotentials({ page, limit: PER_PAGE, search }));
-  const activeParams = { search, page: page > 1 ? String(page) : undefined };
+  const potentials = await safeFetch(
+    getActivePotentials({ page, limit: PER_PAGE, search, category }),
+  );
+
+  const activeParams = {
+    search,
+    kategori: category ? potentialCategorySlug(category) : undefined,
+    page: page > 1 ? String(page) : undefined,
+  };
 
   return (
     <>
@@ -38,19 +54,35 @@ export default async function PotentialListPage({
       />
 
       <Container className="py-8 md:py-12">
-        {/*
-          Tidak ada filter kategori di halaman ini: endpoint `/potential/active`
-          hanya menerima page, limit, dan search — parameter kategori diabaikan
-          backend. Menyaring di sisi klien hanya akan menyaring satu halaman
-          hasil, sehingga menampilkan jumlah yang menyesatkan. Kategori tetap
-          terlihat sebagai label pada setiap kartu.
-        */}
         <SearchInput
           action="/potensi"
           defaultValue={search}
           placeholder="Cari potensi, misalnya bambu atau lele…"
           label="Cari potensi padukuhan"
+          hiddenFields={activeParams.kategori ? { kategori: activeParams.kategori } : {}}
         />
+
+        {/*
+          Kedelapan kategori selalu ditampilkan, bukan hanya yang punya isi:
+          daftarnya berasal dari enum backend, bukan dari data, sehingga tidak
+          ada permintaan tambahan untuk mengetahuinya.
+        */}
+        <div className="mt-4">
+          <FilterChips
+            label="Kategori potensi"
+            basePath="/potensi"
+            paramName="kategori"
+            activeValue={activeParams.kategori}
+            searchParams={activeParams}
+            options={[
+              { label: "Semua" },
+              ...POTENTIAL_CATEGORIES.map((item) => ({
+                value: potentialCategorySlug(item),
+                label: humanizeEnum(item),
+              })),
+            ]}
+          />
+        </div>
 
         <div className="mt-8">
           {potentials.error ? (
@@ -72,8 +104,18 @@ export default async function PotentialListPage({
             </>
           ) : (
             <EmptyState
-              title={search ? `Tidak ada potensi untuk "${search}"` : "Belum ada data potensi"}
-              description="Data potensi akan tampil di sini setelah ditambahkan admin."
+              title={
+                search
+                  ? `Tidak ada potensi untuk "${search}"`
+                  : category
+                    ? `Belum ada potensi ${humanizeEnum(category)}`
+                    : "Belum ada data potensi"
+              }
+              description={
+                category
+                  ? "Pilih kategori lain atau lihat semua potensi."
+                  : "Data potensi akan tampil di sini setelah ditambahkan admin."
+              }
             />
           )}
         </div>

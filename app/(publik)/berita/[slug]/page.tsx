@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import { ArrowLeft, CalendarDays, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Container } from "@/components/ui/container";
@@ -18,7 +17,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   // Judul dan ringkasan berita inilah yang muncul di hasil pencarian dan saat
   // tautannya dibagikan ke WhatsApp — bagian terpenting untuk portal berita.
-  if (!news || !news.published) return { title: "Berita tidak ditemukan" };
+  if (!news) return { title: "Berita tidak ditemukan" };
 
   const description = excerpt(news.content, 160);
 
@@ -39,13 +38,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function NewsDetailPage({ params }: Props) {
   const { slug } = await params;
+  // Draf tidak perlu disaring di sini: `GET /news/:slug` menjawab 404 untuk
+  // pemanggil tanpa token, dan `fetchOrNotFound` menerjemahkannya jadi halaman
+  // "tidak ditemukan" berstatus 404.
   const news = await fetchOrNotFound(getNewsBySlug(slug));
-
-  // `GET /news/:slug` melayani draf sama seperti berita terbit, sehingga siapa
-  // pun yang menebak slug-nya bisa membaca tulisan yang belum siap diumumkan.
-  // Selama backend belum menyaringnya, penyaringan dilakukan di sini.
-  // Lihat LAPORAN-BACKEND.md butir B-2.
-  if (!news.published) notFound();
 
   return (
     <Container className="py-8 md:py-12">

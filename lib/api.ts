@@ -176,6 +176,24 @@ export function getList<T>(
   return request<T[]>(path, { ...options, query });
 }
 
+/**
+ * Pengubah data — hanya dipakai dashboard admin, selalu dengan `token`.
+ *
+ * Tidak ada `revalidate` di sini: permintaan bertoken tidak boleh masuk cache
+ * Next.js, dan tanpa opsi itu `fetch` memang tidak menyimpannya.
+ */
+export function post<T>(path: string, body: unknown, options: RequestOptions = {}) {
+  return request<T>(path, { ...options, method: "POST", body });
+}
+
+export function patch<T>(path: string, body: unknown, options: RequestOptions = {}) {
+  return request<T>(path, { ...options, method: "PATCH", body });
+}
+
+export function del<T>(path: string, options: RequestOptions = {}) {
+  return request<T>(path, { ...options, method: "DELETE" });
+}
+
 export { request };
 
 /**
