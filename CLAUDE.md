@@ -138,7 +138,7 @@ agenda, dan data pekerjaan di monografi.
 
 **Dashboard admin sudah dimulai** (3 Agustus 2026): login, kerangka dashboard, modul berita
 lengkap (tulis, ubah, hapus, unggah gambar), dan pengelolaan kategori berita. Menyusul
-agenda dan pengumuman (4 Agustus 2026). Modul lainnya belum.
+agenda, pengumuman, dan galeri (4 Agustus 2026). Modul lainnya belum.
 
 ## Struktur berkas
 
@@ -261,6 +261,16 @@ Modul berita adalah contoh yang diikuti modul berikutnya. Polanya:
 - **Slug agenda dibiarkan kosong saat menambah.** Backend membuatnya dari judul beserta
   penomoran untuk judul yang berulang — "posyandu-balita", lalu "posyandu-balita-2". Mengisinya
   otomatis dari sisi frontend justru membuat Posyandu bulanan bertabrakan `409`.
+- **Unggah banyak gambar** memakai `POST /upload/multiple` dengan nama field `files` (jamak,
+  beda dari `file` pada unggahan tunggal) dan maksimal `UPLOAD_MAX_FILES` berkas. Berkas
+  diperiksa di browser **dan** di server: unggahan galeri paling berat di seluruh dashboard,
+  dan menunggu sepuluh foto ponsel terkirim hanya untuk ditolak backend menyakitkan di
+  jaringan padukuhan.
+- **Menghapus record tidak menghapus berkasnya di bucket.** Backend hanya membuang barisnya;
+  berkas yatim harus dibuang lewat `DELETE /upload` dengan `path`-nya. Belum ada yang
+  melakukannya otomatis — layak diusulkan ke backend.
+- **Kartu berulang memakai form server biasa**, bukan Client Component: kisi foto bisa berisi
+  puluhan kartu, dan menjadikannya komponen klien mengirim semuanya ke browser demi dua isian.
 - **Relasi wajib memblokir penghapusan.** `News.categoryId` tidak boleh kosong, jadi kategori
   yang masih dipakai ditolak database dengan pesan "Referensi data tidak valid" — kalimat yang
   tidak menjelaskan apa pun kepada pengelola. Karena itu tombol hapusnya dimatikan lebih dulu
@@ -269,7 +279,7 @@ Modul berita adalah contoh yang diikuti modul berikutnya. Polanya:
 
 ## Yang belum dikerjakan
 
-- **Modul dashboard yang tersisa**: galeri, UMKM, potensi, program KKN, peta, monografi,
-  profil, dan pengaturan. Empat yang pertama butuh unggah banyak gambar, bukan satu
-  thumbnail seperti berita.
+- **Modul dashboard yang tersisa**: UMKM, potensi, program KKN, peta, monografi, profil, dan
+  pengaturan. UMKM dan potensi punya galeri gambar sendiri (`/umkm/image`, `/potential/image`)
+  yang polanya mirip isi album galeri.
 - QR Code menuju halaman monografi (FR-052).

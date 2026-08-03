@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   CalendarDays,
   FileText,
+  Images,
   LayoutDashboard,
   Megaphone,
   Tags,
@@ -30,6 +31,7 @@ export const ADMIN_NAV: AdminNavItem[] = [
   { label: "Kategori", href: "/admin/kategori", Icon: Tags },
   { label: "Agenda", href: "/admin/agenda", Icon: CalendarDays },
   { label: "Pengumuman", href: "/admin/pengumuman", Icon: Megaphone },
+  { label: "Galeri", href: "/admin/galeri", Icon: Images },
 ];
 
 /** `/admin` hanya aktif kalau persis dibuka; menu lain juga aktif di halaman turunannya. */

@@ -21,3 +21,17 @@ export function uploadImage(file: File, folder: UploadFolder, token: string) {
 
   return post<UploadedFile>("/upload", body, { token, query: { folder } });
 }
+
+/**
+ * Unggah beberapa gambar sekaligus — dipakai galeri, yang jarang diisi satu foto.
+ *
+ * Nama fieldnya `files` (jamak) dan berbeda dari `uploadImage`; salah satu saja
+ * membuat backend menerima daftar kosong. Batasnya `UPLOAD_MAX_FILES` berkas per
+ * permintaan, jadi pemanggil harus memeriksa jumlahnya lebih dulu.
+ */
+export function uploadImages(files: File[], folder: UploadFolder, token: string) {
+  const body = new FormData();
+  for (const file of files) body.append("files", file);
+
+  return post<UploadedFile[]>("/upload/multiple", body, { token, query: { folder } });
+}
