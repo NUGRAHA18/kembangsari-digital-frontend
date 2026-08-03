@@ -60,7 +60,7 @@ Warga mengakses portal ini hampir seluruhnya dari ponsel.
 **Endpoint list** mengembalikan `{ data, meta }`:
 
 ```ts
-const res = await fetch(`${API}/news?page=1&limit=9`);
+const res = await fetch(`${API}/news/published?page=1&limit=9`);
 const { data, meta } = await res.json();   // data adalah array
 ```
 
@@ -87,6 +87,24 @@ Saat mengirim `FormData`, **jangan** menyetel header `Content-Type` — browser 
 
 `createdAt`, `startDate`, `date`, dan sejenisnya bertipe `string`, bukan `Date`. Bungkus sendiri kalau perlu diolah.
 
+### 5. Endpoint list versi lengkap sekarang milik admin
+
+`GET /news`, `/announcement`, `/monography`, `/umkm`, `/potential`, `/kkn/program`, dan
+`/maps/marker` menjawab **`401` tanpa token**. Halaman publik memakai versi tersaringnya:
+
+```
+/news/published        /potential/active      /maps/marker/active
+/announcement/active   /umkm/active           /monography/published
+/kkn/program/active
+```
+
+Endpoint detail tetap terbuka tanpa token, tetapi record tersembunyi (`published: false`,
+`isActive: false`, `isPublished: false`) dijawab **`404`** — jadi halaman `[slug]` tidak
+perlu lagi menyaring sendiri, cukup `fetchOrNotFound`.
+
+Parameter di luar daftar yang diterima kini dijawab **`400`** (`forbidNonWhitelisted`),
+bukan diabaikan diam-diam seperti dulu. Cek `openapi.json` sebelum menambah query baru.
+
 ## Referensi
 
 | Berkas | Isi | |
@@ -95,9 +113,10 @@ Saat mengirim `FormData`, **jangan** menyetel header `Content-Type` — browser 
 | `openapi.json` | Kontrak API lengkap, bisa dibaca tanpa menjalankan backend | di repo |
 | `FRONTEND_GUIDE.md` | Panduan lengkap: kontrak API, resep komponen per halaman, detail pedoman mobile-first | internal |
 | `LAPORAN-BACKEND.md` | Keterbatasan backend yang ditemukan saat implementasi, beserta usulan perbaikannya | internal |
+| `JAWABAN-LAPORAN-BACKEND.md` | Jawaban tim backend: seluruh butir laporan sudah dikerjakan, beserta kontrak barunya | internal |
 
-Dua berkas terakhir **sengaja tidak ikut di repo publik ini** (lihat `.gitignore`) dan
-dibagikan lewat jalur internal. Keduanya tetap ada di komputer masing-masing anggota tim.
+Tiga berkas terakhir **sengaja tidak ikut di repo publik ini** (lihat `.gitignore`) dan
+dibagikan lewat jalur internal. Ketiganya tetap ada di komputer masing-masing anggota tim.
 
 Kalau butuh tahu bentuk data suatu endpoint, baca `types/api.ts` lebih dulu sebelum menebak. Kalau backend sedang jalan, Swagger tersedia di http://localhost:3000/docs.
 
@@ -113,17 +132,28 @@ Kalau butuh tahu bentuk data suatu endpoint, baca `types/api.ts` lebih dulu sebe
 
 # Keadaan repo saat ini
 
-Seluruh **halaman publik sudah dibangun** (1 Agustus 2026). Dashboard admin belum ada.
+Seluruh **halaman publik sudah dibangun** (1 Agustus 2026), lalu disesuaikan dengan kontrak
+backend yang diperbaiki (3 Agustus 2026): filter kategori berita & potensi, halaman detail
+agenda, dan data pekerjaan di monografi.
+
+**Dashboard admin sudah dimulai** (3 Agustus 2026): login, kerangka dashboard, dan modul
+berita lengkap (tulis, ubah, hapus, unggah gambar). Modul lainnya belum.
 
 ## Struktur berkas
 
 ```
-app/                    Routing. Halaman daftar berada di route group (daftar)/
+app/(publik)/           Portal warga. Layout-nya yang memasang Navbar & Footer.
+                        Halaman daftar berada di route group (daftar)/
+app/admin/              Dashboard. (dasbor)/ memakai kerangka bersidebar;
+                        login/ dan keluar/ sengaja di luarnya
+app/layout.tsx          Hanya dokumen: bahasa, font, tema, metadata
+middleware.ts           Penjaga /admin — memeriksa ada tidaknya cookie sesi
 components/ui/          Komponen dasar lintas modul
 components/layout/      Navbar, Footer, penyedia tema
-features/<modul>/       Komponen khusus satu modul
+features/<modul>/       Komponen khusus satu modul, termasuk features/admin/
 services/<modul>.ts     Satu berkas per modul backend — semua pemanggilan API lewat sini
 lib/api.ts              Klien HTTP tunggal
+lib/session.ts          Cookie sesi admin (server saja)
 lib/format.ts           Tanggal, angka, tautan WhatsApp/Maps — semuanya locale id-ID
 types/api.ts            Kontrak tipe dari backend
 ```
@@ -161,10 +191,11 @@ Jangan "memperbaiki" hal-hal berikut tanpa membaca alasannya dulu:
 - **Agenda dikelompokkan per bulan**, bukan kisi kalender 7 kolom yang tidak terbaca di 320px.
 - **Pagination ponsel memakai tombol Sebelumnya/Selanjutnya**, bukan "Muat lebih banyak":
   setiap halaman tetap punya URL yang bisa dibagikan dan ditelusuri mesin pencari.
-- **`loading.tsx` hanya boleh di route group `(daftar)`, tidak pernah di folder `[slug]`.**
-  Berkas itu membuat batas streaming; begitu potongan pertama terkirim, status HTTP terkunci
-  di 200 dan `notFound()` menghasilkan halaman "tidak ditemukan" berstatus 200 — terbaca
-  mesin pencari sebagai halaman sah.
+- **`loading.tsx` hanya boleh di route group `(daftar)`, tidak pernah di folder `[slug]`
+  maupun di segmen induk yang menaungi keduanya.** Berkas itu membuat batas streaming; begitu
+  potongan pertama terkirim, status HTTP terkunci di 200 dan `notFound()` menghasilkan halaman
+  "tidak ditemukan" berstatus 200 — terbaca mesin pencari sebagai halaman sah. Inilah sebabnya
+  daftar agenda ikut dipindahkan ke `app/agenda/(daftar)/` saat `/agenda/[slug]` dibangun.
 - **Isi Markdown diturunkan satu tingkat** (`h1`→`h2`) di `components/ui/markdown.tsx`, karena
   setiap halaman sudah punya `h1` dari `PageHeader`.
 
@@ -176,31 +207,56 @@ Jangan "memperbaiki" hal-hal berikut tanpa membaca alasannya dulu:
 - Aturan `react-hooks/set-state-in-effect` melarang `setState` langsung di dalam effect.
   Untuk penanda "sudah ter-hydrate", pakai `hooks/use-hydrated.ts`.
 
-## Keterbatasan backend yang ditemukan saat implementasi
+## Keterbatasan backend — sudah diperbaiki (3 Agustus 2026)
 
-Rinciannya beserta usulan perbaikan ada di `LAPORAN-BACKEND.md` — dokumen internal, tidak
-ikut di repo publik ini. Yang dicatat di bawah hanya yang berpengaruh langsung pada cara
-frontend ditulis:
+Seluruh butir `LAPORAN-BACKEND.md` sudah dikerjakan backend; jawabannya ada di
+`JAWABAN-LAPORAN-BACKEND.md`. Yang berubah di frontend sebagai akibatnya:
 
-- `GET /news` dan `GET /potential/active` **tidak menerima filter kategori** — parameternya
-  dibuang backend tanpa galat (`whitelist: true`). Kedua halaman itu karena itu tidak punya
-  filter kategori; kategorinya tampil sebagai label di kartu. (Butir B-1, B-3)
-- `GET /news` **mencampur draf dengan berita terbit**. Frontend menyaring sendiri sebagai
-  pengaman sementara di `services/news.ts` dan `app/berita/[slug]/page.tsx`.
-  **Hapus penyaring itu setelah backend diperbaiki.** (Butir B-2)
-- Kalau sebuah modul menyediakan endpoint versi tersaring (`/potential/active`,
-  `/maps/marker/active`), **halaman publik wajib memakai yang itu**, bukan endpoint list
-  versi lengkapnya. Jangan menukarnya "supaya datanya lebih lengkap" — ada alasan di sisi
-  backend, tercatat sebagai butir A-1 di laporan internal.
-- `employmentData` pada monografi bertipe JSON bebas yang strukturnya belum dibakukan,
-  jadi belum ditampilkan. (Butir B-4)
-- Agenda tidak punya endpoint berbasis slug, hanya `GET /agenda/:id`, sehingga agenda tidak
-  punya halaman detail sendiri — seluruh keterangan ditampilkan di kartu. (Butir B-5)
+- **Filter kategori sudah ada.** `GET /news/published?categoryId=` (id dari
+  `/news/category/all`) dan `GET /potential/active?category=` (nilai enum `PotentialCategory`,
+  huruf besar). Kategori tak dikenal dijawab `400`, jadi nilai dari query string divalidasi
+  dulu di `features/potential/categories.ts`. URL publiknya memakai slug — `?kategori=budaya`,
+  `?kategori=pertanian` — bukan id atau enum mentah.
+- **Draf tidak lagi bocor.** Penyaring pengaman di `services/news.ts` dan
+  `app/berita/[slug]/page.tsx` sudah dihapus; jangan dipasang kembali.
+- Kalau sebuah modul menyediakan endpoint versi tersaring, **halaman publik wajib memakai
+  yang itu** — sekarang bukan lagi soal kesopanan, endpoint list penuhnya menjawab `401`.
+- **`employmentData` sudah dibakukan** mengikuti enum `EmploymentStatus` (15 kunci huruf
+  besar, semuanya opsional). Kunci yang tidak dikirim berarti **tidak didata, bukan nol** —
+  `features/monography/employment.ts` membuangnya, jangan menampilkannya sebagai 0.
+- **Agenda punya `slug`** dan `GET /agenda/:idOrSlug` menerima keduanya, jadi
+  `/agenda/[slug]` sudah dibangun. Daftarnya pindah ke route group `(daftar)` supaya
+  `loading.tsx` tidak ikut membentuk batas streaming di halaman detail.
+- **CORS**: `CORS_ORIGINS` di backend masih menunggu domain frontend produksi. Sampai diisi,
+  backend production hanya melayani `http://localhost:3001`.
+- **Rate limit**: 100 permintaan/menit per IP, dan **5/menit untuk `POST /auth/login`** —
+  sudah ditangani sebagai pesan tersendiri di `app/admin/login/actions.ts`.
+
+## Aturan dashboard admin
+
+Modul berita adalah contoh yang diikuti modul berikutnya. Polanya:
+
+- **Token disimpan di cookie `httpOnly`** (`lib/session.ts`), diset oleh Next.js — bukan
+  `localStorage`, dan tanpa perubahan apa pun di backend. Akibatnya token tidak pernah
+  tersentuh JavaScript browser dan halaman dashboard tetap bisa jadi Server Component.
+- **Semua penulisan lewat Server Action**, bukan `fetch` dari browser. Formnya tetap
+  terkirim ketika JavaScript gagal dimuat — seluruh alur berita sudah diuji tanpa JS.
+- **`lib/api.ts` jangan diberi `revalidate` untuk permintaan bertoken.** Respons admin
+  berisi draf; kalau masuk cache Next.js, ia bisa tersaji ke pengunjung biasa.
+- **Setelah menyimpan, panggil `revalidatePath`** untuk halaman publik yang terpengaruh.
+  Tanpa itu pengelola tidak melihat tulisannya di portal selama 60–300 detik dan mengira
+  penyimpanannya gagal.
+- **Konfirmasi hapus adalah halaman tersendiri**, bukan `confirm()` — dialog itu hilang
+  tanpa JavaScript, dan tombol hapusnya akan langsung menghapus tanpa bertanya.
+- **`401` saat merender** diarahkan ke `/admin/keluar`, yang menghapus cookie basi lalu
+  membawa pengguna ke form masuk. Server Component tidak boleh menghapus cookie sendiri.
+- Field gambar dikosongkan dengan **string kosong**, bukan `null`: DTO backend memakai
+  `@IsString()` sehingga `null` ditolak `400`. Layak diusulkan ke backend suatu saat.
 
 ## Yang belum dikerjakan
 
-- **Dashboard admin** (login, CRUD tiap modul, unggah gambar). `lib/api.ts` sudah menyediakan
-  `token` dan penanganan `FormData` yang benar, tapi belum ada halamannya.
+- **Modul dashboard selain berita**: agenda, pengumuman, galeri, UMKM, potensi, program KKN,
+  peta, monografi, profil, dan pengaturan.
+- Pengelolaan **kategori berita** dari dashboard — berita baru masih membutuhkan kategori
+  yang sudah ada di database.
 - QR Code menuju halaman monografi (FR-052).
-- Keputusan penyimpanan token: `localStorage` vs cookie `httpOnly` — yang kedua memerlukan
-  penyesuaian di backend, diskusikan dulu.
