@@ -137,8 +137,8 @@ backend yang diperbaiki (3 Agustus 2026): filter kategori berita & potensi, hala
 agenda, dan data pekerjaan di monografi.
 
 **Dashboard admin sudah dimulai** (3 Agustus 2026): login, kerangka dashboard, modul berita
-lengkap (tulis, ubah, hapus, unggah gambar), dan pengelolaan kategori berita. Modul lainnya
-belum.
+lengkap (tulis, ubah, hapus, unggah gambar), dan pengelolaan kategori berita. Menyusul
+agenda dan pengumuman (4 Agustus 2026). Modul lainnya belum.
 
 ## Struktur berkas
 
@@ -251,8 +251,16 @@ Modul berita adalah contoh yang diikuti modul berikutnya. Polanya:
   tanpa JavaScript, dan tombol hapusnya akan langsung menghapus tanpa bertanya.
 - **`401` saat merender** diarahkan ke `/admin/keluar`, yang menghapus cookie basi lalu
   membawa pengguna ke form masuk. Server Component tidak boleh menghapus cookie sendiri.
-- Field gambar dikosongkan dengan **string kosong**, bukan `null`: DTO backend memakai
-  `@IsString()` sehingga `null` ditolak `400`. Layak diusulkan ke backend suatu saat.
+- **Field opsional yang dikosongkan wajib dikirim `null`, bukan dihilangkan.** `PATCH` hanya
+  menyentuh field yang dikirim, jadi menghilangkannya membuat nilai lama bertahan — gambar
+  atau waktu selesai yang baru saja dihapus pengelola akan diam-diam kembali. `null` diterima
+  backend karena `@IsOptional()` melewatkan null tanpa menjalankan `@IsString()`/`@IsDateString()`.
+- **Waktu diisi lewat `datetime-local` dan dikunci ke WIB** di kedua arah
+  (`toDateTimeLocal` / `fromDateTimeLocal` di `lib/format.ts`). Input itu tidak mengenal zona
+  waktu; tanpa penguncian, jadwal akan bergeser tujuh jam begitu backend berjalan di UTC.
+- **Slug agenda dibiarkan kosong saat menambah.** Backend membuatnya dari judul beserta
+  penomoran untuk judul yang berulang — "posyandu-balita", lalu "posyandu-balita-2". Mengisinya
+  otomatis dari sisi frontend justru membuat Posyandu bulanan bertabrakan `409`.
 - **Relasi wajib memblokir penghapusan.** `News.categoryId` tidak boleh kosong, jadi kategori
   yang masih dipakai ditolak database dengan pesan "Referensi data tidak valid" — kalimat yang
   tidak menjelaskan apa pun kepada pengelola. Karena itu tombol hapusnya dimatikan lebih dulu
@@ -261,6 +269,7 @@ Modul berita adalah contoh yang diikuti modul berikutnya. Polanya:
 
 ## Yang belum dikerjakan
 
-- **Modul dashboard selain berita**: agenda, pengumuman, galeri, UMKM, potensi, program KKN,
-  peta, monografi, profil, dan pengaturan.
+- **Modul dashboard yang tersisa**: galeri, UMKM, potensi, program KKN, peta, monografi,
+  profil, dan pengaturan. Empat yang pertama butuh unggah banyak gambar, bukan satu
+  thumbnail seperti berita.
 - QR Code menuju halaman monografi (FR-052).

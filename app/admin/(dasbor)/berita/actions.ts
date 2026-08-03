@@ -76,7 +76,7 @@ export async function saveNewsAction(
 
   // Gambar: berkas baru menggantikan yang lama; kalau tidak ada berkas, URL
   // lama diteruskan apa adanya.
-  let thumbnail = String(formData.get("currentThumbnail") ?? "");
+  let thumbnail: string | null = String(formData.get("currentThumbnail") ?? "") || null;
   const file = formData.get("thumbnailFile");
 
   if (file instanceof File && file.size > 0) {
@@ -90,10 +90,9 @@ export async function saveNewsAction(
       return { error: `Gagal mengunggah gambar. ${toMessage(error)}`, values };
     }
   } else if (formData.get("removeThumbnail") === "on") {
-    // Backend menolak `null` pada field ini (`@IsString`), jadi pengosongan
-    // dikirim sebagai string kosong. Halaman publik memperlakukannya sama
-    // dengan tidak bergambar.
-    thumbnail = "";
+    // `null`, bukan string kosong: kolomnya nullable, dan `@IsOptional()` di
+    // backend memang melewatkan null tanpa menjalankan `@IsString()`.
+    thumbnail = null;
   }
 
   const payload: NewsInput = { title, slug, content, categoryId, published, thumbnail };

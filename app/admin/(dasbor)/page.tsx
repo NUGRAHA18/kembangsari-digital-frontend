@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CalendarDays, FileText, PenSquare, Plus } from "lucide-react";
+import { CalendarDays, FileText, Megaphone, PenSquare, Plus } from "lucide-react";
 import { ButtonLink } from "@/components/ui/button";
 import { Card, CardBody } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/states";
@@ -9,6 +9,7 @@ import { fetchAsAdmin } from "@/lib/admin-fetch";
 import { formatDateShort, formatNumber } from "@/lib/format";
 import { requireSession } from "@/lib/session";
 import { getUpcomingAgenda } from "@/services/agenda";
+import { getActiveAnnouncements } from "@/services/announcement";
 import { getAllNews } from "@/services/news";
 
 export const metadata: Metadata = { title: "Ringkasan" };
@@ -18,8 +19,12 @@ export default async function DashboardHomePage() {
 
   // Satu permintaan berita saja: `meta.total` memberi jumlah seluruhnya, dan
   // lima baris pertamanya sekaligus mengisi daftar "terakhir diperbarui".
-  const news = await fetchAsAdmin(getAllNews({ limit: 5 }, token));
-  const agenda = await safeFetch(getUpcomingAgenda({ limit: 1 }));
+  // Sisanya hanya diambil untuk angkanya, jadi cukup satu baris per modul.
+  const [news, agenda, announcements] = await Promise.all([
+    fetchAsAdmin(getAllNews({ limit: 5 }, token)),
+    safeFetch(getUpcomingAgenda({ limit: 1 })),
+    safeFetch(getActiveAnnouncements({ limit: 1 })),
+  ]);
 
   const draftCount = news.data.filter((item) => !item.published).length;
 
@@ -29,6 +34,11 @@ export default async function DashboardHomePage() {
       label: "Agenda mendatang",
       value: agenda.data?.meta.total ?? null,
       Icon: CalendarDays,
+    },
+    {
+      label: "Pengumuman tampil",
+      value: announcements.data?.meta.total ?? null,
+      Icon: Megaphone,
     },
   ];
 
@@ -48,7 +58,7 @@ export default async function DashboardHomePage() {
         </ButtonLink>
       </div>
 
-      <ul className="grid grid-cols-2 gap-3 md:gap-4">
+      <ul className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-3">
         {stats.map(({ label, value, Icon }) => (
           <li key={label}>
             <Card className="h-full">

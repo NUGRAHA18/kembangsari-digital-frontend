@@ -2,7 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FileText, LayoutDashboard, Tags, type LucideIcon } from "lucide-react";
+import {
+  CalendarDays,
+  FileText,
+  LayoutDashboard,
+  Megaphone,
+  Tags,
+  type LucideIcon,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface AdminNavItem {
@@ -21,6 +28,8 @@ export const ADMIN_NAV: AdminNavItem[] = [
   { label: "Ringkasan", href: "/admin", Icon: LayoutDashboard },
   { label: "Berita", href: "/admin/berita", Icon: FileText },
   { label: "Kategori", href: "/admin/kategori", Icon: Tags },
+  { label: "Agenda", href: "/admin/agenda", Icon: CalendarDays },
+  { label: "Pengumuman", href: "/admin/pengumuman", Icon: Megaphone },
 ];
 
 /** `/admin` hanya aktif kalau persis dibuka; menu lain juga aktif di halaman turunannya. */

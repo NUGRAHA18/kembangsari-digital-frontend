@@ -65,7 +65,8 @@ export interface NewsInput {
   title: string;
   slug: string;
   content: string;
-  thumbnail?: string;
+  /** `null` untuk menghapus gambar — `@IsOptional()` di backend melewatkan null. */
+  thumbnail?: string | null;
   published?: boolean;
   categoryId: string;
 }

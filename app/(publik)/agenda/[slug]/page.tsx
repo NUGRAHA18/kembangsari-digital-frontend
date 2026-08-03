@@ -6,18 +6,12 @@ import { Card, CardBody } from "@/components/ui/card";
 import { Container } from "@/components/ui/container";
 import { PageHeader } from "@/components/ui/page-header";
 import { PlainText } from "@/components/ui/plain-text";
+import { hasAgendaPassed } from "@/features/agenda/status";
 import { excerpt, formatDate, formatDateRange } from "@/lib/format";
 import { fetchOrNotFound, fetchOrNull } from "@/lib/fetch-page";
 import { getAgendaBySlug } from "@/services/agenda";
-import type { Agenda } from "@/types/api";
 
 type Props = { params: Promise<{ slug: string }> };
-
-/** Kegiatan dianggap selesai setelah waktu akhirnya lewat — atau setelah hari mulainya, kalau tidak ada waktu akhir. */
-function hasPassed(agenda: Agenda): boolean {
-  const end = new Date(agenda.endDate ?? agenda.startDate);
-  return Number.isFinite(end.getTime()) && end.getTime() < Date.now();
-}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
@@ -50,7 +44,7 @@ export default async function AgendaDetailPage({ params }: Props) {
         title={agenda.title}
         breadcrumbs={[{ label: "Agenda", href: "/agenda" }, { label: agenda.title }]}
       >
-        {hasPassed(agenda) ? (
+        {hasAgendaPassed(agenda) ? (
           <Badge tone="neutral" className="mt-4">
             Sudah berlangsung
           </Badge>
