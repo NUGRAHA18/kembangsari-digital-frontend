@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { ApiRequestError, ApiUnreachableError } from "@/lib/api";
+import type { FormState } from "@/lib/form-state";
 import { validateImage } from "@/lib/image";
 import { requireSession } from "@/lib/session";
 import { slugify } from "@/lib/slug";
@@ -21,10 +22,6 @@ import { UPLOAD_MAX_FILES } from "@/types/api";
 export interface AlbumFormState {
   error?: string;
   values?: Partial<AlbumInput>;
-}
-
-export interface PhotoFormState {
-  error?: string;
 }
 
 function revalidateGallery(slug?: string) {
@@ -141,9 +138,9 @@ export async function deleteAlbumAction(formData: FormData) {
  * sudah tercatat, dan berkas yatim tidak merusak apa pun selain memakan ruang.
  */
 export async function addPhotosAction(
-  _prevState: PhotoFormState,
+  _prevState: FormState,
   formData: FormData,
-): Promise<PhotoFormState> {
+): Promise<FormState> {
   const { token } = await requireSession();
 
   const albumId = String(formData.get("albumId") ?? "");
@@ -151,7 +148,7 @@ export async function addPhotosAction(
   if (!albumId) return { error: "Album tidak dikenali." };
 
   const files = formData
-    .getAll("photos")
+    .getAll("images")
     .filter((entry): entry is File => entry instanceof File && entry.size > 0);
 
   if (files.length === 0) return { error: "Pilih setidaknya satu foto." };
@@ -183,9 +180,9 @@ export async function addPhotosAction(
 
 /** Menambahkan video sebagai tautan; berkasnya tidak ikut diunggah ke bucket. */
 export async function addVideoAction(
-  _prevState: PhotoFormState,
+  _prevState: FormState,
   formData: FormData,
-): Promise<PhotoFormState> {
+): Promise<FormState> {
   const { token } = await requireSession();
 
   const albumId = String(formData.get("albumId") ?? "");

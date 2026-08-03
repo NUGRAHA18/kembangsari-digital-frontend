@@ -138,7 +138,7 @@ agenda, dan data pekerjaan di monografi.
 
 **Dashboard admin sudah dimulai** (3 Agustus 2026): login, kerangka dashboard, modul berita
 lengkap (tulis, ubah, hapus, unggah gambar), dan pengelolaan kategori berita. Menyusul
-agenda, pengumuman, dan galeri (4 Agustus 2026). Modul lainnya belum.
+agenda, pengumuman, galeri, dan UMKM (4 Agustus 2026). Modul lainnya belum.
 
 ## Struktur berkas
 
@@ -266,6 +266,11 @@ Modul berita adalah contoh yang diikuti modul berikutnya. Polanya:
   diperiksa di browser **dan** di server: unggahan galeri paling berat di seluruh dashboard,
   dan menunggu sepuluh foto ponsel terkirim hanya untuk ditolak backend menyakitkan di
   jaringan padukuhan.
+- **`isPrimary` tidak dijaga backend.** Kolom itu sekadar disimpan, sehingga dua gambar bisa
+  sama-sama bertanda utama dan kartu daftar akan menampilkan salah satunya secara acak. Yang
+  menjaganya frontend: gambar pertama otomatis jadi utama, menandai yang baru melepas yang
+  lama satu per satu, dan menghapus gambar utama mengangkat sisa yang pertama sebagai gantinya.
+  Berlaku sama untuk potensi nanti.
 - **Menghapus record tidak menghapus berkasnya di bucket.** Backend hanya membuang barisnya;
   berkas yatim harus dibuang lewat `DELETE /upload` dengan `path`-nya. Belum ada yang
   melakukannya otomatis — layak diusulkan ke backend.
@@ -279,7 +284,7 @@ Modul berita adalah contoh yang diikuti modul berikutnya. Polanya:
 
 ## Yang belum dikerjakan
 
-- **Modul dashboard yang tersisa**: UMKM, potensi, program KKN, peta, monografi, profil, dan
-  pengaturan. UMKM dan potensi punya galeri gambar sendiri (`/umkm/image`, `/potential/image`)
-  yang polanya mirip isi album galeri.
+- **Modul dashboard yang tersisa**: potensi, program KKN, peta, monografi, profil, dan
+  pengaturan. Potensi paling mirip UMKM — sama-sama punya galeri gambar sendiri
+  (`/potential/image`) dan penanda `isPrimary` yang harus dijaga frontend.
 - QR Code menuju halaman monografi (FR-052).

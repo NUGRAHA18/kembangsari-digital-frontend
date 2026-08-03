@@ -7,8 +7,9 @@ import { Card, CardBody } from "@/components/ui/card";
 import { Field, inputClasses } from "@/components/ui/field";
 import { EmptyState } from "@/components/ui/states";
 import { AlbumForm } from "@/features/admin/album-form";
-import { PhotoUploadForm, VideoLinkForm } from "@/features/admin/photo-upload-form";
-import { updateItemAction } from "@/app/admin/(dasbor)/galeri/actions";
+import { ImageUploadForm } from "@/features/admin/image-upload-form";
+import { VideoLinkForm } from "@/features/admin/video-link-form";
+import { addPhotosAction, updateItemAction } from "@/app/admin/(dasbor)/galeri/actions";
 import { fetchAsAdmin } from "@/lib/admin-fetch";
 import { readParam, type RawSearchParams } from "@/lib/page-params";
 import { getGalleryAlbumBySlugAsAdmin } from "@/services/gallery";
@@ -81,7 +82,10 @@ export default async function ManageAlbumPage({ params, searchParams }: Props) {
         <Card>
           <CardBody className="flex flex-col gap-4">
             <h3 className="font-semibold">Unggah Foto</h3>
-            <PhotoUploadForm albumId={album.id} albumSlug={album.slug} />
+            <ImageUploadForm
+              action={addPhotosAction}
+              hiddenFields={{ albumId: album.id, albumSlug: album.slug }}
+            />
           </CardBody>
         </Card>
 

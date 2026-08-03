@@ -8,6 +8,7 @@ import {
   Images,
   LayoutDashboard,
   Megaphone,
+  Store,
   Tags,
   type LucideIcon,
 } from "lucide-react";
@@ -32,6 +33,7 @@ export const ADMIN_NAV: AdminNavItem[] = [
   { label: "Agenda", href: "/admin/agenda", Icon: CalendarDays },
   { label: "Pengumuman", href: "/admin/pengumuman", Icon: Megaphone },
   { label: "Galeri", href: "/admin/galeri", Icon: Images },
+  { label: "UMKM", href: "/admin/umkm", Icon: Store },
 ];
 
 /** `/admin` hanya aktif kalau persis dibuka; menu lain juga aktif di halaman turunannya. */
