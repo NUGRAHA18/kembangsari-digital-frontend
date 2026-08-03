@@ -136,8 +136,9 @@ Seluruh **halaman publik sudah dibangun** (1 Agustus 2026), lalu disesuaikan den
 backend yang diperbaiki (3 Agustus 2026): filter kategori berita & potensi, halaman detail
 agenda, dan data pekerjaan di monografi.
 
-**Dashboard admin sudah dimulai** (3 Agustus 2026): login, kerangka dashboard, dan modul
-berita lengkap (tulis, ubah, hapus, unggah gambar). Modul lainnya belum.
+**Dashboard admin sudah dimulai** (3 Agustus 2026): login, kerangka dashboard, modul berita
+lengkap (tulis, ubah, hapus, unggah gambar), dan pengelolaan kategori berita. Modul lainnya
+belum.
 
 ## Struktur berkas
 
@@ -252,11 +253,14 @@ Modul berita adalah contoh yang diikuti modul berikutnya. Polanya:
   membawa pengguna ke form masuk. Server Component tidak boleh menghapus cookie sendiri.
 - Field gambar dikosongkan dengan **string kosong**, bukan `null`: DTO backend memakai
   `@IsString()` sehingga `null` ditolak `400`. Layak diusulkan ke backend suatu saat.
+- **Relasi wajib memblokir penghapusan.** `News.categoryId` tidak boleh kosong, jadi kategori
+  yang masih dipakai ditolak database dengan pesan "Referensi data tidak valid" — kalimat yang
+  tidak menjelaskan apa pun kepada pengelola. Karena itu tombol hapusnya dimatikan lebih dulu
+  berdasarkan `_count.news`, dan halaman konfirmasinya memeriksa ulang. Pola yang sama berlaku
+  untuk modul lain yang punya relasi wajib.
 
 ## Yang belum dikerjakan
 
 - **Modul dashboard selain berita**: agenda, pengumuman, galeri, UMKM, potensi, program KKN,
   peta, monografi, profil, dan pengaturan.
-- Pengelolaan **kategori berita** dari dashboard — berita baru masih membutuhkan kategori
-  yang sudah ada di database.
 - QR Code menuju halaman monografi (FR-052).

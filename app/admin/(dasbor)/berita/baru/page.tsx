@@ -30,8 +30,11 @@ export default async function NewNewsPage() {
         // Kategori wajib diisi saat menyimpan, jadi tanpa satu pun kategori
         // form ini tidak akan pernah bisa dikirim.
         <Alert tone="error">
-          Belum ada kategori berita. Kategori harus dibuat lebih dulu lewat backend sebelum berita
-          bisa ditulis.
+          Belum ada kategori berita.{" "}
+          <Link href="/admin/kategori" className="font-medium underline">
+            Tambahkan kategori
+          </Link>{" "}
+          terlebih dahulu, baru berita bisa ditulis.
         </Alert>
       )}
     </div>

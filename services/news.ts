@@ -26,9 +26,20 @@ export function getNewsBySlug(slug: string) {
   return getOne<News>(`/news/${slug}`, { revalidate: 300 });
 }
 
-/** Kategori berita — ARRAY POLOS. */
+/**
+ * Kategori berita — ARRAY POLOS.
+ *
+ * `_count.news` yang menyertainya menghitung **semua** berita termasuk draf,
+ * jadi jangan dipakai sebagai jumlah berita yang terlihat warga. Untuk
+ * dashboard justru itulah angka yang benar.
+ */
 export function getNewsCategories() {
   return getList<Category>("/news/category/all", {}, { revalidate: 600 });
+}
+
+/** Satu kategori beserta `_count.news`. Publik, tidak butuh token. */
+export function getNewsCategoryById(id: string) {
+  return getOne<Category>(`/news/category/${id}`, { revalidate: 600 });
 }
 
 // ============================================================
@@ -70,4 +81,30 @@ export function updateNews(id: string, input: Partial<NewsInput>, token: string)
 
 export function deleteNews(id: string, token: string) {
   return del<News>(`/news/${id}`, { token });
+}
+
+/** `name` dan `slug` sama-sama wajib dan sama-sama unik di database. */
+export interface CategoryInput {
+  name: string;
+  slug: string;
+}
+
+export function createNewsCategory(input: CategoryInput, token: string) {
+  return post<Category>("/news/category", input, { token });
+}
+
+export function updateNewsCategory(id: string, input: Partial<CategoryInput>, token: string) {
+  return patch<Category>(`/news/category/${id}`, input, { token });
+}
+
+/**
+ * Menghapus kategori.
+ *
+ * Akan gagal selama masih ada berita yang memakainya: relasi `News.category`
+ * wajib, sehingga database menolak penghapusannya. Pemanggil wajib memeriksa
+ * `_count.news` lebih dulu — pesan galat yang muncul dari backend
+ * ("Referensi data tidak valid") tidak menjelaskan apa pun kepada pengelola.
+ */
+export function deleteNewsCategory(id: string, token: string) {
+  return del<Category>(`/news/category/${id}`, { token });
 }
