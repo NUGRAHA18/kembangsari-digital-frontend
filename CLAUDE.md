@@ -138,7 +138,7 @@ agenda, dan data pekerjaan di monografi.
 
 **Dashboard admin sudah dimulai** (3 Agustus 2026): login, kerangka dashboard, modul berita
 lengkap (tulis, ubah, hapus, unggah gambar), dan pengelolaan kategori berita. Menyusul
-agenda, pengumuman, galeri, dan UMKM (4 Agustus 2026). Modul lainnya belum.
+agenda, pengumuman, galeri, UMKM, dan potensi (4 Agustus 2026). Modul lainnya belum.
 
 ## Struktur berkas
 
@@ -270,7 +270,14 @@ Modul berita adalah contoh yang diikuti modul berikutnya. Polanya:
   sama-sama bertanda utama dan kartu daftar akan menampilkan salah satunya secara acak. Yang
   menjaganya frontend: gambar pertama otomatis jadi utama, menandai yang baru melepas yang
   lama satu per satu, dan menghapus gambar utama mengangkat sisa yang pertama sebagai gantinya.
-  Berlaku sama untuk potensi nanti.
+  Berlaku sama untuk potensi.
+- **Potensi punya dua jalur gambar.** `thumbnail` adalah satu URL di record itu sendiri
+  (unggahan tunggal lewat form, sama seperti berita), sedangkan `/potential/image` adalah
+  galeri dokumentasinya. Kartu daftar memakai `thumbnail` dan jatuh ke gambar `isPrimary`
+  bila kosong — itu sebabnya `isPrimary` tetap dijaga meski sampulnya terpisah.
+- **Kategori potensi divalidasi di Server Action**, bukan hanya di `<select>`. Nilainya enum
+  huruf besar, dan yang di luar daftar dijawab backend `400` dengan pesan yang tidak
+  menjelaskan apa pun. Daftar sahnya satu-satunya ada di `features/potential/categories.ts`.
 - **Menghapus record tidak menghapus berkasnya di bucket.** Backend hanya membuang barisnya;
   berkas yatim harus dibuang lewat `DELETE /upload` dengan `path`-nya. Belum ada yang
   melakukannya otomatis — layak diusulkan ke backend.
@@ -284,7 +291,5 @@ Modul berita adalah contoh yang diikuti modul berikutnya. Polanya:
 
 ## Yang belum dikerjakan
 
-- **Modul dashboard yang tersisa**: potensi, program KKN, peta, monografi, profil, dan
-  pengaturan. Potensi paling mirip UMKM — sama-sama punya galeri gambar sendiri
-  (`/potential/image`) dan penanda `isPrimary` yang harus dijaga frontend.
+- **Modul dashboard yang tersisa**: program KKN, peta, monografi, profil, dan pengaturan.
 - QR Code menuju halaman monografi (FR-052).

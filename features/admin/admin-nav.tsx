@@ -8,6 +8,7 @@ import {
   Images,
   LayoutDashboard,
   Megaphone,
+  Sprout,
   Store,
   Tags,
   type LucideIcon,
@@ -34,6 +35,7 @@ export const ADMIN_NAV: AdminNavItem[] = [
   { label: "Pengumuman", href: "/admin/pengumuman", Icon: Megaphone },
   { label: "Galeri", href: "/admin/galeri", Icon: Images },
   { label: "UMKM", href: "/admin/umkm", Icon: Store },
+  { label: "Potensi", href: "/admin/potensi", Icon: Sprout },
 ];
 
 /** `/admin` hanya aktif kalau persis dibuka; menu lain juga aktif di halaman turunannya. */
