@@ -2,18 +2,19 @@ import Link from "next/link";
 import { BookOpen, Lightbulb, Sprout, Trash2 } from "lucide-react";
 import { Card, CardBody } from "@/components/ui/card";
 import { Thumbnail } from "@/components/ui/thumbnail";
+import { SUB_PROGRAM_LABELS } from "@/features/kkn/sub-programs";
 import { excerpt } from "@/lib/format";
 import type { KKNProgram, KKNSubProgram } from "@/types/api";
 
-/** Empat sub-program KKN, masing-masing dengan ikon dan label bacanya sendiri. */
+/** Ikon tiap sub-program; labelnya diambil dari `sub-programs.ts`. */
 export const SUB_PROGRAM_META: Record<
   KKNSubProgram,
   { label: string; Icon: typeof BookOpen }
 > = {
-  RUMAH_BELAJAR: { label: "Rumah Belajar", Icon: BookOpen },
-  PEKARANGAN_PRODUKTIF: { label: "Pekarangan Produktif", Icon: Sprout },
-  PENGELOLAAN_SAMPAH: { label: "Pengelolaan Sampah", Icon: Trash2 },
-  PENERANGAN_JALAN: { label: "Penerangan Jalan", Icon: Lightbulb },
+  RUMAH_BELAJAR: { label: SUB_PROGRAM_LABELS.RUMAH_BELAJAR, Icon: BookOpen },
+  PEKARANGAN_PRODUKTIF: { label: SUB_PROGRAM_LABELS.PEKARANGAN_PRODUKTIF, Icon: Sprout },
+  PENGELOLAAN_SAMPAH: { label: SUB_PROGRAM_LABELS.PENGELOLAAN_SAMPAH, Icon: Trash2 },
+  PENERANGAN_JALAN: { label: SUB_PROGRAM_LABELS.PENERANGAN_JALAN, Icon: Lightbulb },
 };
 
 export function KknCard({ program }: { program: KKNProgram }) {

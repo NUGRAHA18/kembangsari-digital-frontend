@@ -100,6 +100,79 @@ export function formatDateRange(start: string | Date, end?: string | Date | null
   return `${startLabel} WIB – ${formatDate(endDate)}, ${formatTime(endDate)} WIB`;
 }
 
+/**
+ * ISO string → nilai untuk `<input type="datetime-local">`, dibaca sebagai WIB.
+ *
+ * Input itu tidak mengenal zona waktu sama sekali: ia hanya menampilkan dan
+ * mengembalikan "2026-08-24T13:00". Karena itu konversinya dikunci ke
+ * Asia/Jakarta di kedua arah, bukan dibiarkan mengikuti zona server — di
+ * produksi backend berjalan di UTC, dan tanpa penguncian ini setiap jadwal
+ * akan bergeser tujuh jam begitu disimpan.
+ */
+export function toDateTimeLocal(value: string | Date): string {
+  const date = toDate(value);
+  if (!date) return "";
+
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+    timeZone: TIME_ZONE,
+  }).formatToParts(date);
+
+  const find = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((part) => part.type === type)?.value ?? "";
+
+  return `${find("year")}-${find("month")}-${find("day")}T${find("hour")}:${find("minute")}`;
+}
+
+/**
+ * Kebalikannya: nilai `datetime-local` → ISO string beserta offset WIB.
+ *
+ * Offsetnya ditulis tetap `+07:00` karena Indonesia bagian barat tidak
+ * mengenal daylight saving, sehingga tidak ada tanggal yang perlu dikecualikan.
+ * Mengembalikan `null` kalau bentuknya tidak dikenali.
+ */
+export function fromDateTimeLocal(value: string): string | null {
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)) return null;
+
+  const iso = `${value}:00+07:00`;
+  return Number.isNaN(new Date(iso).getTime()) ? null : iso;
+}
+
+/**
+ * Pasangan yang sama untuk `<input type="date">`, dipakai tanggal kegiatan KKN
+ * yang memang tidak punya jam.
+ *
+ * Penguncian ke WIB tetap diperlukan meski jamnya dibuang: yang tersimpan di
+ * backend tetap sebuah momen. Tanpa itu, tanggal yang diketik "4 Agustus" bisa
+ * terbaca kembali sebagai 3 Agustus saat formulirnya dibuka lagi — `formatDate`
+ * membacanya sebagai WIB, jadi konversinya harus memakai zona yang sama.
+ */
+export function toDateInput(value: string | Date): string {
+  const date = toDate(value);
+  if (!date) return "";
+
+  // en-CA memberi bentuk "2026-08-04" apa adanya, persis yang diminta input date.
+  return new Intl.DateTimeFormat("en-CA", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    timeZone: TIME_ZONE,
+  }).format(date);
+}
+
+/** Kebalikannya: "2026-08-04" → tengah malam WIB pada tanggal itu. */
+export function fromDateInput(value: string): string | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+
+  const iso = `${value}T00:00:00+07:00`;
+  return Number.isNaN(new Date(iso).getTime()) ? null : iso;
+}
+
 /** Contoh: 1234 → "1.234" */
 export function formatNumber(value: number | null | undefined): string {
   if (value === null || value === undefined || Number.isNaN(value)) return "-";

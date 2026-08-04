@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { fetchOrNull } from "@/lib/fetch-page";
+import { getAgendaList } from "@/services/agenda";
 import { getGalleryAlbums } from "@/services/gallery";
 import { getActiveKknPrograms } from "@/services/kkn";
 import { getNewsList } from "@/services/news";
@@ -37,8 +38,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: route.priority,
   }));
 
-  const [news, profiles, umkm, potentials, programs, albums] = await Promise.all([
+  const [news, agenda, profiles, umkm, potentials, programs, albums] = await Promise.all([
     fetchOrNull(getNewsList({ limit: 100 })),
+    fetchOrNull(getAgendaList({ limit: 100 })),
     fetchOrNull(getProfiles()),
     fetchOrNull(getActiveUmkm({ limit: 100 })),
     fetchOrNull(getActivePotentials({ limit: 100 })),
@@ -52,6 +54,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(item.updatedAt),
       changeFrequency: "monthly" as const,
       priority: 0.7,
+    })),
+    // Agenda yang sudah lewat tetap dimasukkan: warga masih mencarinya sebagai
+    // catatan kegiatan, dan tautan yang pernah dibagikan tidak boleh jadi buntu.
+    ...(agenda?.data ?? []).map((item) => ({
+      url: `${SITE_URL}/agenda/${item.slug}`,
+      lastModified: new Date(item.updatedAt),
+      changeFrequency: "monthly" as const,
+      priority: 0.5,
     })),
     ...(profiles ?? []).map((item) => ({
       url: `${SITE_URL}/profil/${item.slug}`,

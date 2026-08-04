@@ -42,9 +42,10 @@ yarn-error.log*
 next-env.d.ts
 
 # dokumen kerja internal — sengaja tidak dipublikasikan
-# LAPORAN-BACKEND.md memuat kelemahan backend yang belum diperbaiki, dan
-# FRONTEND_GUIDE.md memuat kontrak API selengkapnya. Keduanya tetap ada di
+# LAPORAN-BACKEND.md memuat kelemahan backend beserta jawabannya, dan
+# FRONTEND_GUIDE.md memuat kontrak API selengkapnya. Ketiganya tetap ada di
 # komputer masing-masing dan dibagikan lewat jalur internal, bukan lewat repo
 # publik ini.
 /LAPORAN-BACKEND.md
+/JAWABAN-LAPORAN-BACKEND.md
 /FRONTEND_GUIDE.md

@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
-import { Footer } from "@/components/layout/footer";
-import { Navbar } from "@/components/layout/navbar";
 import { ThemeProvider } from "@/components/layout/theme-provider";
 import { getSettingsMap } from "@/services/settings";
 import "./globals.css";
@@ -39,9 +37,14 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const settings = await getSettingsMap();
-
+/**
+ * Root layout hanya menyiapkan dokumen: bahasa, font, tema, dan metadata.
+ *
+ * Navbar dan footer pindah ke `app/(publik)/layout.tsx` karena dashboard admin
+ * di `/admin` memakai kerangka yang sama sekali berbeda — tidak boleh ada menu
+ * warga dan alamat padukuhan di halaman kerja pengelola.
+ */
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     // suppressHydrationWarning diperlukan karena next-themes menulis class `dark`
     // ke <html> sebelum React sempat melakukan hydration.
@@ -55,24 +58,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       className={`${geistSans.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col font-sans">
-        <ThemeProvider>
-          <a
-            href="#konten-utama"
-            className="sr-only rounded-xl bg-primary px-4 text-white focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-100 focus:inline-flex focus:min-h-11 focus:items-center"
-          >
-            Lewati ke konten utama
-          </a>
-
-          <Navbar siteName={settings.site_name ?? "Kembangsari Digital"} />
-
-          {/* pt-16 mengganti tinggi navbar yang posisinya fixed. Beranda
-              menariknya kembali dengan -mt-16 agar hero berada di baliknya. */}
-          <main id="konten-utama" className="flex-1 pt-16">
-            {children}
-          </main>
-
-          <Footer settings={settings} />
-        </ThemeProvider>
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   );
