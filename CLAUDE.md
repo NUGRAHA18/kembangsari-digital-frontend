@@ -138,7 +138,8 @@ agenda, dan data pekerjaan di monografi.
 
 **Dashboard admin sudah dimulai** (3 Agustus 2026): login, kerangka dashboard, modul berita
 lengkap (tulis, ubah, hapus, unggah gambar), dan pengelolaan kategori berita. Menyusul
-agenda, pengumuman, galeri, UMKM, dan potensi (4 Agustus 2026). Modul lainnya belum.
+agenda, pengumuman, galeri, UMKM, potensi, dan program KKN (4 Agustus 2026). Modul lainnya
+belum.
 
 ## Struktur berkas
 
@@ -278,6 +279,21 @@ Modul berita adalah contoh yang diikuti modul berikutnya. Polanya:
 - **Kategori potensi divalidasi di Server Action**, bukan hanya di `<select>`. Nilainya enum
   huruf besar, dan yang di luar daftar dijawab backend `400` dengan pesan yang tidak
   menjelaskan apa pun. Daftar sahnya satu-satunya ada di `features/potential/categories.ts`.
+  Hal yang sama berlaku untuk sub-program KKN di `features/kkn/sub-programs.ts` — label dan
+  daftarnya sengaja dipisah dari `kkn-card.tsx` supaya Server Action tidak ikut menarik React.
+- **Menghapus program KKN diblokir selama masih punya kegiatan.** `KKNActivity.programId`
+  relasi wajib dan tidak ada catatan bahwa backend menghapusnya berantai seperti gambar UMKM.
+  Dua kemungkinannya sama-sama buruk: galat "Referensi data tidak valid" yang tidak
+  menjelaskan apa pun, atau seluruh dokumentasi lenyap tanpa diminta. **Belum diuji dengan
+  backend hidup** — kalau ternyata backend memang cascade, blokirnya boleh dilonggarkan
+  menjadi peringatan berisi jumlah kegiatan, seperti halaman hapus UMKM.
+- **Daftar program KKN di dashboard tidak punya saringan sub-program.** `GET /kkn/program`
+  hanya menerima `page`, `limit`, `search`. `/kkn/program/sub/:subProgram` bukan penggantinya
+  karena menyaring yang aktif saja — program tersembunyi justru lenyap saat dicari.
+- **Tanggal tanpa jam** (`KKNActivity.date`) memakai `toDateInput`/`fromDateInput` di
+  `lib/format.ts`, sepasang dengan `toDateTimeLocal`/`fromDateTimeLocal`. Penguncian ke WIB
+  tetap perlu meski jamnya dibuang: yang tersimpan tetap sebuah momen, dan tanpa itu tanggal
+  yang diketik bisa terbaca mundur sehari saat formulirnya dibuka kembali.
 - **Menghapus record tidak menghapus berkasnya di bucket.** Backend hanya membuang barisnya;
   berkas yatim harus dibuang lewat `DELETE /upload` dengan `path`-nya. Belum ada yang
   melakukannya otomatis — layak diusulkan ke backend.
@@ -291,5 +307,5 @@ Modul berita adalah contoh yang diikuti modul berikutnya. Polanya:
 
 ## Yang belum dikerjakan
 
-- **Modul dashboard yang tersisa**: program KKN, peta, monografi, profil, dan pengaturan.
+- **Modul dashboard yang tersisa**: peta, monografi, profil, dan pengaturan.
 - QR Code menuju halaman monografi (FR-052).

@@ -143,6 +143,36 @@ export function fromDateTimeLocal(value: string): string | null {
   return Number.isNaN(new Date(iso).getTime()) ? null : iso;
 }
 
+/**
+ * Pasangan yang sama untuk `<input type="date">`, dipakai tanggal kegiatan KKN
+ * yang memang tidak punya jam.
+ *
+ * Penguncian ke WIB tetap diperlukan meski jamnya dibuang: yang tersimpan di
+ * backend tetap sebuah momen. Tanpa itu, tanggal yang diketik "4 Agustus" bisa
+ * terbaca kembali sebagai 3 Agustus saat formulirnya dibuka lagi — `formatDate`
+ * membacanya sebagai WIB, jadi konversinya harus memakai zona yang sama.
+ */
+export function toDateInput(value: string | Date): string {
+  const date = toDate(value);
+  if (!date) return "";
+
+  // en-CA memberi bentuk "2026-08-04" apa adanya, persis yang diminta input date.
+  return new Intl.DateTimeFormat("en-CA", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    timeZone: TIME_ZONE,
+  }).format(date);
+}
+
+/** Kebalikannya: "2026-08-04" → tengah malam WIB pada tanggal itu. */
+export function fromDateInput(value: string): string | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+
+  const iso = `${value}T00:00:00+07:00`;
+  return Number.isNaN(new Date(iso).getTime()) ? null : iso;
+}
+
 /** Contoh: 1234 → "1.234" */
 export function formatNumber(value: number | null | undefined): string {
   if (value === null || value === undefined || Number.isNaN(value)) return "-";

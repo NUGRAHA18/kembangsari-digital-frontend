@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   CalendarDays,
   FileText,
+  GraduationCap,
   Images,
   LayoutDashboard,
   Megaphone,
@@ -36,6 +37,7 @@ export const ADMIN_NAV: AdminNavItem[] = [
   { label: "Galeri", href: "/admin/galeri", Icon: Images },
   { label: "UMKM", href: "/admin/umkm", Icon: Store },
   { label: "Potensi", href: "/admin/potensi", Icon: Sprout },
+  { label: "Program KKN", href: "/admin/program-kkn", Icon: GraduationCap },
 ];
 
 /** `/admin` hanya aktif kalau persis dibuka; menu lain juga aktif di halaman turunannya. */
