@@ -43,10 +43,17 @@ export function FilterChips({
     <nav aria-label={label}>
       {/* Yang menggulir adalah daftar chip-nya, bukan halaman. */}
       <ul className="-mx-4 flex snap-x gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:flex-wrap md:px-0">
-        {options.map((option) => {
+        {options.map((option, index) => {
           const isActive = option.value === activeValue;
           return (
-            <li key={option.value ?? "semua"} className="snap-start">
+            // Kunci memakai indeks, bukan nilainya. Opsi "semua" bernilai
+            // `undefined`, dan nilai itu tidak bisa dijadikan kunci dengan
+            // menggantinya menjadi teks apa pun: halaman agenda punya opsi lain
+            // yang nilainya benar-benar "semua", dan kategori berita yang diberi
+            // nama "Semua" oleh pengelola akan menghasilkan slug yang sama.
+            // Daftar ini dibentuk ulang setiap render dan tidak pernah diurutkan
+            // ulang maupun menyimpan state sendiri, jadi indeks aman di sini.
+            <li key={index} className="snap-start">
               <Link
                 href={hrefFor(option.value)}
                 aria-current={isActive ? "true" : undefined}
