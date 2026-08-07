@@ -11,9 +11,11 @@ import {
   LayoutDashboard,
   MapPin,
   Megaphone,
+  Settings,
   Sprout,
   Store,
   Tags,
+  UserRound,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -42,6 +44,8 @@ export const ADMIN_NAV: AdminNavItem[] = [
   { label: "Program KKN", href: "/admin/program-kkn", Icon: GraduationCap },
   { label: "Peta", href: "/admin/peta", Icon: MapPin },
   { label: "Monografi", href: "/admin/monografi", Icon: BarChart3 },
+  { label: "Profil", href: "/admin/profil", Icon: UserRound },
+  { label: "Pengaturan", href: "/admin/pengaturan", Icon: Settings },
 ];
 
 /** `/admin` hanya aktif kalau persis dibuka; menu lain juga aktif di halaman turunannya. */

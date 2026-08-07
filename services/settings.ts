@@ -1,4 +1,4 @@
-import { getList } from "@/lib/api";
+import { getList, patch } from "@/lib/api";
 import type { Setting, SettingKey } from "@/types/api";
 
 /** Pengaturan situs berbentuk pasangan key-value. Perhatikan: ARRAY POLOS, bukan `{ data }`. */
@@ -53,4 +53,31 @@ export async function getSettingsMap(): Promise<SettingsMap> {
   } catch {
     return SETTINGS_FALLBACK;
   }
+}
+
+// ============================================================
+// DASHBOARD ADMIN
+// ============================================================
+
+/**
+ * Pengaturan tanpa cache dan tanpa nilai bawaan.
+ *
+ * Form pengaturan harus menampilkan apa yang benar-benar tersimpan: kalau
+ * `SETTINGS_FALLBACK` ikut tercampur seperti pada `getSettingsMap`, pengelola
+ * akan mengira nama situs sudah terisi padahal yang dilihatnya nilai cadangan
+ * milik frontend — dan menyimpannya akan menuliskan nilai itu ke backend.
+ */
+export function getSettingsAsAdmin() {
+  return getList<Setting>("/settings");
+}
+
+/**
+ * Menyimpan satu pengaturan.
+ *
+ * Backend hanya menyediakan `PATCH /settings/:key` — tidak ada endpoint untuk
+ * menambah atau menghapus key, jadi daftar key-nya tetap dan berasal dari seed
+ * backend. Key yang belum ada di sana dijawab `404`, bukan dibuatkan.
+ */
+export function updateSetting(key: string, value: string, token: string) {
+  return patch<Setting>(`/settings/${key}`, { value }, { token });
 }
