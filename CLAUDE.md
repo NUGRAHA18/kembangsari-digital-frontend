@@ -139,8 +139,9 @@ agenda, dan data pekerjaan di monografi.
 **Dashboard admin sudah dimulai** (3 Agustus 2026): login, kerangka dashboard, modul berita
 lengkap (tulis, ubah, hapus, unggah gambar), dan pengelolaan kategori berita. Menyusul
 agenda, pengumuman, galeri, UMKM, potensi, dan program KKN (4 Agustus 2026), lalu peta
-beserta kategori lokasinya, monografi, profil, dan pengaturan situs (7 Agustus 2026).
-**Seluruh modul dashboard sudah ada**, tetapi belum satu pun diuji dengan backend hidup.
+beserta kategori lokasinya, monografi, profil, dan pengaturan situs (7 Agustus 2026), lalu
+halaman QR Code monografi (8 Agustus 2026). **Seluruh modul dashboard sudah ada**, tetapi
+belum satu pun diuji dengan backend hidup.
 
 ## Struktur berkas
 
@@ -189,6 +190,11 @@ Jangan "memperbaiki" hal-hal berikut tanpa membaca alasannya dulu:
 - **Tanpa TanStack Query, Axios, Zustand, Framer Motion** meski disebut di dokumen arsitektur.
   Halaman publik memakai Server Component + `fetch`, jadi pustaka itu hanya menambah berkas
   yang harus diunduh tanpa memberi manfaat. Pertimbangkan lagi saat membangun dashboard admin.
+- **Satu-satunya dependensi tambahan: `qrcode`** (di luar Leaflet dan react-markdown yang
+  memang dipakai halaman publik). Penolakan di butir sebelumnya menyasar pustaka yang harus
+  diunduh browser warga; `qrcode` hanya dipanggil `lib/qr.ts` dari Server Component dan Route
+  Handler, sehingga yang sampai ke ponsel cuma SVG atau PNG jadi. Menulis encoder QR sendiri
+  berarti memelihara Reed-Solomon dan masking sendiri — satu bit meleset, QR-nya tidak terbaca.
 - **Grafik monografi dibuat dari CSS**, bukan pustaka grafik: angkanya tetap terbaca mesin
   pencari dan halaman tidak perlu jadi Client Component.
 - **Agenda dikelompokkan per bulan**, bukan kisi kalender 7 kolom yang tidak terbaca di 320px.
@@ -375,11 +381,23 @@ Modul berita adalah contoh yang diikuti modul berikutnya. Polanya:
 - **Susunan form pengaturan ada di `features/settings/fields.ts`** — dipakai bersama form dan
   Server Action-nya, dan sengaja bebas React karena aksi itu mengimpornya. `hint` di sana teks
   biasa, bukan JSX, dengan alasan yang sama.
+- **QR Code (FR-052) dibangkitkan saat diminta, bukan disimpan sebagai berkas.** `/admin/qr-code`
+  merender SVG-nya di server dan `/admin/qr-code/unduh?format=png|svg` mengirimkannya sebagai
+  berkas lewat Route Handler — tanpa JavaScript sama sekali, kecuali tombol cetak yang
+  menyembunyikan diri sampai halaman ter-hydrate. Karena selalu dibangkitkan ulang, QR-nya
+  mengikuti `NEXT_PUBLIC_SITE_URL` yang sedang berlaku; tidak ada berkas usang di `public/`
+  yang mengarah ke `localhost` setelah portal naik ke domain sungguhan.
+- **Lembar QR dipatok hitam-putih**, tidak mengikuti token tema. Pemindai mencari modul gelap
+  di atas latar terang, dan QR yang ikut membalik di mode gelap tidak terbaca sebagian ponsel —
+  kertas cetaknya pun selalu putih. Ini satu-satunya tempat warna ditulis langsung, dan
+  alasannya fisik, bukan estetis.
+- **`print:hidden` di bilah atas dan sidebar** (`app/admin/(dasbor)/layout.tsx`) supaya yang
+  tercetak hanya lembar QR-nya. Koreksi galatnya **Q** (pulih 25%), bukan `M` bawaan: kertas
+  yang ditempel di balai padukuhan akan kotor dan tersenggol.
 
 ## Yang belum dikerjakan
 
-- Seluruh modul dashboard sudah ada. Yang tersisa dari daftar kebutuhan: QR Code menuju
-  halaman monografi (FR-052).
+- Seluruh daftar kebutuhan sudah tergarap, termasuk QR Code monografi (FR-052).
 - **Belum ada satu pun modul dashboard yang diuji dengan backend hidup.** Yang paling layak
   diperiksa lebih dulu: bentuk body `PATCH /settings/:key` (diasumsikan `{ value }`),
   `employmentData: null` pada monografi, dan apakah menghapus program KKN benar-benar

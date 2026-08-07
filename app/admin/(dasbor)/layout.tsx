@@ -22,7 +22,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <header className="sticky top-0 z-50 border-b border-border bg-surface">
+      {/* `print:hidden` di sini dan pada sidebar: satu-satunya halaman yang
+          dicetak adalah QR monografi, dan yang dibutuhkan di kertas hanya
+          lembar QR-nya — bukan bilah atas dan menu dashboard. */}
+      <header className="sticky top-0 z-50 border-b border-border bg-surface print:hidden">
         <div className="flex items-center gap-2 px-4 py-2">
           <Link href="/admin" className="flex min-h-11 items-center gap-2 font-semibold">
             <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-white">
@@ -68,7 +71,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       </header>
 
       <div className="mx-auto flex w-full max-w-7xl flex-1 gap-8 px-4 py-6 lg:py-8">
-        <aside className="hidden w-56 shrink-0 lg:block">
+        <aside className="hidden w-56 shrink-0 lg:block print:hidden">
           <div className="sticky top-24">
             <AdminNav />
           </div>

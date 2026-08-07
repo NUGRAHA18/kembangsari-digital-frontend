@@ -11,6 +11,7 @@ import {
   LayoutDashboard,
   MapPin,
   Megaphone,
+  QrCode,
   Settings,
   Sprout,
   Store,
@@ -44,6 +45,7 @@ export const ADMIN_NAV: AdminNavItem[] = [
   { label: "Program KKN", href: "/admin/program-kkn", Icon: GraduationCap },
   { label: "Peta", href: "/admin/peta", Icon: MapPin },
   { label: "Monografi", href: "/admin/monografi", Icon: BarChart3 },
+  { label: "QR Code", href: "/admin/qr-code", Icon: QrCode },
   { label: "Profil", href: "/admin/profil", Icon: UserRound },
   { label: "Pengaturan", href: "/admin/pengaturan", Icon: Settings },
 ];
