@@ -227,6 +227,17 @@ export function googleMapsDirectionsLink(latitude: number, longitude: number): s
   return `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`;
 }
 
+/**
+ * Tautan ke sebuah titik di Google Maps, bukan rute menuju ke sana.
+ *
+ * Dipakai dashboard untuk memeriksa koordinat yang baru diketik: yang
+ * dibutuhkan pengelola adalah melihat titiknya mendarat di tempat yang benar,
+ * sedangkan tautan petunjuk arah selalu berangkat dari posisinya sendiri.
+ */
+export function googleMapsPointLink(latitude: number, longitude: number): string {
+  return `https://www.google.com/maps?q=${latitude},${longitude}`;
+}
+
 export function telLink(phone: string): string {
   return `tel:${phone.replace(/[^\d+]/g, "")}`;
 }

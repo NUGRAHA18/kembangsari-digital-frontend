@@ -3,15 +3,20 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  BarChart3,
   CalendarDays,
   FileText,
   GraduationCap,
   Images,
   LayoutDashboard,
+  MapPin,
   Megaphone,
+  QrCode,
+  Settings,
   Sprout,
   Store,
   Tags,
+  UserRound,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -38,6 +43,11 @@ export const ADMIN_NAV: AdminNavItem[] = [
   { label: "UMKM", href: "/admin/umkm", Icon: Store },
   { label: "Potensi", href: "/admin/potensi", Icon: Sprout },
   { label: "Program KKN", href: "/admin/program-kkn", Icon: GraduationCap },
+  { label: "Peta", href: "/admin/peta", Icon: MapPin },
+  { label: "Monografi", href: "/admin/monografi", Icon: BarChart3 },
+  { label: "QR Code", href: "/admin/qr-code", Icon: QrCode },
+  { label: "Profil", href: "/admin/profil", Icon: UserRound },
+  { label: "Pengaturan", href: "/admin/pengaturan", Icon: Settings },
 ];
 
 /** `/admin` hanya aktif kalau persis dibuka; menu lain juga aktif di halaman turunannya. */

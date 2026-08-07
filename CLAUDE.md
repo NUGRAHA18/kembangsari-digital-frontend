@@ -138,8 +138,10 @@ agenda, dan data pekerjaan di monografi.
 
 **Dashboard admin sudah dimulai** (3 Agustus 2026): login, kerangka dashboard, modul berita
 lengkap (tulis, ubah, hapus, unggah gambar), dan pengelolaan kategori berita. Menyusul
-agenda, pengumuman, galeri, UMKM, potensi, dan program KKN (4 Agustus 2026). Modul lainnya
-belum.
+agenda, pengumuman, galeri, UMKM, potensi, dan program KKN (4 Agustus 2026), lalu peta
+beserta kategori lokasinya, monografi, profil, dan pengaturan situs (7 Agustus 2026), lalu
+halaman QR Code monografi (8 Agustus 2026). **Seluruh modul dashboard sudah ada**, tetapi
+belum satu pun diuji dengan backend hidup.
 
 ## Struktur berkas
 
@@ -188,6 +190,11 @@ Jangan "memperbaiki" hal-hal berikut tanpa membaca alasannya dulu:
 - **Tanpa TanStack Query, Axios, Zustand, Framer Motion** meski disebut di dokumen arsitektur.
   Halaman publik memakai Server Component + `fetch`, jadi pustaka itu hanya menambah berkas
   yang harus diunduh tanpa memberi manfaat. Pertimbangkan lagi saat membangun dashboard admin.
+- **Satu-satunya dependensi tambahan: `qrcode`** (di luar Leaflet dan react-markdown yang
+  memang dipakai halaman publik). Penolakan di butir sebelumnya menyasar pustaka yang harus
+  diunduh browser warga; `qrcode` hanya dipanggil `lib/qr.ts` dari Server Component dan Route
+  Handler, sehingga yang sampai ke ponsel cuma SVG atau PNG jadi. Menulis encoder QR sendiri
+  berarti memelihara Reed-Solomon dan masking sendiri — satu bit meleset, QR-nya tidak terbaca.
 - **Grafik monografi dibuat dari CSS**, bukan pustaka grafik: angkanya tetap terbaca mesin
   pencari dan halaman tidak perlu jadi Client Component.
 - **Agenda dikelompokkan per bulan**, bukan kisi kalender 7 kolom yang tidak terbaca di 320px.
@@ -304,8 +311,94 @@ Modul berita adalah contoh yang diikuti modul berikutnya. Polanya:
   tidak menjelaskan apa pun kepada pengelola. Karena itu tombol hapusnya dimatikan lebih dulu
   berdasarkan `_count.news`, dan halaman konfirmasinya memeriksa ulang. Pola yang sama berlaku
   untuk modul lain yang punya relasi wajib.
+- **Kategori marker peta dihitung sendiri.** `GET /maps/category` tidak menyertakan `_count`
+  seperti kategori berita, padahal `MapMarker.categoryId` juga relasi wajib. Jumlah
+  pemakaiannya dihitung dari daftar marker (`getEveryMarker` di `services/maps.ts`, menyusuri
+  semua halaman `GET /maps/marker`) supaya tombol hapusnya bisa dimatikan lebih dulu. Dipakai
+  endpoint admin, bukan `/maps/marker/active`, agar marker yang disembunyikan ikut terhitung —
+  kalau tidak, kategori yang "kosong" akan tetap ditolak database saat dihapus. **Layak
+  diusulkan ke backend** supaya `_count` ikut dikirim.
+- **`categoryId` marker divalidasi di Server Action**, seperti kategori potensi — id yang tidak
+  ada dijawab backend dengan galat referensi yang tidak menjelaskan apa pun. Pemeriksaannya
+  memakai `getMapCategoriesUncached`, bukan `getMapCategories` yang di-cache sepuluh menit:
+  kategori yang baru dibuat pada menit yang sama akan terbaca sebagai tidak ada, dan marker
+  yang sah pun ditolak.
+- **Koordinat marker wajib, tidak seperti pada potensi dan UMKM.** Di sana koordinat hanya
+  mengisi tombol "Petunjuk Arah" dan boleh kosong; marker peta tanpa lintang-bujur justru
+  tersimpan tanpa pernah tampil di peta, dan pengelola tidak punya cara mengetahuinya.
+- **Daftar marker di dashboard tidak punya saringan kategori.** `GET /maps/marker` hanya
+  menerima `page`, `limit`, `search`. `/maps/marker/category/:categoryId` tidak dipakai sebagai
+  penggantinya karena tidak terdokumentasi apakah ia ikut menyembunyikan marker nonaktif —
+  masalah yang sama dengan `/kkn/program/sub/:subProgram`.
+- **Warna pin peta berasal dari urutan kategori** (`colorForCategory` di
+  `features/maps/map-view.tsx`), bukan dari kolom `icon`. Menghapus atau menambah kategori
+  menggeser warna kategori sesudahnya — halaman kategori dan halaman hapusnya menyebutkan itu.
+  Kolom `icon` tetap disunting di form meski belum dipakai portal, supaya nama ikon yang sudah
+  tersimpan tidak terhapus diam-diam oleh `PATCH`.
+- **Kolom monografi yang dikosongkan dikirim `null`, dan itu bukan nol.** `null` berarti tidak
+  didata: halaman publik menyembunyikan kategorinya, sedangkan 0 tampil sebagai batang kosong
+  yang menyatakan angkanya memang nihil. Formnya mengulang keterangan itu di setiap kelompok
+  isian, dan `placeholder`-nya "Belum didata".
+- **`employmentData` dikirim sebagai objek utuh**, bukan tambalan — `PATCH` menimpanya
+  sekaligus. Kunci yang dikosongkan dibuang dari objek, dan objek yang seluruhnya kosong
+  dikirim `null`. Daftar kuncinya hanya ada di `features/monography/employment.ts`
+  (`EMPLOYMENT_KEYS`/`EMPLOYMENT_LABELS`); kunci di luar itu ditolak backend.
+- **Laki-laki + perempuan wajib sama dengan total penduduk.** Diperiksa di Server Action, bukan
+  hanya di browser: halaman publik menghitung persentase jenis kelamin dari penjumlahan kedua
+  angka lalu menampilkan totalnya sebagai baris tersendiri, jadi selisihnya terbaca warga
+  sebagai dua angka yang saling membantah.
+- **Monografi ditelusuri lewat `id` di dashboard**, bukan tahun seperti `/monografi?tahun=`.
+  Tahun adalah kolom yang bisa disunting, dan alamat halaman tidak boleh ikut berubah saat
+  pengelola membetulkan salah ketik pada tahunnya.
+- **Daftar kolom angka monografi ada di `features/monography/fields.ts`**, dipakai bersama oleh
+  form dan Server Action-nya. Ada 19 kolom opsional; menuliskannya dua kali berarti cepat atau
+  lambat ada kolom yang tampil di form tetapi tidak pernah ikut terkirim. Berkas itu sengaja
+  bebas React karena Server Action mengimpornya.
+
+- **Profil ditelusuri lewat slug, tetapi disimpan lewat id.** `GET /profile/:slug`, sedangkan
+  `PATCH` dan `DELETE /profile/:id` — satu-satunya modul dengan dua jenis penanda seperti ini,
+  jadi form profil membawa `id` sebagai input tersembunyi meski alamat halamannya slug.
+- **Profil tidak punya status draf.** Model `Profile` memang tidak punya kolomnya, jadi tidak
+  ada badge terbit/draf di daftarnya dan setiap simpanan langsung terbaca warga. Jangan
+  menambahkan penyaring seolah-olah statusnya ada.
+- **Dashboard memakai `getProfilesAsAdmin`/`getProfileBySlugAsAdmin`**, bukan fungsi publik yang
+  sama isinya. Bedanya hanya cache: versi publik menyimpan jawabannya satu jam, dan pengelola
+  tidak boleh menunggu sejam untuk melihat tulisannya sendiri.
+- **Pengaturan hanya bisa diubah, tidak ditambah.** Backend cuma menyediakan
+  `PATCH /settings/:key`; daftar key-nya berasal dari seed dan ada di `SettingKey`
+  (`types/api.ts`). Key yang belum di-seed dijawab `404` — Server Action menerjemahkannya
+  menjadi permintaan agar tim backend menambahkannya, bukan galat mentah.
+- **Yang dikirim hanya pengaturan yang berubah.** Satu permintaan per key, jadi menyimpan
+  ketujuh belasnya setiap kali tombol simpan ditekan berarti tujuh belas permintaan untuk satu
+  perubahan kecil. Nilai tersimpan dibaca ulang di Server Action untuk membandingkannya.
+- **`SETTINGS_FALLBACK` tidak boleh masuk ke form pengaturan.** `getSettingsMap` mencampurkan
+  nilai cadangan frontend agar navbar dan footer tidak pernah kosong; kalau nilai itu ikut
+  tampil di form, pengelola mengira sudah tersimpan — dan menekan simpan akan benar-benar
+  menuliskannya ke backend. Karena itu formnya memakai `getSettingsAsAdmin` yang polos.
+- **Menyimpan pengaturan menyegarkan seluruh portal** dengan `revalidatePath("/", "layout")`,
+  bukan satu halaman: nama situs, logo, dan kontak dipakai navbar serta footer yang menempel di
+  setiap halaman.
+- **Susunan form pengaturan ada di `features/settings/fields.ts`** — dipakai bersama form dan
+  Server Action-nya, dan sengaja bebas React karena aksi itu mengimpornya. `hint` di sana teks
+  biasa, bukan JSX, dengan alasan yang sama.
+- **QR Code (FR-052) dibangkitkan saat diminta, bukan disimpan sebagai berkas.** `/admin/qr-code`
+  merender SVG-nya di server dan `/admin/qr-code/unduh?format=png|svg` mengirimkannya sebagai
+  berkas lewat Route Handler — tanpa JavaScript sama sekali, kecuali tombol cetak yang
+  menyembunyikan diri sampai halaman ter-hydrate. Karena selalu dibangkitkan ulang, QR-nya
+  mengikuti `NEXT_PUBLIC_SITE_URL` yang sedang berlaku; tidak ada berkas usang di `public/`
+  yang mengarah ke `localhost` setelah portal naik ke domain sungguhan.
+- **Lembar QR dipatok hitam-putih**, tidak mengikuti token tema. Pemindai mencari modul gelap
+  di atas latar terang, dan QR yang ikut membalik di mode gelap tidak terbaca sebagian ponsel —
+  kertas cetaknya pun selalu putih. Ini satu-satunya tempat warna ditulis langsung, dan
+  alasannya fisik, bukan estetis.
+- **`print:hidden` di bilah atas dan sidebar** (`app/admin/(dasbor)/layout.tsx`) supaya yang
+  tercetak hanya lembar QR-nya. Koreksi galatnya **Q** (pulih 25%), bukan `M` bawaan: kertas
+  yang ditempel di balai padukuhan akan kotor dan tersenggol.
 
 ## Yang belum dikerjakan
 
-- **Modul dashboard yang tersisa**: peta, monografi, profil, dan pengaturan.
-- QR Code menuju halaman monografi (FR-052).
+- Seluruh daftar kebutuhan sudah tergarap, termasuk QR Code monografi (FR-052).
+- **Belum ada satu pun modul dashboard yang diuji dengan backend hidup.** Yang paling layak
+  diperiksa lebih dulu: bentuk body `PATCH /settings/:key` (diasumsikan `{ value }`),
+  `employmentData: null` pada monografi, dan apakah menghapus program KKN benar-benar
+  terhalang relasi kegiatannya.
