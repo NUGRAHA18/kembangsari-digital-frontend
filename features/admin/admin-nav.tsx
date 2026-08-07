@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  BarChart3,
   CalendarDays,
   FileText,
   GraduationCap,
@@ -40,6 +41,7 @@ export const ADMIN_NAV: AdminNavItem[] = [
   { label: "Potensi", href: "/admin/potensi", Icon: Sprout },
   { label: "Program KKN", href: "/admin/program-kkn", Icon: GraduationCap },
   { label: "Peta", href: "/admin/peta", Icon: MapPin },
+  { label: "Monografi", href: "/admin/monografi", Icon: BarChart3 },
 ];
 
 /** `/admin` hanya aktif kalau persis dibuka; menu lain juga aktif di halaman turunannya. */

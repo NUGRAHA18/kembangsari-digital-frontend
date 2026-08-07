@@ -11,7 +11,7 @@ import type { StatBarItem } from "@/features/monography/stat-bars";
  * Urutannya mengikuti enum `EmploymentStatus` di backend, bukan diurutkan dari
  * yang terbesar: urutan yang tetap membuat perbandingan antar-tahun mudah dibaca.
  */
-const EMPLOYMENT_LABELS: Record<EmploymentStatus, string> = {
+export const EMPLOYMENT_LABELS: Record<EmploymentStatus, string> = {
   PETANI: "Petani",
   NELAYAN: "Nelayan",
   PNS: "PNS",
@@ -30,6 +30,14 @@ const EMPLOYMENT_LABELS: Record<EmploymentStatus, string> = {
 };
 
 /**
+ * Kunci `employmentData` dalam urutan enum backend.
+ *
+ * Dipakai form dashboard dan Server Action-nya. Kunci di luar daftar ini
+ * ditolak backend, jadi keduanya harus berangkat dari daftar yang sama.
+ */
+export const EMPLOYMENT_KEYS = Object.keys(EMPLOYMENT_LABELS) as EmploymentStatus[];
+
+/**
  * Menyiapkan `employmentData` untuk `StatBars`.
  *
  * Kategori yang tidak dikirim backend berarti **tidak didata**, bukan bernilai
@@ -40,7 +48,6 @@ const EMPLOYMENT_LABELS: Record<EmploymentStatus, string> = {
 export function toEmploymentItems(data: EmploymentData | null): StatBarItem[] {
   if (!data) return [];
 
-  return (Object.keys(EMPLOYMENT_LABELS) as EmploymentStatus[])
-    .filter((key) => typeof data[key] === "number")
+  return EMPLOYMENT_KEYS.filter((key) => typeof data[key] === "number")
     .map((key) => ({ label: EMPLOYMENT_LABELS[key], value: data[key] as number }));
 }
