@@ -8,6 +8,7 @@ import {
   GraduationCap,
   Images,
   LayoutDashboard,
+  MapPin,
   Megaphone,
   Sprout,
   Store,
@@ -38,6 +39,7 @@ export const ADMIN_NAV: AdminNavItem[] = [
   { label: "UMKM", href: "/admin/umkm", Icon: Store },
   { label: "Potensi", href: "/admin/potensi", Icon: Sprout },
   { label: "Program KKN", href: "/admin/program-kkn", Icon: GraduationCap },
+  { label: "Peta", href: "/admin/peta", Icon: MapPin },
 ];
 
 /** `/admin` hanya aktif kalau persis dibuka; menu lain juga aktif di halaman turunannya. */
