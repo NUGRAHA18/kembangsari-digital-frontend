@@ -1,5 +1,5 @@
-import { del, getList, getOne, getPaginated, patch, post } from "@/lib/api";
-import type { PaginationQuery, UMKM, UMKMImage } from "@/types/api";
+import { del, getOne, getPaginated, patch, post } from "@/lib/api";
+import type { AdminUmkmQuery, PaginationQuery, UMKM, UMKMImage } from "@/types/api";
 
 /**
  * UMKM yang aktif. Endpoint ini sudah menyaring hanya gambar `isPrimary`,
@@ -19,8 +19,11 @@ export function getUmkmBySlug(slug: string) {
 // DASHBOARD ADMIN
 // ============================================================
 
-/** Seluruh UMKM termasuk yang nonaktif. `GET /umkm` menjawab 401 tanpa token. */
-export function getAllUmkm(query: PaginationQuery, token: string) {
+/**
+ * Seluruh UMKM termasuk yang nonaktif. `GET /umkm` menjawab 401 tanpa token.
+ * `isActive` menyaringnya; tidak dikirim berarti semua.
+ */
+export function getAllUmkm(query: AdminUmkmQuery, token: string) {
   return getPaginated<UMKM>("/umkm", query, { token });
 }
 
@@ -62,11 +65,10 @@ export function deleteUmkm(id: string, token: string) {
 }
 
 // ---------- Gambar UMKM ----------
-
-/** ARRAY POLOS, bukan `{ data, meta }`. */
-export function getUmkmImages(umkmId: string) {
-  return getList<UMKMImage>(`/umkm/image/umkm/${umkmId}`);
-}
+//
+// `GET /umkm/image/umkm/:id` sengaja tidak dibungkus di sini. Dulu ia dipakai
+// untuk menghitung sendiri gambar mana yang bertanda utama; sekarang backend
+// menjaganya, dan daftar gambar sudah ikut di `GET /umkm/:slug`.
 
 export function getUmkmImageById(id: string) {
   return getOne<UMKMImage>(`/umkm/image/${id}`);
@@ -76,6 +78,10 @@ export interface UmkmImageInput {
   url: string;
   umkmId: string;
   caption?: string | null;
+  /**
+   * Boleh tidak dikirim: gambar pertama sebuah UMKM otomatis menjadi utama.
+   * Mengirim `true` melepas penanda gambar lain dalam transaksi yang sama.
+   */
   isPrimary?: boolean;
 }
 
@@ -84,9 +90,11 @@ export function createUmkmImage(input: UmkmImageInput, token: string) {
 }
 
 /**
- * Backend tidak menjaga agar gambar utama hanya satu — `isPrimary` sekadar
- * disimpan apa adanya. Yang menjaganya adalah pemanggil; lihat
- * `setPrimaryImageAction` di modul UMKM dashboard.
+ * Backend menjaga agar gambar utama tepat satu, jadi cukup satu permintaan
+ * `isPrimary: true` — jangan melepas penanda yang lama lebih dulu.
+ *
+ * `isPrimary: false` pada satu-satunya gambar dijawab `400`; dashboard tidak
+ * menyediakan tombolnya, jadi keadaan itu tidak pernah muncul.
  */
 export function updateUmkmImage(id: string, input: Partial<UmkmImageInput>, token: string) {
   return patch<UMKMImage>(`/umkm/image/${id}`, input, { token });

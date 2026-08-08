@@ -65,6 +65,49 @@ export interface PotentialQuery extends PaginationQuery {
   category?: PotentialCategory;
 }
 
+// ------------------------------------------------------------
+// SARINGAN STATUS — hanya di daftar BERTOKEN
+//
+// Tidak dikirim berarti "semua". Nilai selain true/false dijawab 400 dengan
+// pesan yang menyebut nama parameternya.
+//
+// Jangan mengirimnya ke versi tersaring (`/news/published`,
+// `/umkm/active`, dan seterusnya): di sana parameternya tidak punya arti dan
+// forbidNonWhitelisted menjawabnya 400 — itu sebabnya tipe query publik dan
+// admin dipisah, bukan disatukan dengan field opsional.
+// ------------------------------------------------------------
+
+/** Untuk modul berstatus terbit/draf: berita dan monografi. */
+export interface PublishedFilter {
+  published?: boolean;
+}
+
+/** Untuk modul berstatus tampil/disembunyikan. */
+export interface ActiveFilter {
+  isActive?: boolean;
+}
+
+export interface AdminNewsQuery extends NewsQuery, PublishedFilter {}
+
+export interface AdminAnnouncementQuery extends PaginationQuery, ActiveFilter {}
+
+export interface AdminUmkmQuery extends PaginationQuery, ActiveFilter {}
+
+export interface AdminPotentialQuery extends PotentialQuery, ActiveFilter {}
+
+/** `/monography` tidak punya kolom teks untuk dicari; `search` sengaja tidak ada. */
+export interface AdminMonographyQuery extends Omit<PaginationQuery, 'search'>, PublishedFilter {}
+
+/** Saringan kategori marker kini ada di daftar utama, bukan endpoint terpisah. */
+export interface AdminMarkerQuery extends PaginationQuery, ActiveFilter {
+  categoryId?: string;
+}
+
+/** Sama untuk program KKN: sub-program bisa digabung dengan saringan status. */
+export interface AdminKknProgramQuery extends PaginationQuery, ActiveFilter {
+  subProgram?: KKNSubProgram;
+}
+
 // ============================================================
 // ENUM
 // ============================================================
@@ -277,6 +320,15 @@ export interface MapCategory {
   icon: string | null;
   createdAt: string;
   updatedAt: string;
+  /**
+   * Hadir pada GET /maps/category dan /maps/category/:id — termasuk marker
+   * yang disembunyikan.
+   *
+   * PERHATIAN, berbeda dari `Category._count.news`: menghapus kategori peta
+   * TIDAK ditolak backend, ia menghapus seluruh marker di dalamnya. Angka ini
+   * dipakai untuk memperingatkan, bukan untuk mematikan tombol hapus.
+   */
+  _count?: { markers: number };
 }
 
 export interface MapMarker {
@@ -330,6 +382,17 @@ export interface GalleryItem {
 // UMKM
 // ============================================================
 
+/**
+ * Gambar UMKM.
+ *
+ * `isPrimary` dijaga backend dalam satu transaksi: gambar pertama sebuah
+ * record otomatis menjadi utama, menandai yang baru melepas yang lama, dan
+ * menghapus yang utama mengangkat gambar teratas berikutnya. Jaminannya —
+ * selama sebuah record punya gambar, tepat satu di antaranya bertanda utama.
+ * Frontend tidak perlu (dan tidak boleh) ikut menjaganya.
+ *
+ * Melepas penanda pada satu-satunya gambar dijawab 400.
+ */
 export interface UMKMImage {
   id: string;
   url: string;
@@ -372,6 +435,7 @@ export interface UMKM {
 // POTENSI PADUKUHAN
 // ============================================================
 
+/** Sama seperti `UMKMImage`: `isPrimary` dijaga backend, bukan frontend. */
 export interface PotentialImage {
   id: string;
   url: string;
@@ -447,7 +511,25 @@ export interface Setting {
   updatedAt: string;
 }
 
-/** Key yang tersedia dari seed backend. */
+/**
+ * Badan `PATCH /settings/:key`. `key` sudah ada di URL — mengirimnya ikut di
+ * badan dijawab 400 oleh forbidNonWhitelisted.
+ *
+ * `value` SELALU teks, termasuk `map_zoom` ("15") dan `map_latitude`
+ * ("-7.795580"). Frontend yang mengubahnya menjadi angka bila perlu.
+ */
+export interface UpdateSettingBody {
+  value: string;
+}
+
+/**
+ * Key yang datang dari seed backend.
+ *
+ * Bukan daftar tertutup: `PATCH /settings/:key` bersifat upsert, jadi key baru
+ * (`tiktok`, misalnya) tinggal dikirim dan akan dibuatkan. Yang tetap menjawab
+ * 404 adalah `GET /settings/:key` untuk key yang belum ada, dan `DELETE`
+ * memang tidak disediakan — mengosongkan `value` adalah caranya.
+ */
 export type SettingKey =
   | 'site_name'
   | 'site_description'

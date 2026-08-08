@@ -4,7 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { Card, CardBody } from "@/components/ui/card";
 import { MapCategoryForm } from "@/features/admin/map-category-form";
 import { fetchAsAdmin } from "@/lib/admin-fetch";
-import { getMapCategoryById } from "@/services/maps";
+import { getMapCategoryByIdUncached } from "@/services/maps";
 
 export const metadata: Metadata = { title: "Ubah Kategori Lokasi" };
 
@@ -12,7 +12,7 @@ type Props = { params: Promise<{ id: string }> };
 
 export default async function EditMapCategoryPage({ params }: Props) {
   const { id } = await params;
-  const category = await fetchAsAdmin(getMapCategoryById(id));
+  const category = await fetchAsAdmin(getMapCategoryByIdUncached(id));
 
   return (
     <div className="mx-auto flex w-full max-w-xl flex-col gap-6">

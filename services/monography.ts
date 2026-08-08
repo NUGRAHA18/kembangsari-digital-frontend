@@ -1,5 +1,10 @@
 import { del, getOne, getPaginated, patch, post } from "@/lib/api";
-import type { EmploymentData, PaginationQuery, PopulationStat } from "@/types/api";
+import type {
+  AdminMonographyQuery,
+  EmploymentData,
+  PaginationQuery,
+  PopulationStat,
+} from "@/types/api";
 
 /**
  * Statistik penduduk yang sudah dipublikasikan.
@@ -22,8 +27,14 @@ export function getMonographyByYear(year: number) {
 // belum diterbitkan, dan cache Next.js tidak membedakan siapa yang meminta.
 // ============================================================
 
-/** Seluruh tahun termasuk yang belum terbit. `GET /monography` menjawab 401 tanpa token. */
-export function getAllMonography(query: Omit<PaginationQuery, "search">, token: string) {
+/**
+ * Seluruh tahun termasuk yang belum terbit. `GET /monography` menjawab 401
+ * tanpa token; `published` menyaringnya.
+ *
+ * `search` sengaja tidak ada di tipenya: backend masih menerimanya tetapi
+ * mengabaikannya diam-diam, dan modul ini memang tidak punya kolom teks.
+ */
+export function getAllMonography(query: AdminMonographyQuery, token: string) {
   return getPaginated<PopulationStat>("/monography", query, { token });
 }
 

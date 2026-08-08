@@ -1,5 +1,5 @@
-import { del, getList, getOne, getPaginated, patch, post, MAX_PAGE_LIMIT } from "@/lib/api";
-import type { MapCategory, MapMarker, PaginationQuery } from "@/types/api";
+import { del, getList, getOne, getPaginated, patch, post } from "@/lib/api";
+import type { AdminMarkerQuery, MapCategory, MapMarker } from "@/types/api";
 
 /**
  * ARRAY POLOS dan sengaja tidak dipaginasi: peta harus menggambar semua pin
@@ -9,18 +9,24 @@ export function getActiveMarkers() {
   return getList<MapMarker>("/maps/marker/active", {}, { revalidate: 600 });
 }
 
-/** Kategori marker — ARRAY POLOS, dipakai untuk filter dan warna pin. */
+/**
+ * Kategori marker — ARRAY POLOS, dipakai untuk filter dan warna pin.
+ *
+ * Menyertakan `_count.markers`, termasuk marker yang disembunyikan.
+ */
 export function getMapCategories() {
   return getList<MapCategory>("/maps/category", {}, { revalidate: 600 });
 }
 
 /**
- * Kategori marker tanpa cache.
+ * Kategori marker tanpa cache — dipakai seluruh dashboard, bukan hanya Server
+ * Action.
  *
- * Dipakai Server Action untuk memeriksa `categoryId` yang dikirim form.
- * `getMapCategories` menyimpan jawabannya sepuluh menit, dan kategori yang baru
- * dibuat pada menit yang sama akan terbaca sebagai tidak ada — marker yang
- * sebenarnya sah pun ditolak dengan alasan yang membingungkan pengelola.
+ * `getMapCategories` menyimpan jawabannya sepuluh menit. Dua akibatnya sama-sama
+ * tidak bisa diterima di dashboard: kategori yang baru dibuat terbaca sebagai
+ * tidak ada saat marker disimpan, dan `_count.markers` yang basi membuat halaman
+ * hapus menyebut angka yang lebih kecil daripada jumlah titik yang benar-benar
+ * akan ikut terhapus.
  */
 export function getMapCategoriesUncached() {
   return getList<MapCategory>("/maps/category");
@@ -29,6 +35,11 @@ export function getMapCategoriesUncached() {
 /** Satu kategori marker. Publik, tidak butuh token. */
 export function getMapCategoryById(id: string) {
   return getOne<MapCategory>(`/maps/category/${id}`, { revalidate: 600 });
+}
+
+/** Versi tanpa cache, dengan alasan yang sama seperti `getMapCategoriesUncached`. */
+export function getMapCategoryByIdUncached(id: string) {
+  return getOne<MapCategory>(`/maps/category/${id}`);
 }
 
 // ============================================================
@@ -43,48 +54,19 @@ export function getMapCategoryById(id: string) {
  * Seluruh marker termasuk yang disembunyikan — `GET /maps/marker` menjawab
  * `401` tanpa token.
  *
- * Query yang diterima hanya `page`, `limit`, dan `search`; sejak backend
- * memakai `forbidNonWhitelisted`, parameter lain dijawab `400`. Karena itu
- * daftar dashboard tidak punya saringan kategori — penyaringnya
- * `/maps/marker/category/:categoryId`, endpoint terpisah yang tidak
- * terdokumentasi apakah ikut menyembunyikan marker nonaktif seperti
- * `/maps/marker/active`. Marker tersembunyi justru yang paling perlu dicari
- * pengelola, jadi risikonya tidak diambil.
+ * Selain `page`, `limit`, dan `search`, daftar ini menerima `categoryId` dan
+ * `isActive` — dua saringan yang bisa dipakai bersamaan. Itulah yang tidak
+ * bisa dilakukan `/maps/marker/category/:categoryId`, dan sebabnya endpoint
+ * terpisah itu tidak dipakai dashboard meski ia ikut menampilkan marker
+ * nonaktif untuk pemanggil bertoken.
  */
-export function getAllMarkers(query: PaginationQuery, token: string) {
+export function getAllMarkers(query: AdminMarkerQuery, token: string) {
   return getPaginated<MapMarker>("/maps/marker", query, { token });
 }
 
 /** Dengan token, marker nonaktif ikut terbaca. `category` selalu disertakan. */
 export function getMarkerById(id: string, token: string) {
   return getOne<MapMarker>(`/maps/marker/${id}`, { token });
-}
-
-/**
- * Mengambil seluruh marker lintas halaman.
- *
- * Dipakai halaman kategori peta: `GET /maps/category` tidak menyertakan
- * `_count` seperti kategori berita, padahal `MapMarker.categoryId` adalah
- * relasi wajib — kategori yang masih dipakai akan ditolak database dengan
- * "Referensi data tidak valid". Jumlahnya dihitung sendiri di sini, dari
- * endpoint admin supaya marker yang disembunyikan ikut terhitung.
- *
- * Marker satu padukuhan jumlahnya puluhan, jadi perulangannya nyaris selalu
- * berhenti setelah satu permintaan.
- */
-export async function getEveryMarker(token: string): Promise<MapMarker[]> {
-  const markers: MapMarker[] = [];
-  let page = 1;
-  let lastPage = 1;
-
-  do {
-    const response = await getAllMarkers({ page, limit: MAX_PAGE_LIMIT }, token);
-    markers.push(...response.data);
-    lastPage = response.meta.lastPage;
-    page += 1;
-  } while (page <= lastPage);
-
-  return markers;
 }
 
 export interface MarkerInput {
@@ -129,11 +111,12 @@ export function updateMapCategory(id: string, input: Partial<MapCategoryInput>, 
 }
 
 /**
- * Menghapus kategori marker.
+ * Menghapus kategori marker **beserta seluruh marker di dalamnya**.
  *
- * Akan gagal selama masih ada marker yang memakainya: `MapMarker.categoryId`
- * relasi wajib, sama seperti `News.categoryId`. Pemanggil memeriksa jumlah
- * pemakaiannya lebih dulu agar pengelola tidak menemui pesan database.
+ * Berbeda dari kategori berita: yang itu ditolak `400` selama masih dipakai,
+ * yang ini berantai dalam satu transaksi. Karena itu pemanggil tidak
+ * mematikan tombol hapusnya, melainkan memperingatkan berapa titik lokasi
+ * yang akan ikut hilang — angkanya dari `_count.markers`.
  */
 export function deleteMapCategory(id: string, token: string) {
   return del<MapCategory>(`/maps/category/${id}`, { token });

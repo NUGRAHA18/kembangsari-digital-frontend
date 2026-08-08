@@ -38,7 +38,7 @@ export default async function DeleteProfilePage({ params }: Props) {
       </p>
 
       <form action={deleteProfileAction} className="flex flex-wrap gap-3">
-        <input type="hidden" name="id" value={profile.id} />
+        {/* Slug saja: `DELETE /profile/:idOrSlug` menerima keduanya. */}
         <input type="hidden" name="slug" value={profile.slug} />
 
         <Button type="submit" size="lg" className="bg-error hover:brightness-95">

@@ -5,10 +5,16 @@ import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { Card, CardBody } from "@/components/ui/card";
+import { FilterChips } from "@/components/ui/filter-chips";
 import { Pagination } from "@/components/ui/pagination";
 import { SearchInput } from "@/components/ui/search-input";
 import { EmptyState } from "@/components/ui/states";
-import { SUB_PROGRAM_LABELS } from "@/features/kkn/sub-programs";
+import { readStatus, statusOptions, VISIBILITY_STATUS } from "@/features/admin/status-filter";
+import {
+  KKN_SUB_PROGRAMS,
+  readSubProgram,
+  SUB_PROGRAM_LABELS,
+} from "@/features/kkn/sub-programs";
 import { fetchAsAdmin } from "@/lib/admin-fetch";
 import { readPage, readParam, type RawSearchParams } from "@/lib/page-params";
 import { requireSession } from "@/lib/session";
@@ -19,7 +25,7 @@ export const metadata: Metadata = { title: "Program KKN" };
 const PER_PAGE = 20;
 
 const MESSAGES: Record<string, string> = {
-  dihapus: "Program berhasil dihapus.",
+  dihapus: "Program beserta kegiatannya berhasil dihapus.",
 };
 
 export default async function AdminKknPage({
@@ -32,16 +38,26 @@ export default async function AdminKknPage({
 
   const page = readPage(params);
   const search = readParam(params, "search");
+  // Nilai enum huruf besar dipakai apa adanya di URL. Sub-program tidak punya
+  // slug seperti kategori, dan yang di luar daftar dijawab backend 400 — jadi
+  // apa pun yang datang dari query string diterjemahkan dulu.
+  const subProgram = readSubProgram(readParam(params, "sub") ?? "");
+  const status = readStatus(params, VISIBILITY_STATUS);
   const message = MESSAGES[readParam(params, "pesan") ?? ""];
 
-  // Tidak ada saringan sub-program: `GET /kkn/program` hanya menerima page,
-  // limit, dan search. Menyaringnya di sini hanya akan menyaring satu halaman
-  // hasil dan membuat jumlahnya menyesatkan — sama seperti daftar berita.
   const programs = await fetchAsAdmin(
-    getAllKknPrograms({ page, limit: PER_PAGE, search }, token),
+    getAllKknPrograms(
+      { page, limit: PER_PAGE, search, subProgram: subProgram ?? undefined, isActive: status.value },
+      token,
+    ),
   );
 
-  const activeParams = { search, page: page > 1 ? String(page) : undefined };
+  const activeParams = {
+    search,
+    sub: subProgram ?? undefined,
+    status: status.param,
+    page: page > 1 ? String(page) : undefined,
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -49,7 +65,9 @@ export default async function AdminKknPage({
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Program KKN</h1>
           <p className="mt-1 text-muted">
-            {programs.meta.total} program, termasuk yang tidak ditampilkan.
+            {status.value === undefined
+              ? `${programs.meta.total} program, termasuk yang tidak ditampilkan.`
+              : `${programs.meta.total} program ${status.value ? "yang tampil" : "yang disembunyikan"}.`}
           </p>
         </div>
 
@@ -61,12 +79,41 @@ export default async function AdminKknPage({
 
       {message ? <Alert tone="success">{message}</Alert> : null}
 
-      <SearchInput
-        action="/admin/program-kkn"
-        defaultValue={search}
-        placeholder="Cari judul atau isi program…"
-        label="Cari program KKN"
-      />
+      <div className="flex flex-col gap-4">
+        <SearchInput
+          action="/admin/program-kkn"
+          defaultValue={search}
+          placeholder="Cari judul atau isi program…"
+          label="Cari program KKN"
+          hiddenFields={{ sub: subProgram ?? undefined, status: status.param }}
+        />
+
+        <FilterChips
+          label="Status program"
+          basePath="/admin/program-kkn"
+          paramName="status"
+          activeValue={status.param}
+          searchParams={activeParams}
+          options={statusOptions(VISIBILITY_STATUS)}
+        />
+
+        {/* `?subProgram=` di daftar utama, bukan `/kkn/program/sub/:sub` —
+            hanya yang pertama bisa digabung dengan saringan status. */}
+        <FilterChips
+          label="Sub-program"
+          basePath="/admin/program-kkn"
+          paramName="sub"
+          activeValue={subProgram ?? undefined}
+          searchParams={activeParams}
+          options={[
+            { label: "Semua" },
+            ...KKN_SUB_PROGRAMS.map((item) => ({
+              value: item,
+              label: SUB_PROGRAM_LABELS[item],
+            })),
+          ]}
+        />
+      </div>
 
       {programs.data.length > 0 ? (
         <>
@@ -133,9 +180,17 @@ export default async function AdminKknPage({
         </>
       ) : (
         <EmptyState
-          title={search ? `Tidak ada program untuk "${search}"` : "Belum ada program KKN"}
+          title={
+            search
+              ? `Tidak ada program untuk "${search}"`
+              : status.param || subProgram
+                ? "Tidak ada program yang cocok"
+                : "Belum ada program KKN"
+          }
           description={
-            search ? "Coba kata kunci lain." : "Tambahkan program KKN yang pertama."
+            search || status.param || subProgram
+              ? "Coba ubah kata kunci atau saringannya."
+              : "Tambahkan program KKN yang pertama."
           }
         />
       )}

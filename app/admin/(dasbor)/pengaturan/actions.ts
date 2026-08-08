@@ -108,21 +108,14 @@ export async function saveSettingsAction(
     return { error: "Tidak ada perubahan untuk disimpan.", values };
   }
 
+  // `PATCH /settings/:key` bersifat upsert: key yang belum ada di seed backend
+  // dibuatkan, bukan dijawab 404. Jadi tidak ada lagi keadaan "mintakan
+  // penambahannya ke tim backend" yang perlu diterjemahkan di sini.
   for (const field of changed) {
     try {
       await updateSetting(field.key, values[field.key], token);
     } catch (error) {
       redirectIfExpired(error);
-
-      // Key berasal dari seed backend dan tidak bisa dibuat dari sini; `404`
-      // berarti seed-nya belum memuat key itu, bukan salah ketik pengelola.
-      if (error instanceof ApiRequestError && error.isNotFound) {
-        return {
-          error: `Pengaturan "${field.label}" belum tersedia di backend (key: ${field.key}). Mintakan penambahannya ke tim backend.`,
-          values,
-        };
-      }
-
       return { error: `Gagal menyimpan ${field.label}. ${toMessage(error)}`, values };
     }
   }

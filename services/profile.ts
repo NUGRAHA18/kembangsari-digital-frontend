@@ -45,11 +45,15 @@ export function createProfile(input: ProfileInput, token: string) {
   return post<Profile>("/profile", input, { token });
 }
 
-/** Perhatikan: `PATCH` dan `DELETE` memakai **id**, sedangkan `GET` memakai slug. */
-export function updateProfile(id: string, input: Partial<ProfileInput>, token: string) {
-  return patch<Profile>(`/profile/${id}`, input, { token });
+/**
+ * `PATCH` dan `DELETE` menerima **id maupun slug** pada URL yang sama,
+ * mengikuti pola `/agenda/:idOrSlug`. Dashboard mengirim slug, karena itu yang
+ * sudah ada di alamat halamannya.
+ */
+export function updateProfile(idOrSlug: string, input: Partial<ProfileInput>, token: string) {
+  return patch<Profile>(`/profile/${idOrSlug}`, input, { token });
 }
 
-export function deleteProfile(id: string, token: string) {
-  return del<Profile>(`/profile/${id}`, { token });
+export function deleteProfile(idOrSlug: string, token: string) {
+  return del<Profile>(`/profile/${idOrSlug}`, { token });
 }

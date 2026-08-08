@@ -5,9 +5,11 @@ import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { Card, CardBody } from "@/components/ui/card";
+import { FilterChips } from "@/components/ui/filter-chips";
 import { Pagination } from "@/components/ui/pagination";
 import { SearchInput } from "@/components/ui/search-input";
 import { EmptyState } from "@/components/ui/states";
+import { readStatus, statusOptions, VISIBILITY_STATUS } from "@/features/admin/status-filter";
 import { fetchAsAdmin } from "@/lib/admin-fetch";
 import { readPage, readParam, type RawSearchParams } from "@/lib/page-params";
 import { requireSession } from "@/lib/session";
@@ -31,10 +33,18 @@ export default async function AdminUmkmPage({
 
   const page = readPage(params);
   const search = readParam(params, "search");
+  const status = readStatus(params, VISIBILITY_STATUS);
   const message = MESSAGES[readParam(params, "pesan") ?? ""];
 
-  const umkm = await fetchAsAdmin(getAllUmkm({ page, limit: PER_PAGE, search }, token));
-  const activeParams = { search, page: page > 1 ? String(page) : undefined };
+  const umkm = await fetchAsAdmin(
+    getAllUmkm({ page, limit: PER_PAGE, search, isActive: status.value }, token),
+  );
+
+  const activeParams = {
+    search,
+    status: status.param,
+    page: page > 1 ? String(page) : undefined,
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -42,7 +52,9 @@ export default async function AdminUmkmPage({
         <div>
           <h1 className="text-2xl font-bold tracking-tight">UMKM</h1>
           <p className="mt-1 text-muted">
-            {umkm.meta.total} usaha warga, termasuk yang tidak ditampilkan.
+            {status.value === undefined
+              ? `${umkm.meta.total} usaha warga, termasuk yang tidak ditampilkan.`
+              : `${umkm.meta.total} usaha warga ${status.value ? "yang tampil" : "yang disembunyikan"}.`}
           </p>
         </div>
 
@@ -54,12 +66,24 @@ export default async function AdminUmkmPage({
 
       {message ? <Alert tone="success">{message}</Alert> : null}
 
-      <SearchInput
-        action="/admin/umkm"
-        defaultValue={search}
-        placeholder="Cari nama, deskripsi, atau alamat…"
-        label="Cari UMKM"
-      />
+      <div className="flex flex-col gap-4">
+        <SearchInput
+          action="/admin/umkm"
+          defaultValue={search}
+          placeholder="Cari nama, deskripsi, atau alamat…"
+          label="Cari UMKM"
+          hiddenFields={{ status: status.param }}
+        />
+
+        <FilterChips
+          label="Status UMKM"
+          basePath="/admin/umkm"
+          paramName="status"
+          activeValue={status.param}
+          searchParams={activeParams}
+          options={statusOptions(VISIBILITY_STATUS)}
+        />
+      </div>
 
       {umkm.data.length > 0 ? (
         <>
@@ -129,9 +153,17 @@ export default async function AdminUmkmPage({
         </>
       ) : (
         <EmptyState
-          title={search ? `Tidak ada UMKM untuk "${search}"` : "Belum ada UMKM"}
+          title={
+            search
+              ? `Tidak ada UMKM untuk "${search}"`
+              : status.param
+                ? "Tidak ada UMKM yang cocok"
+                : "Belum ada UMKM"
+          }
           description={
-            search ? "Coba kata kunci lain." : "Tambahkan usaha warga pertama ke portal."
+            search || status.param
+              ? "Coba ubah kata kunci atau saringannya."
+              : "Tambahkan usaha warga pertama ke portal."
           }
         />
       )}

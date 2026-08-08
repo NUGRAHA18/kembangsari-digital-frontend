@@ -5,14 +5,17 @@ import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { Card, CardBody } from "@/components/ui/card";
+import { FilterChips } from "@/components/ui/filter-chips";
 import { Pagination } from "@/components/ui/pagination";
 import { SearchInput } from "@/components/ui/search-input";
-import { EmptyState } from "@/components/ui/states";
+import { EmptyState, ErrorState } from "@/components/ui/states";
+import { readStatus, statusOptions, VISIBILITY_STATUS } from "@/features/admin/status-filter";
+import { safeFetch } from "@/lib/api";
 import { fetchAsAdmin } from "@/lib/admin-fetch";
 import { googleMapsPointLink } from "@/lib/format";
 import { readPage, readParam, type RawSearchParams } from "@/lib/page-params";
 import { requireSession } from "@/lib/session";
-import { getAllMarkers } from "@/services/maps";
+import { getAllMarkers, getMapCategoriesUncached } from "@/services/maps";
 
 export const metadata: Metadata = { title: "Peta" };
 
@@ -34,13 +37,34 @@ export default async function AdminMapPage({
 
   const page = readPage(params);
   const search = readParam(params, "search");
+  const categorySlug = readParam(params, "kategori");
+  const status = readStatus(params, VISIBILITY_STATUS);
   const message = MESSAGES[readParam(params, "pesan") ?? ""];
 
-  // Tanpa saringan kategori — `GET /maps/marker` hanya menerima page, limit,
-  // dan search. Alasan lengkapnya ada di `services/maps.ts`.
-  const markers = await fetchAsAdmin(getAllMarkers({ page, limit: PER_PAGE, search }, token));
+  // Kategori disaring lewat id, tetapi alamat halamannya memakai slug — sama
+  // seperti daftar berita, supaya URL-nya tetap terbaca saat dibagikan.
+  const categories = await safeFetch(getMapCategoriesUncached());
+  const activeCategory = (categories.data ?? []).find((item) => item.slug === categorySlug);
 
-  const activeParams = { search, page: page > 1 ? String(page) : undefined };
+  const markers = await fetchAsAdmin(
+    getAllMarkers(
+      {
+        page,
+        limit: PER_PAGE,
+        search,
+        categoryId: activeCategory?.id,
+        isActive: status.value,
+      },
+      token,
+    ),
+  );
+
+  const activeParams = {
+    search,
+    kategori: activeCategory?.slug,
+    status: status.param,
+    page: page > 1 ? String(page) : undefined,
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -48,7 +72,9 @@ export default async function AdminMapPage({
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Peta</h1>
           <p className="mt-1 text-muted text-pretty">
-            {markers.meta.total} titik lokasi, termasuk yang tidak ditampilkan di peta warga.
+            {status.value === undefined
+              ? `${markers.meta.total} titik lokasi, termasuk yang tidak ditampilkan di peta warga.`
+              : `${markers.meta.total} titik lokasi ${status.value ? "yang tampil di peta warga" : "yang disembunyikan"}.`}
           </p>
         </div>
 
@@ -70,12 +96,52 @@ export default async function AdminMapPage({
 
       {message ? <Alert tone="success">{message}</Alert> : null}
 
-      <SearchInput
-        action="/admin/peta"
-        defaultValue={search}
-        placeholder="Cari nama atau alamat lokasi…"
-        label="Cari titik lokasi"
-      />
+      <div className="flex flex-col gap-4">
+        <SearchInput
+          action="/admin/peta"
+          defaultValue={search}
+          placeholder="Cari nama atau alamat lokasi…"
+          label="Cari titik lokasi"
+          hiddenFields={{ kategori: activeCategory?.slug, status: status.param }}
+        />
+
+        <FilterChips
+          label="Status titik lokasi"
+          basePath="/admin/peta"
+          paramName="status"
+          activeValue={status.param}
+          searchParams={activeParams}
+          options={statusOptions(VISIBILITY_STATUS)}
+        />
+
+        {/* Saringan kategori memakai `?categoryId=` di daftar utama, bukan
+            `/maps/marker/category/:id` — hanya yang pertama bisa digabung
+            dengan saringan status. */}
+        {categories.data && categories.data.length > 0 ? (
+          <FilterChips
+            label="Kategori lokasi"
+            basePath="/admin/peta"
+            paramName="kategori"
+            activeValue={activeCategory?.slug}
+            searchParams={activeParams}
+            options={[
+              { label: "Semua" },
+              ...categories.data.map((item) => ({
+                value: item.slug,
+                label: item.name,
+                count: item._count?.markers,
+              })),
+            ]}
+          />
+        ) : null}
+      </div>
+
+      {categories.error ? (
+        <ErrorState
+          title="Kategori gagal dimuat"
+          message="Saringan kategori tidak tersedia untuk sementara."
+        />
+      ) : null}
 
       {markers.data.length > 0 ? (
         <>
@@ -141,10 +207,16 @@ export default async function AdminMapPage({
         </>
       ) : (
         <EmptyState
-          title={search ? `Tidak ada lokasi untuk "${search}"` : "Belum ada titik lokasi"}
-          description={
+          title={
             search
-              ? "Coba kata kunci lain."
+              ? `Tidak ada lokasi untuk "${search}"`
+              : status.param || activeCategory
+                ? "Tidak ada lokasi yang cocok"
+                : "Belum ada titik lokasi"
+          }
+          description={
+            search || status.param || activeCategory
+              ? "Coba ubah kata kunci atau saringannya."
               : "Tambahkan fasilitas umum atau titik penting yang pertama."
           }
         />

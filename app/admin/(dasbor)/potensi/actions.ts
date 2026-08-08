@@ -13,7 +13,6 @@ import {
   createPotentialImage,
   deletePotential,
   deletePotentialImage,
-  getPotentialImages,
   updatePotential,
   updatePotentialImage,
   type PotentialInput,
@@ -199,9 +198,10 @@ export async function deletePotentialAction(formData: FormData) {
  * Mengunggah gambar dokumentasi potensi, lalu mencatat masing-masing sebagai
  * record gambar.
  *
- * Gambar pertama otomatis menjadi gambar utama: kartu daftar memakai
- * `thumbnail`, dan bila belum diisi ia jatuh ke gambar `isPrimary` — tanpa
- * penanda itu potensi yang sudah berfoto tetap tampil sebagai kotak kosong.
+ * `isPrimary` tidak dikirim: backend menandai gambar pertama sebuah record
+ * sebagai utama dengan sendirinya. Penanda itu tetap penting di sini karena
+ * kartu daftar memakai `thumbnail` dan jatuh ke gambar `isPrimary` bila
+ * sampulnya kosong.
  */
 export async function addPotentialImagesAction(
   _prevState: FormState,
@@ -230,14 +230,10 @@ export async function addPotentialImagesAction(
   }
 
   try {
-    const existing = await getPotentialImages(potentialId);
-    let hasPrimary = existing.some((image) => image.isPrimary);
-
     const uploaded = await uploadImages(files, "potensi", token);
 
     for (const item of uploaded) {
-      await createPotentialImage({ url: item.url, potentialId, isPrimary: !hasPrimary }, token);
-      hasPrimary = true;
+      await createPotentialImage({ url: item.url, potentialId }, token);
     }
   } catch (error) {
     redirectIfExpired(error);
@@ -271,28 +267,18 @@ export async function updatePotentialImageAction(formData: FormData) {
 /**
  * Menjadikan satu gambar sebagai gambar utama.
  *
- * Penandaan lama dilepas satu per satu karena backend tidak melakukannya:
- * `isPrimary` hanya disimpan apa adanya, sehingga dua gambar bisa sama-sama
- * bertanda utama dan kartu potensi akan menampilkan salah satunya secara acak.
+ * Satu permintaan saja: backend melepas penanda gambar lain dalam transaksi
+ * yang sama.
  */
 export async function setPrimaryImageAction(formData: FormData) {
   const { token } = await requireSession();
 
   const id = String(formData.get("id") ?? "");
-  const potentialId = String(formData.get("potentialId") ?? "");
   const potentialSlug = String(formData.get("potentialSlug") ?? "");
 
-  if (!id || !potentialId) redirect(`/admin/potensi/${potentialSlug}`);
+  if (!id) redirect(`/admin/potensi/${potentialSlug}`);
 
   try {
-    const images = await getPotentialImages(potentialId);
-
-    for (const image of images) {
-      if (image.isPrimary && image.id !== id) {
-        await updatePotentialImage(image.id, { isPrimary: false }, token);
-      }
-    }
-
     await updatePotentialImage(id, { isPrimary: true }, token);
   } catch (error) {
     redirectIfExpired(error);
@@ -303,27 +289,22 @@ export async function setPrimaryImageAction(formData: FormData) {
   redirect(`/admin/potensi/${potentialSlug}?pesan=gambar-utama`);
 }
 
+/**
+ * Menghapus satu gambar.
+ *
+ * Tidak ada pengangkatan pengganti di sini: menghapus gambar utama membuat
+ * backend mengangkat gambar teratas berikutnya, dalam transaksi yang sama.
+ */
 export async function deletePotentialImageAction(formData: FormData) {
   const { token } = await requireSession();
 
   const id = String(formData.get("id") ?? "");
-  const potentialId = String(formData.get("potentialId") ?? "");
   const potentialSlug = String(formData.get("potentialSlug") ?? "");
 
   if (!id) redirect(`/admin/potensi/${potentialSlug}`);
 
   try {
     await deletePotentialImage(id, token);
-
-    // Kalau yang dihapus adalah gambar utama, gambar tersisa yang pertama
-    // menggantikannya — kalau tidak, potensi tanpa sampul akan kehilangan
-    // gambarnya di kartu daftar padahal fotonya masih ada.
-    if (potentialId) {
-      const remaining = await getPotentialImages(potentialId);
-      if (remaining.length > 0 && !remaining.some((image) => image.isPrimary)) {
-        await updatePotentialImage(remaining[0].id, { isPrimary: true }, token);
-      }
-    }
   } catch (error) {
     redirectIfExpired(error);
     throw error;

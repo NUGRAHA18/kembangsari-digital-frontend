@@ -13,7 +13,6 @@ import {
   createUmkmImage,
   deleteUmkm,
   deleteUmkmImage,
-  getUmkmImages,
   updateUmkm,
   updateUmkmImage,
   type UmkmInput,
@@ -197,9 +196,8 @@ export async function deleteUmkmAction(formData: FormData) {
 /**
  * Mengunggah gambar UMKM, lalu mencatat masing-masing sebagai record gambar.
  *
- * Gambar pertama sebuah UMKM otomatis menjadi gambar utama: kartu di halaman
- * daftar hanya menampilkan gambar `isPrimary`, jadi tanpa penanda itu UMKM yang
- * sudah berfoto tetap tampil sebagai kotak kosong.
+ * `isPrimary` tidak dikirim sama sekali: backend menandai gambar pertama
+ * sebuah record sebagai utama dengan sendirinya, dalam transaksi yang sama.
  */
 export async function addUmkmImagesAction(
   _prevState: FormState,
@@ -228,14 +226,10 @@ export async function addUmkmImagesAction(
   }
 
   try {
-    const existing = await getUmkmImages(umkmId);
-    let hasPrimary = existing.some((image) => image.isPrimary);
-
     const uploaded = await uploadImages(files, "umkm", token);
 
     for (const item of uploaded) {
-      await createUmkmImage({ url: item.url, umkmId, isPrimary: !hasPrimary }, token);
-      hasPrimary = true;
+      await createUmkmImage({ url: item.url, umkmId }, token);
     }
   } catch (error) {
     redirectIfExpired(error);
@@ -269,28 +263,18 @@ export async function updateUmkmImageAction(formData: FormData) {
 /**
  * Menjadikan satu gambar sebagai gambar utama.
  *
- * Penandaan lama dilepas satu per satu karena backend tidak melakukannya:
- * `isPrimary` hanya disimpan apa adanya, sehingga dua gambar bisa sama-sama
- * bertanda utama dan kartu UMKM akan menampilkan salah satunya secara acak.
+ * Satu permintaan saja: backend melepas penanda gambar lain dalam transaksi
+ * yang sama. Untuk album delapan foto ini dulu sembilan permintaan.
  */
 export async function setPrimaryImageAction(formData: FormData) {
   const { token } = await requireSession();
 
   const id = String(formData.get("id") ?? "");
-  const umkmId = String(formData.get("umkmId") ?? "");
   const umkmSlug = String(formData.get("umkmSlug") ?? "");
 
-  if (!id || !umkmId) redirect(`/admin/umkm/${umkmSlug}`);
+  if (!id) redirect(`/admin/umkm/${umkmSlug}`);
 
   try {
-    const images = await getUmkmImages(umkmId);
-
-    for (const image of images) {
-      if (image.isPrimary && image.id !== id) {
-        await updateUmkmImage(image.id, { isPrimary: false }, token);
-      }
-    }
-
     await updateUmkmImage(id, { isPrimary: true }, token);
   } catch (error) {
     redirectIfExpired(error);
@@ -301,27 +285,22 @@ export async function setPrimaryImageAction(formData: FormData) {
   redirect(`/admin/umkm/${umkmSlug}?pesan=gambar-utama`);
 }
 
+/**
+ * Menghapus satu gambar.
+ *
+ * Tidak ada pengangkatan pengganti di sini: menghapus gambar utama membuat
+ * backend mengangkat gambar teratas berikutnya, dalam transaksi yang sama.
+ */
 export async function deleteUmkmImageAction(formData: FormData) {
   const { token } = await requireSession();
 
   const id = String(formData.get("id") ?? "");
-  const umkmId = String(formData.get("umkmId") ?? "");
   const umkmSlug = String(formData.get("umkmSlug") ?? "");
 
   if (!id) redirect(`/admin/umkm/${umkmSlug}`);
 
   try {
     await deleteUmkmImage(id, token);
-
-    // Kalau yang dihapus adalah gambar utama, gambar tersisa yang pertama
-    // menggantikannya — kalau tidak, kartu UMKM ini akan kehilangan gambarnya
-    // padahal fotonya masih ada.
-    if (umkmId) {
-      const remaining = await getUmkmImages(umkmId);
-      if (remaining.length > 0 && !remaining.some((image) => image.isPrimary)) {
-        await updateUmkmImage(remaining[0].id, { isPrimary: true }, token);
-      }
-    }
   } catch (error) {
     redirectIfExpired(error);
     throw error;

@@ -1,5 +1,11 @@
-import { del, getList, getOne, getPaginated, patch, post } from "@/lib/api";
-import type { Potential, PotentialCategory, PotentialImage, PotentialQuery } from "@/types/api";
+import { del, getOne, getPaginated, patch, post } from "@/lib/api";
+import type {
+  AdminPotentialQuery,
+  Potential,
+  PotentialCategory,
+  PotentialImage,
+  PotentialQuery,
+} from "@/types/api";
 
 /**
  * Potensi padukuhan yang aktif.
@@ -22,8 +28,11 @@ export function getPotentialBySlug(slug: string) {
 // DASHBOARD ADMIN
 // ============================================================
 
-/** Seluruh potensi termasuk yang nonaktif. `GET /potential` menjawab 401 tanpa token. */
-export function getAllPotentials(query: PotentialQuery, token: string) {
+/**
+ * Seluruh potensi termasuk yang nonaktif. `GET /potential` menjawab 401 tanpa
+ * token. `isActive` menyaringnya, dan bisa digabung dengan `category`.
+ */
+export function getAllPotentials(query: AdminPotentialQuery, token: string) {
   return getPaginated<Potential>("/potential", query, { token });
 }
 
@@ -61,11 +70,10 @@ export function deletePotential(id: string, token: string) {
 }
 
 // ---------- Gambar potensi ----------
-
-/** ARRAY POLOS, bukan `{ data, meta }`. */
-export function getPotentialImages(potentialId: string) {
-  return getList<PotentialImage>(`/potential/image/potential/${potentialId}`);
-}
+//
+// Seperti pada UMKM, `GET /potential/image/potential/:id` tidak dibungkus:
+// backend menjaga sendiri gambar utamanya, dan daftar gambar sudah ikut di
+// `GET /potential/:slug`.
 
 export function getPotentialImageById(id: string) {
   return getOne<PotentialImage>(`/potential/image/${id}`);
@@ -75,6 +83,7 @@ export interface PotentialImageInput {
   url: string;
   potentialId: string;
   caption?: string | null;
+  /** Boleh tidak dikirim: gambar pertama otomatis menjadi utama. */
   isPrimary?: boolean;
 }
 
@@ -83,9 +92,8 @@ export function createPotentialImage(input: PotentialImageInput, token: string) 
 }
 
 /**
- * Seperti pada UMKM, backend tidak menjaga agar gambar utama hanya satu —
- * `isPrimary` sekadar disimpan apa adanya. Yang menjaganya adalah pemanggil;
- * lihat `setPrimaryImageAction` di modul potensi dashboard.
+ * Seperti pada UMKM: backend menjaga agar gambar utama tepat satu, jadi cukup
+ * satu permintaan `isPrimary: true`.
  */
 export function updatePotentialImage(
   id: string,

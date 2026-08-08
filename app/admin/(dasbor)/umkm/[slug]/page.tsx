@@ -107,7 +107,7 @@ export default async function ManageUmkmPage({ params, searchParams }: Props) {
           <ul className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {images.map((image) => (
               <li key={image.id}>
-                <ImageCard image={image} umkmId={umkm.id} umkmSlug={umkm.slug} />
+                <ImageCard image={image} umkmSlug={umkm.slug} />
               </li>
             ))}
           </ul>
@@ -130,15 +130,7 @@ export default async function ManageUmkmPage({ params, searchParams }: Props) {
 }
 
 /** Form-form kecil ini dirender di server; lihat alasannya di modul galeri. */
-function ImageCard({
-  image,
-  umkmId,
-  umkmSlug,
-}: {
-  image: UMKMImage;
-  umkmId: string;
-  umkmSlug: string;
-}) {
+function ImageCard({ image, umkmSlug }: { image: UMKMImage; umkmSlug: string }) {
   const captionId = `caption-${image.id}`;
 
   return (
@@ -160,7 +152,6 @@ function ImageCard({
         ) : (
           <form action={setPrimaryImageAction}>
             <input type="hidden" name="id" value={image.id} />
-            <input type="hidden" name="umkmId" value={umkmId} />
             <input type="hidden" name="umkmSlug" value={umkmSlug} />
             <Button type="submit" size="sm" variant="ghost" className="px-0 text-muted">
               <Star className="size-4" aria-hidden="true" />

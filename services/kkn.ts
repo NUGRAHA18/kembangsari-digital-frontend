@@ -1,5 +1,11 @@
 import { del, getOne, getPaginated, patch, post } from "@/lib/api";
-import type { KKNActivity, KKNProgram, KKNSubProgram, PaginationQuery } from "@/types/api";
+import type {
+  AdminKknProgramQuery,
+  KKNActivity,
+  KKNProgram,
+  KKNSubProgram,
+  PaginationQuery,
+} from "@/types/api";
 
 /** Program KKN yang aktif. */
 export function getActiveKknPrograms(query: PaginationQuery = {}) {
@@ -27,12 +33,14 @@ export function getKknActivitiesByProgram(programId: string, query: PaginationQu
 
 /**
  * Seluruh program termasuk yang nonaktif. `GET /kkn/program` menjawab 401 tanpa
- * token, dan hanya menerima page, limit, dan search — tidak ada penyaring
- * sub-program di sini. `/kkn/program/sub/:subProgram` bukan penggantinya:
- * endpoint itu menyaring yang aktif saja, jadi program tersembunyi akan lenyap
- * dari dashboard justru saat pengelola mencarinya.
+ * token.
+ *
+ * Menerima `subProgram` dan `isActive` sekaligus — itu yang tidak bisa
+ * dilakukan `/kkn/program/sub/:subProgram`, dan sebabnya endpoint terpisah itu
+ * tidak dipakai dashboard meski ia ikut menampilkan program nonaktif untuk
+ * pemanggil bertoken.
  */
-export function getAllKknPrograms(query: PaginationQuery, token: string) {
+export function getAllKknPrograms(query: AdminKknProgramQuery, token: string) {
   return getPaginated<KKNProgram>("/kkn/program", query, { token });
 }
 
