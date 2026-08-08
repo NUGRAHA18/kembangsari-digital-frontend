@@ -8,6 +8,10 @@
  * `Date`. JSON tidak punya tipe tanggal, jadi yang sampai ke frontend adalah
  * string ISO 8601 (contoh: "2026-08-01T09:30:58.790Z"). Bungkus dengan
  * `new Date(...)` sendiri kalau perlu diolah.
+ *
+ * Berkas ini disusun manual, sedangkan `openapi.json` dihasilkan langsung
+ * dari kode backend (`npm run openapi`). Kalau keduanya berbeda, yang
+ * benar adalah `openapi.json`.
  */
 
 // ============================================================
@@ -51,7 +55,7 @@ export interface PaginationQuery {
 }
 
 /**
- * Query untuk GET /news/published dan GET /news.
+ * Query untuk GET /news/published (publik).
  * Catatan: sejak backend memakai forbidNonWhitelisted, parameter di luar
  * daftar ini dijawab 400, bukan diabaikan diam-diam.
  */
@@ -60,52 +64,80 @@ export interface NewsQuery extends PaginationQuery {
   categoryId?: string;
 }
 
-/** Query untuk GET /potential/active dan GET /potential. */
+/** Query untuk GET /potential/active (publik). */
 export interface PotentialQuery extends PaginationQuery {
   category?: PotentialCategory;
 }
 
+/** Query untuk GET /gallery/album, /gallery/item/*, /agenda, /umkm/active, /announcement/active. */
+export type SimpleListQuery = PaginationQuery;
+
+/** Query untuk GET /kkn/program/active (publik). */
+export interface KKNProgramQuery extends PaginationQuery {
+  subProgram?: KKNSubProgram;
+}
+
 // ------------------------------------------------------------
-// SARINGAN STATUS — hanya di daftar BERTOKEN
+// Query khusus daftar bertoken (dashboard)
 //
-// Tidak dikirim berarti "semua". Nilai selain true/false dijawab 400 dengan
-// pesan yang menyebut nama parameternya.
+// Saringan status sengaja HANYA ada di daftar bertoken. Mengirimnya ke
+// endpoint publik pasangannya dijawab 400 — di sana ia tidak punya arti.
 //
-// Jangan mengirimnya ke versi tersaring (`/news/published`,
-// `/umkm/active`, dan seterusnya): di sana parameternya tidak punya arti dan
-// forbidNonWhitelisted menjawabnya 400 — itu sebabnya tipe query publik dan
-// admin dipisah, bukan disatukan dengan field opsional.
+// Di semua saringan status berlaku hal yang sama: tidak dikirim berarti
+// "semua". Jadi untuk menghitung berapa yang draf/disembunyikan, kirim
+// `false` lalu baca `meta.total` — tidak perlu mengunduh seluruh data.
 // ------------------------------------------------------------
 
-/** Untuk modul berstatus terbit/draf: berita dan monografi. */
-export interface PublishedFilter {
+/** Query untuk GET /news (bertoken). */
+export interface AdminNewsQuery extends NewsQuery {
+  /** true = sudah terbit, false = masih draf, tidak dikirim = semua. */
   published?: boolean;
 }
 
-/** Untuk modul berstatus tampil/disembunyikan. */
-export interface ActiveFilter {
+/**
+ * Query untuk GET /monography (bertoken).
+ * `search` ikut diterima tetapi tidak berpengaruh — monografi tidak punya
+ * kolom teks untuk dicari.
+ */
+export interface AdminMonographyQuery extends PaginationQuery {
+  /** true = sudah terbit, false = belum, tidak dikirim = semua. */
+  published?: boolean;
+}
+
+/** Query untuk GET /announcement (bertoken). */
+export interface AdminAnnouncementQuery extends PaginationQuery {
+  /** true = tampil, false = disembunyikan, tidak dikirim = semua. */
   isActive?: boolean;
 }
 
-export interface AdminNewsQuery extends NewsQuery, PublishedFilter {}
-
-export interface AdminAnnouncementQuery extends PaginationQuery, ActiveFilter {}
-
-export interface AdminUmkmQuery extends PaginationQuery, ActiveFilter {}
-
-export interface AdminPotentialQuery extends PotentialQuery, ActiveFilter {}
-
-/** `/monography` tidak punya kolom teks untuk dicari; `search` sengaja tidak ada. */
-export interface AdminMonographyQuery extends Omit<PaginationQuery, 'search'>, PublishedFilter {}
-
-/** Saringan kategori marker kini ada di daftar utama, bukan endpoint terpisah. */
-export interface AdminMarkerQuery extends PaginationQuery, ActiveFilter {
-  categoryId?: string;
+/** Query untuk GET /umkm (bertoken). */
+export interface AdminUmkmQuery extends PaginationQuery {
+  isActive?: boolean;
 }
 
-/** Sama untuk program KKN: sub-program bisa digabung dengan saringan status. */
-export interface AdminKknProgramQuery extends PaginationQuery, ActiveFilter {
-  subProgram?: KKNSubProgram;
+/** Query untuk GET /potential (bertoken). */
+export interface AdminPotentialQuery extends PotentialQuery {
+  isActive?: boolean;
+}
+
+/**
+ * Query untuk GET /kkn/program (bertoken).
+ * Menggantikan GET /kkn/program/sub/:subProgram untuk kebutuhan dashboard:
+ * di sini saringan sub-program bisa digabung dengan saringan status.
+ */
+export interface AdminKKNProgramQuery extends KKNProgramQuery {
+  isActive?: boolean;
+}
+
+/**
+ * Query untuk GET /maps/marker (bertoken).
+ * Menggantikan GET /maps/marker/category/:categoryId untuk kebutuhan
+ * dashboard, dengan alasan yang sama seperti di atas.
+ */
+export interface AdminMarkerQuery extends PaginationQuery {
+  /** Saring berdasarkan id kategori (ambil dari GET /maps/category). */
+  categoryId?: string;
+  isActive?: boolean;
 }
 
 // ============================================================
@@ -247,6 +279,11 @@ export interface Announcement {
 // PROFIL PADUKUHAN
 // ============================================================
 
+/**
+ * Dibaca dengan slug (`GET /profile/:slug`). Sejak putaran perbaikan kedua,
+ * `PATCH` dan `DELETE` menerima id **maupun** slug pada URL yang sama, jadi
+ * form profil tidak perlu lagi membawa id sebagai input tersembunyi.
+ */
 export interface Profile {
   id: string;
   slug: string;
@@ -321,12 +358,11 @@ export interface MapCategory {
   createdAt: string;
   updatedAt: string;
   /**
-   * Hadir pada GET /maps/category dan /maps/category/:id — termasuk marker
-   * yang disembunyikan.
+   * Hadir pada GET /maps/category dan GET /maps/category/:id.
    *
-   * PERHATIAN, berbeda dari `Category._count.news`: menghapus kategori peta
-   * TIDAK ditolak backend, ia menghapus seluruh marker di dalamnya. Angka ini
-   * dipakai untuk memperingatkan, bukan untuk mematikan tombol hapus.
+   * Menghapus kategori peta ikut menghapus seluruh markernya — jadi angka
+   * ini untuk memperingatkan pengelola, bukan untuk mematikan tombol hapus
+   * seperti pada kategori berita.
    */
   _count?: { markers: number };
 }
@@ -382,21 +418,19 @@ export interface GalleryItem {
 // UMKM
 // ============================================================
 
-/**
- * Gambar UMKM.
- *
- * `isPrimary` dijaga backend dalam satu transaksi: gambar pertama sebuah
- * record otomatis menjadi utama, menandai yang baru melepas yang lama, dan
- * menghapus yang utama mengangkat gambar teratas berikutnya. Jaminannya —
- * selama sebuah record punya gambar, tepat satu di antaranya bertanda utama.
- * Frontend tidak perlu (dan tidak boleh) ikut menjaganya.
- *
- * Melepas penanda pada satu-satunya gambar dijawab 400.
- */
 export interface UMKMImage {
   id: string;
   url: string;
   caption: string | null;
+  /**
+   * Dijaga backend, tidak perlu ditambal dari frontend:
+   * - gambar pertama sebuah UMKM otomatis menjadi utama
+   * - mengirim `isPrimary: true` melepas penanda gambar lain dalam satu transaksi
+   * - menghapus gambar utama mengangkat gambar teratas berikutnya
+   * - mengirim `isPrimary: false` pada satu-satunya gambar dijawab 400
+   *
+   * Artinya: selama sebuah UMKM punya gambar, tepat satu di antaranya utama.
+   */
   isPrimary: boolean;
   umkmId: string;
   createdAt: string;
@@ -435,11 +469,11 @@ export interface UMKM {
 // POTENSI PADUKUHAN
 // ============================================================
 
-/** Sama seperti `UMKMImage`: `isPrimary` dijaga backend, bukan frontend. */
 export interface PotentialImage {
   id: string;
   url: string;
   caption: string | null;
+  /** Dijaga backend dengan aturan yang sama persis seperti `UMKMImage.isPrimary`. */
   isPrimary: boolean;
   potentialId: string;
   createdAt: string;
@@ -512,23 +546,24 @@ export interface Setting {
 }
 
 /**
- * Badan `PATCH /settings/:key`. `key` sudah ada di URL — mengirimnya ikut di
- * badan dijawab 400 oleh forbidNonWhitelisted.
- *
- * `value` SELALU teks, termasuk `map_zoom` ("15") dan `map_latitude`
- * ("-7.795580"). Frontend yang mengubahnya menjadi angka bila perlu.
+ * Badan permintaan `PATCH /settings/:key`. Hanya `value` — `key` sudah ada
+ * di URL, dan mengirimnya lagi di badan permintaan dijawab 400.
  */
 export interface UpdateSettingBody {
+  /**
+   * Selalu teks. Angka dan koordinat pun dikirim sebagai teks,
+   * misalnya "15" atau "-7.795580".
+   */
   value: string;
 }
 
 /**
- * Key yang datang dari seed backend.
+ * Key yang tersedia dari seed backend.
  *
- * Bukan daftar tertutup: `PATCH /settings/:key` bersifat upsert, jadi key baru
- * (`tiktok`, misalnya) tinggal dikirim dan akan dibuatkan. Yang tetap menjawab
- * 404 adalah `GET /settings/:key` untuk key yang belum ada, dan `DELETE`
- * memang tidak disediakan — mengosongkan `value` adalah caranya.
+ * Daftar ini tidak tertutup: `PATCH /settings/:key` bersifat **upsert**,
+ * jadi key yang belum ada akan dibuatkan, bukan dijawab 404. Menambah key
+ * baru (misalnya "tiktok") cukup lewat endpoint itu — tanpa seed baru dan
+ * tanpa perlu meminta tambahan ke tim backend.
  */
 export type SettingKey =
   | 'site_name'
@@ -563,6 +598,14 @@ export type UploadFolder =
   | 'pengaturan'
   | 'umum';
 
+/**
+ * Sejak putaran perbaikan kedua, frontend **tidak perlu** membersihkan
+ * bucket sendiri. Backend menghapus berkasnya bersamaan dengan record-nya,
+ * dan juga saat sebuah gambar diganti dengan yang lain.
+ *
+ * `DELETE /upload` kini hanya untuk satu keadaan: berkas yang terlanjur
+ * terunggah tetapi batal dipakai karena pengelola menutup form.
+ */
 export interface UploadedFile {
   /** Path objek di dalam bucket, dipakai untuk menghapus. */
   path: string;

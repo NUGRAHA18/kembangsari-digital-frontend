@@ -1,6 +1,6 @@
 import { del, getOne, getPaginated, patch, post } from "@/lib/api";
 import type {
-  AdminKknProgramQuery,
+  AdminKKNProgramQuery,
   KKNActivity,
   KKNProgram,
   KKNSubProgram,
@@ -40,7 +40,7 @@ export function getKknActivitiesByProgram(programId: string, query: PaginationQu
  * tidak dipakai dashboard meski ia ikut menampilkan program nonaktif untuk
  * pemanggil bertoken.
  */
-export function getAllKknPrograms(query: AdminKknProgramQuery, token: string) {
+export function getAllKknPrograms(query: AdminKKNProgramQuery, token: string) {
   return getPaginated<KKNProgram>("/kkn/program", query, { token });
 }
 

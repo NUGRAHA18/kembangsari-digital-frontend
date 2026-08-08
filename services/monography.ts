@@ -31,10 +31,12 @@ export function getMonographyByYear(year: number) {
  * Seluruh tahun termasuk yang belum terbit. `GET /monography` menjawab 401
  * tanpa token; `published` menyaringnya.
  *
- * `search` sengaja tidak ada di tipenya: backend masih menerimanya tetapi
- * mengabaikannya diam-diam, dan modul ini memang tidak punya kolom teks.
+ * `search` dibuang dari tipenya di sini, walau `AdminMonographyQuery` masih
+ * memuatnya: backend menerimanya tetapi mengabaikannya diam-diam, dan sudah
+ * menawarkan untuk menolaknya `400` kalau ternyata tidak ada yang mengirim.
+ * Penyempitan ini yang menjaga jawaban itu tetap benar.
  */
-export function getAllMonography(query: AdminMonographyQuery, token: string) {
+export function getAllMonography(query: Omit<AdminMonographyQuery, "search">, token: string) {
   return getPaginated<PopulationStat>("/monography", query, { token });
 }
 

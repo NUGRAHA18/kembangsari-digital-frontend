@@ -83,6 +83,8 @@ Field `thumbnail`, `image`, dan `url` berisi string URL. Untuk mengunggah, prose
 
 Saat mengirim `FormData`, **jangan** menyetel header `Content-Type` — browser perlu menuliskannya sendiri lengkap dengan boundary.
 
+Penghapusan berkas **bukan tugas frontend**. Backend membuang objek di bucket bersamaan dengan record-nya, dan juga saat sebuah gambar diganti lewat `PATCH`. `DELETE /upload` hanya untuk berkas yang terlanjur terunggah lalu batal dipakai.
+
 ### 4. Semua tanggal adalah string ISO
 
 `createdAt`, `startDate`, `date`, dan sejenisnya bertipe `string`, bukan `Date`. Bungkus sendiri kalau perlu diolah.
@@ -144,11 +146,16 @@ apa pun di frontend** — cukup satu `PATCH`. Melepas penanda pada satu-satunya 
 Berkas selain dua yang teratas **sengaja tidak ikut di repo publik ini** (lihat `.gitignore`)
 dan dibagikan lewat jalur internal. Semuanya tetap ada di komputer masing-masing anggota tim.
 
-⚠️ **`openapi.json` di repo ini masih versi lama** (0 respons berskema, 32 dari 35 DTO
-kosong). Versi baru — 103 respons berskema, 0 DTO kosong — ada di `frontend-handoff/`
-milik backend dan **belum disalin ke sini**. Salin ulang seluruh isi `frontend-handoff/`
-sebelum menambah query atau menebak bentuk respons. Backend bisa membangkitkannya ulang
-kapan saja dengan `npm run openapi`, tanpa database maupun server yang menyala.
+`openapi.json` kini memuat kontrak penuh: **103 respons berskema, 0 DTO kosong**, lengkap
+dengan keterangan dan contoh per properti. Ia dihasilkan langsung dari kode backend, jadi
+**kalau isinya berbeda dari `types/api.ts` yang disusun manual, yang benar `openapi.json`.**
+
+Cara memperbaruinya kalau skema backend berubah: jalankan `npm run openapi` di repo backend
+— tanpa database, Supabase, maupun server yang menyala — lalu salin `openapi.json`,
+`types/api.ts`, dan `FRONTEND_GUIDE.md` dari `frontend-handoff/` ke sini. **Jangan menyalin
+`CLAUDE.md` dari paket itu**: yang di sana adalah versi awal yang masih menyebut identitas
+visual belum ditentukan dan dashboard belum dirancang, dan akan memundurkan berkas ini jauh.
+Perubahan aturannya disalin manual.
 
 Kalau butuh tahu bentuk data suatu endpoint, baca `types/api.ts` lebih dulu sebelum menebak. Kalau backend sedang jalan, Swagger tersedia di http://localhost:3000/docs.
 
@@ -446,8 +453,6 @@ Modul berita adalah contoh yang diikuti modul berikutnya. Polanya:
 ## Yang belum dikerjakan
 
 - Seluruh daftar kebutuhan sudah tergarap, termasuk QR Code monografi (FR-052).
-- **Salin ulang `frontend-handoff/` dari backend.** `openapi.json` di repo ini masih versi
-  lama; `FRONTEND_GUIDE.md` juga belum ikut diperbarui.
 - **Belum ada satu pun modul dashboard yang diuji dengan backend hidup.** Yang paling layak
   ditekan tombolnya lebih dulu — bukan lagi karena kontraknya meragukan, melainkan karena
   butir yang bergantung pada transaksi memang perlu dijalankan:
@@ -456,6 +461,7 @@ Modul berita adalah contoh yang diikuti modul berikutnya. Polanya:
   - saringan status di ketujuh daftar (nilai boolean dikirim sebagai `"true"`/`"false"`
     lewat query string oleh `buildUrl`);
   - simpan profil setelah penandanya berpindah dari `id` ke slug.
-- **Untuk tim backend:** frontend **tidak pernah** mengirim `?search=` ke `/monography`
-  (`AdminMonographyQuery` dan `getPublishedMonography` sama-sama membuangnya), jadi parameter
-  itu aman ditolak `400` seperti yang ditawarkan di B-2.
+- **Untuk tim backend:** frontend **tidak pernah** mengirim `?search=` ke `/monography`.
+  `AdminMonographyQuery` di paket handoff masih memuatnya, tetapi `services/monography.ts`
+  menyempitkannya dengan `Omit<…, "search">` di kedua fungsinya. Jadi parameter itu aman
+  ditolak `400` seperti yang ditawarkan di B-2.
