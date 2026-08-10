@@ -33,9 +33,21 @@ Backend dijalankan terpisah dari foldernya sendiri (`npm run start:dev`). Kalau 
 NEXT_PUBLIC_API_URL=http://localhost:3000/api/v1
 ```
 
-Jangan pernah menulis base URL langsung di kode. Backend akan pindah ke Render/Railway nanti, dan saat itu hanya baris ini yang berubah.
+Jangan pernah menulis base URL langsung di kode. Saat backend pindah alamat, hanya baris ini yang berubah.
 
 Frontend **tidak boleh** menyimpan kredensial Supabase apa pun. Semua akses data lewat backend.
+
+`NEXT_PUBLIC_API_URL` satu-satunya yang wajib ada — `lib/api.ts` melempar galat saat dimuat kalau kosong, dan build ikut gagal di `/sitemap.xml` yang di-prerender. `NEXT_PUBLIC_SITE_URL` punya nilai cadangan `http://localhost:3001` di semua pemakaiannya.
+
+## Deploy
+
+**Vercel**, dan bukan sekadar preferensi: 39 dari ~50 rute dirender saat diminta, ada `middleware.ts`, seluruh penulisan lewat Server Action, dan `next/image` mengoptimalkan gambar Supabase. Portal ini butuh server Node.js yang hidup — shared hosting cPanel tidak bisa menjalankannya, jadi yang dipakai dari hosting hanya nama domainnya lewat DNS.
+
+`git push` ke `main` menerbitkan sendiri lewat integrasi Git milik Vercel; setiap pull request dapat URL pratinjau. `.github/workflows/ci.yml` menjalankan typecheck, lint, dan build sebagai penjaga — **CI sengaja tidak ikut men-deploy**, supaya tidak ada dua jalur yang mengerjakan hal sama.
+
+Langkah lengkapnya, termasuk mengarahkan domain dan daftar gejala-penyebab, ada di `DEPLOY.md`.
+
+Satu hal yang mudah terlewat: **seluruh pemanggilan API terjadi di server**, tidak ada satu pun Client Component yang memanggil `lib/api.ts` atau `services/`. Jadi frontend→backend adalah server-ke-server dan **CORS tidak pernah ikut bermain**. `CORS_ORIGINS` di backend adalah jaring pengaman untuk nanti, bukan syarat portal berjalan.
 
 ## Aturan yang tidak bisa ditawar
 

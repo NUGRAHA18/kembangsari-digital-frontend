@@ -1,0 +1,66 @@
+# Penjaga mutu: typecheck, lint, dan build di setiap push maupun pull request.
+#
+# Yang TIDAK dikerjakan di sini adalah deploy. Vercel menyambung sendiri ke
+# repository ini lewat integrasi Git-nya — setiap pull request mendapat URL
+# pratinjau, dan merge ke `main` naik ke production. Menambahkan langkah deploy
+# di sini berarti menyimpan tiga rahasia (token, org id, project id) dan
+# memelihara dua jalur yang mengerjakan hal yang sama.
+#
+# Guna alur ini: kalau build gagal, gagalnya terlihat di pull request sebelum
+# Vercel mencoba menerbitkannya.
+
+name: CI
+
+on:
+  push:
+  pull_request:
+
+# Push beruntun ke cabang yang sama membatalkan run sebelumnya. Tanpa ini,
+# antrean menumpuk dan yang paling lama menunggu justru commit terbaru.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  periksa:
+    name: Typecheck, lint, build
+    runs-on: ubuntu-latest
+
+    env:
+      # `lib/api.ts` melempar galat saat dimuat kalau variabel ini kosong, dan
+      # `/sitemap.xml` di-prerender saat build — jadi tanpa isian apa pun build
+      # gagal di runner yang tidak punya `.env.local`.
+      #
+      # Nilainya sengaja bukan URL backend yang sebenarnya: tidak ada satu pun
+      # permintaan jaringan yang harus berhasil agar build lolos. Halaman yang
+      # mengambil data saat build sudah menangani backend mati sendiri —
+      # `fetchOrNull` di sitemap dan `getSettingsMap` di layout. Yang diuji di
+      # sini kodenya, bukan datanya.
+      NEXT_PUBLIC_API_URL: http://localhost:3000/api/v1
+      NEXT_PUBLIC_SITE_URL: http://localhost:3001
+
+    steps:
+      - name: Ambil kode
+        uses: actions/checkout@v4
+
+      - name: Siapkan Node
+        uses: actions/setup-node@v4
+        with:
+          # Menyamai versi yang dipakai tim (v22) dan yang dipakai Vercel.
+          node-version: 22
+          cache: npm
+
+      # `npm ci` menuruti package-lock.json apa adanya dan gagal kalau keduanya
+      # berbeda — itu yang diinginkan di CI, tidak seperti `npm install` yang
+      # diam-diam memperbarui lockfile.
+      - name: Pasang dependensi
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
