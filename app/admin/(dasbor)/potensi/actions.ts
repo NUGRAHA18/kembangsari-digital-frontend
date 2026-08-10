@@ -6,7 +6,7 @@ import { POTENTIAL_CATEGORIES } from "@/features/potential/categories";
 import { ApiRequestError, ApiUnreachableError } from "@/lib/api";
 import type { FormState } from "@/lib/form-state";
 import { validateImage } from "@/lib/image";
-import { requireSession } from "@/lib/session";
+import { requireSession, SESSION_EXPIRED_PATH } from "@/lib/session";
 import { slugify } from "@/lib/slug";
 import {
   createPotential,
@@ -44,7 +44,7 @@ function toMessage(error: unknown): string {
 
 function redirectIfExpired(error: unknown) {
   if (error instanceof ApiRequestError && error.isUnauthorized) {
-    redirect("/admin/keluar?sesi=habis");
+    redirect(SESSION_EXPIRED_PATH);
   }
 }
 

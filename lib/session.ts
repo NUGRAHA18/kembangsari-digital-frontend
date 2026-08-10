@@ -31,6 +31,15 @@ export interface Session {
 export const ADMIN_HOME = "/admin";
 export const LOGIN_PATH = "/admin/login";
 
+/**
+ * Tujuan setiap `401` dari backend.
+ *
+ * Cookie basinya tidak dibuang di sini melainkan oleh `proxy.ts` saat
+ * halaman ini dibuka — Server Component memang tidak boleh menghapus cookie,
+ * dan rute `GET` khusus untuk itu justru berbahaya (lihat proxy.ts).
+ */
+export const SESSION_EXPIRED_PATH = `${LOGIN_PATH}?sesi=habis`;
+
 export async function createSession(login: LoginResponse) {
   const store = await cookies();
 
@@ -65,9 +74,9 @@ export async function getSession(): Promise<Session | null> {
 }
 
 /**
- * Dipakai setiap halaman dashboard. Middleware sudah menyaring pengunjung tanpa
+ * Dipakai setiap halaman dashboard. `proxy.ts` sudah menyaring pengunjung tanpa
  * cookie sebelum sampai ke sini, tetapi pemeriksaan ini tetap ada supaya
- * halaman tidak pernah bergantung pada middleware saja — misalnya kalau
+ * halaman tidak pernah bergantung pada proxy saja — misalnya kalau
  * `matcher`-nya suatu saat diubah.
  */
 export async function requireSession(): Promise<Session> {

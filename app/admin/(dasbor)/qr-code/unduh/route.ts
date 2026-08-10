@@ -16,7 +16,7 @@ const TARGET_PATH = "/monografi";
  * Word dan dikirim lewat WhatsApp, sedangkan SVG tetap tajam pada cetakan
  * sebesar apa pun.
  *
- * Aksesnya dijaga `middleware.ts` bersama seluruh `/admin`. Isinya sendiri
+ * Aksesnya dijaga `proxy.ts` bersama seluruh `/admin`. Isinya sendiri
  * bukan rahasia — hanya alamat halaman publik.
  */
 export async function GET(request: NextRequest) {

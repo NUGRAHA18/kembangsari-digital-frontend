@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { ApiRequestError, ApiUnreachableError } from "@/lib/api";
 import { validateImage } from "@/lib/image";
-import { requireSession } from "@/lib/session";
+import { requireSession, SESSION_EXPIRED_PATH } from "@/lib/session";
 import { slugify } from "@/lib/slug";
 import { createNews, deleteNews, updateNews, type NewsInput } from "@/services/news";
 import { uploadImage } from "@/services/upload";
@@ -104,7 +104,7 @@ export async function saveNewsAction(
       await createNews(payload, token);
     }
   } catch (error) {
-    if (error instanceof ApiRequestError && error.isUnauthorized) redirect("/admin/keluar?sesi=habis");
+    if (error instanceof ApiRequestError && error.isUnauthorized) redirect(SESSION_EXPIRED_PATH);
     return { error: toMessage(error), values };
   }
 
@@ -123,7 +123,7 @@ export async function deleteNewsAction(formData: FormData) {
   try {
     await deleteNews(id, token);
   } catch (error) {
-    if (error instanceof ApiRequestError && error.isUnauthorized) redirect("/admin/keluar?sesi=habis");
+    if (error instanceof ApiRequestError && error.isUnauthorized) redirect(SESSION_EXPIRED_PATH);
     throw error;
   }
 

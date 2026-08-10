@@ -12,7 +12,7 @@ setiap permintaan:
 - **39 dari sekitar 50 rute dirender saat diminta**, bukan disiapkan sebagai
   berkas. Berita yang baru ditulis harus langsung terbaca, dan halaman
   dashboard berbeda isinya untuk tiap pengelola.
-- **`middleware.ts`** memeriksa cookie sesi sebelum `/admin` dibuka.
+- **`proxy.ts`** memeriksa cookie sesi sebelum `/admin` dibuka.
 - **Seluruh penyimpanan lewat Server Action** — form dikirim ke server, bukan
   diproses di browser.
 - **`next/image`** memotong dan mengompres gambar Supabase saat diminta.
@@ -24,7 +24,7 @@ Hostingnya tetap boleh dipakai untuk hal lain (email, subdomain lain), dan
 tidak ada yang perlu dihapus dari sana.
 
 Vercel dipilih karena ia yang membuat Next.js — tidak ada yang perlu disetel
-agar Server Action, middleware, dan optimasi gambar bekerja. Paket gratisnya
+agar Server Action, proxy, dan optimasi gambar bekerja. Paket gratisnya
 cukup untuk portal padukuhan.
 
 ---
