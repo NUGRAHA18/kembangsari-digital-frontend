@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { ApiRequestError, ApiUnreachableError } from "@/lib/api";
-import { requireSession } from "@/lib/session";
+import { requireSession, SESSION_EXPIRED_PATH } from "@/lib/session";
 import { slugify } from "@/lib/slug";
 import {
   createMapCategory,
@@ -72,7 +72,7 @@ export async function saveMapCategoryAction(
     }
   } catch (error) {
     if (error instanceof ApiRequestError && error.isUnauthorized) {
-      redirect("/admin/keluar?sesi=habis");
+      redirect(SESSION_EXPIRED_PATH);
     }
     return { error: toMessage(error), values };
   }
@@ -91,7 +91,7 @@ export async function deleteMapCategoryAction(formData: FormData) {
     await deleteMapCategory(id, token);
   } catch (error) {
     if (error instanceof ApiRequestError && error.isUnauthorized) {
-      redirect("/admin/keluar?sesi=habis");
+      redirect(SESSION_EXPIRED_PATH);
     }
     throw error;
   }

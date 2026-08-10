@@ -41,7 +41,7 @@ Frontend **tidak boleh** menyimpan kredensial Supabase apa pun. Semua akses data
 
 ## Deploy
 
-**Vercel**, dan bukan sekadar preferensi: 39 dari ~50 rute dirender saat diminta, ada `middleware.ts`, seluruh penulisan lewat Server Action, dan `next/image` mengoptimalkan gambar Supabase. Portal ini butuh server Node.js yang hidup — shared hosting cPanel tidak bisa menjalankannya, jadi yang dipakai dari hosting hanya nama domainnya lewat DNS.
+**Vercel**, dan bukan sekadar preferensi: 39 dari ~50 rute dirender saat diminta, ada `proxy.ts`, seluruh penulisan lewat Server Action, dan `next/image` mengoptimalkan gambar Supabase. Portal ini butuh server Node.js yang hidup — shared hosting cPanel tidak bisa menjalankannya, jadi yang dipakai dari hosting hanya nama domainnya lewat DNS.
 
 `git push` ke `main` menerbitkan sendiri lewat integrasi Git milik Vercel; setiap pull request dapat URL pratinjau. `.github/workflows/ci.yml` menjalankan typecheck, lint, dan build sebagai penjaga — **CI sengaja tidak ikut men-deploy**, supaya tidak ada dua jalur yang mengerjakan hal sama.
 
@@ -199,6 +199,11 @@ di tujuh daftar dashboard, saringan kategori dipasang di daftar peta dan program
 hapus program KKN dilonggarkan menjadi peringatan, profil disatukan ke slug, dan pesan
 "mintakan ke tim backend" pada pengaturan dicabut karena `PATCH` sudah upsert.
 
+**Sesi dashboard diperbaiki** (10 Agustus 2026): dashboard memantulkan pengelola ke form
+masuk di setiap menu karena prefetch `<Link>` memanggil rute keluar. Tombol keluarnya kini
+Server Action, rute `/admin/keluar` dihapus seluruhnya, dan pembuangan cookie basi pindah ke
+`proxy.ts`. Diuji terhadap build produksi dengan backend tiruan yang menjawab `401`.
+
 **Belum ada satu pun modul dashboard yang diuji dengan backend hidup** — penyesuaian di atas
 mengikuti kontrak yang sudah backend verifikasi sendiri, tetapi alur tulisnya belum ditekan
 tombolnya dari sisi ini.
@@ -209,9 +214,10 @@ tombolnya dari sisi ini.
 app/(publik)/           Portal warga. Layout-nya yang memasang Navbar & Footer.
                         Halaman daftar berada di route group (daftar)/
 app/admin/              Dashboard. (dasbor)/ memakai kerangka bersidebar;
-                        login/ dan keluar/ sengaja di luarnya
+                        login/ sengaja di luarnya
 app/layout.tsx          Hanya dokumen: bahasa, font, tema, metadata
-middleware.ts           Penjaga /admin — memeriksa ada tidaknya cookie sesi
+proxy.ts                Penjaga /admin — memeriksa ada tidaknya cookie sesi,
+                        sekaligus satu-satunya tempat cookie basi dibuang
 components/ui/          Komponen dasar lintas modul
 components/layout/      Navbar, Footer, penyedia tema
 features/<modul>/       Komponen khusus satu modul, termasuk features/admin/
@@ -317,8 +323,24 @@ Modul berita adalah contoh yang diikuti modul berikutnya. Polanya:
   penyimpanannya gagal.
 - **Konfirmasi hapus adalah halaman tersendiri**, bukan `confirm()` — dialog itu hilang
   tanpa JavaScript, dan tombol hapusnya akan langsung menghapus tanpa bertanya.
-- **`401` saat merender** diarahkan ke `/admin/keluar`, yang menghapus cookie basi lalu
-  membawa pengguna ke form masuk. Server Component tidak boleh menghapus cookie sendiri.
+- **Tidak ada satu pun `GET` yang mengakhiri sesi.** Keluar atas kemauan sendiri memakai
+  Server Action `logoutAction` di `(dasbor)/actions.ts`; `401` saat merender diarahkan ke
+  `SESSION_EXPIRED_PATH` (`/admin/login?sesi=habis`) dan **`proxy.ts` yang membuang
+  cookie basinya di sana** — dari permintaan yang diteruskan sekaligus dari browser.
+
+  Rute `/admin/keluar` yang dulu memegang tugas itu sudah dihapus, dan alasannya bukan
+  selera. Sebuah `GET` yang mengakhiri sesi bisa terpanggil tanpa seorang pun mengkliknya:
+  prefetch `<Link>` di production pernah benar-benar melakukannya lewat tombol "Keluar" di
+  bilah atas setiap halaman, sehingga **setiap menu yang diketuk meminta login lagi**.
+  Menyaringnya lewat header tidak menutup lubangnya — dari tiga strategi prefetch Next.js
+  16 hanya satu yang mengirim `Next-Router-Prefetch: 1`, dan yang menentukan, `redirect()`
+  dari Server Component pada navigasi lunak dikirim sebagai `NEXT_REDIRECT` di dalam muatan
+  RSC lalu **router klien yang meminta alamat tujuannya**, dengan `RSC: 1` dan tanpa header
+  prefetch. Jalur `401` yang sah dan prefetch tiba dalam bentuk yang identik.
+
+  Karena itu jangan menambahkan rute keluar dalam bentuk apa pun, dan **jangan memasang
+  `<Link>` ke alamat yang punya efek samping.** Halaman masuk aman memegang tugas ini: ia
+  memang halaman yang sedang dituju pengguna, dan tidak punya apa pun untuk dirusak.
 - **Field opsional yang dikosongkan wajib dikirim `null`, bukan dihilangkan.** `PATCH` hanya
   menyentuh field yang dikirim, jadi menghilangkannya membuat nilai lama bertahan — gambar
   atau waktu selesai yang baru saja dihapus pengelola akan diam-diam kembali. `null` diterima

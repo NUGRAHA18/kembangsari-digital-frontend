@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { ApiRequestError, ApiUnreachableError } from "@/lib/api";
 import { validateImage } from "@/lib/image";
-import { requireSession } from "@/lib/session";
+import { requireSession, SESSION_EXPIRED_PATH } from "@/lib/session";
 import { slugify } from "@/lib/slug";
 import {
   createProfile,
@@ -46,7 +46,7 @@ function toMessage(error: unknown): string {
 
 function redirectIfExpired(error: unknown) {
   if (error instanceof ApiRequestError && error.isUnauthorized) {
-    redirect("/admin/keluar?sesi=habis");
+    redirect(SESSION_EXPIRED_PATH);
   }
 }
 

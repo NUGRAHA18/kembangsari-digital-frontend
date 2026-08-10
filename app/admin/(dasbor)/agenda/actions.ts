@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { ApiRequestError, ApiUnreachableError } from "@/lib/api";
 import { fromDateTimeLocal } from "@/lib/format";
-import { requireSession } from "@/lib/session";
+import { requireSession, SESSION_EXPIRED_PATH } from "@/lib/session";
 import { slugify } from "@/lib/slug";
 import { createAgenda, deleteAgenda, updateAgenda, type AgendaInput } from "@/services/agenda";
 
@@ -89,7 +89,7 @@ export async function saveAgendaAction(
     saved = id ? await updateAgenda(id, payload, token) : await createAgenda(payload, token);
   } catch (error) {
     if (error instanceof ApiRequestError && error.isUnauthorized) {
-      redirect("/admin/keluar?sesi=habis");
+      redirect(SESSION_EXPIRED_PATH);
     }
     return { error: toMessage(error), values };
   }
@@ -110,7 +110,7 @@ export async function deleteAgendaAction(formData: FormData) {
     await deleteAgenda(id, token);
   } catch (error) {
     if (error instanceof ApiRequestError && error.isUnauthorized) {
-      redirect("/admin/keluar?sesi=habis");
+      redirect(SESSION_EXPIRED_PATH);
     }
     throw error;
   }

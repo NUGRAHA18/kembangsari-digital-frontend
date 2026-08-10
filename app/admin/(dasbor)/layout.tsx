@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ExternalLink, Leaf, LogOut } from "lucide-react";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
+import { logoutAction } from "@/app/admin/(dasbor)/actions";
 import { AdminNav } from "@/features/admin/admin-nav";
 import { requireSession } from "@/lib/session";
 
@@ -53,14 +54,20 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
             <ThemeToggle />
 
-            <Link
-              href="/admin/keluar"
-              className="inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-muted transition-colors hover:bg-surface-muted"
-            >
-              <LogOut className="size-5" aria-hidden="true" />
-              <span className="hidden sm:inline">Keluar</span>
-              <span className="sr-only sm:hidden">Keluar</span>
-            </Link>
+            {/* Form, bukan <Link>: di production Next.js mem-prefetch setiap
+                <Link> yang masuk viewport, dan tombol ini ada di bilah atas
+                setiap halaman — prefetch-nya akan menghapus sesi pengelola
+                sebelum ia sempat mengklik apa pun. Lihat actions.ts. */}
+            <form action={logoutAction}>
+              <button
+                type="submit"
+                className="inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-muted transition-colors hover:bg-surface-muted"
+              >
+                <LogOut className="size-5" aria-hidden="true" />
+                <span className="hidden sm:inline">Keluar</span>
+                <span className="sr-only sm:hidden">Keluar</span>
+              </button>
+            </form>
           </div>
         </div>
 

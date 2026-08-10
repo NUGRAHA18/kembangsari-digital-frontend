@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { EMPLOYMENT_KEYS, EMPLOYMENT_LABELS } from "@/features/monography/employment";
 import { OPTIONAL_STAT_FIELDS } from "@/features/monography/fields";
 import { ApiRequestError, ApiUnreachableError } from "@/lib/api";
-import { requireSession } from "@/lib/session";
+import { requireSession, SESSION_EXPIRED_PATH } from "@/lib/session";
 import {
   createMonography,
   deleteMonography,
@@ -149,7 +149,7 @@ export async function saveMonographyAction(
     }
   } catch (error) {
     if (error instanceof ApiRequestError && error.isUnauthorized) {
-      redirect("/admin/keluar?sesi=habis");
+      redirect(SESSION_EXPIRED_PATH);
     }
     return { error: toMessage(error), values };
   }
@@ -168,7 +168,7 @@ export async function deleteMonographyAction(formData: FormData) {
     await deleteMonography(id, token);
   } catch (error) {
     if (error instanceof ApiRequestError && error.isUnauthorized) {
-      redirect("/admin/keluar?sesi=habis");
+      redirect(SESSION_EXPIRED_PATH);
     }
     throw error;
   }
