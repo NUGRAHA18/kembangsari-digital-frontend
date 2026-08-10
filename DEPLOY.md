@@ -45,12 +45,13 @@ bisa memanggil `localhost` di komputer Anda.
 
    | Name | Value |
    |------|-------|
-   | `NEXT_PUBLIC_API_URL` | URL backend + `/api/v1`, misalnya `https://kembangsari-api.onrender.com/api/v1` |
+   | `NEXT_PUBLIC_API_URL` | `https://kembangsari-backend.onrender.com/api/v1` |
    | `NEXT_PUBLIC_SITE_URL` | Kosongkan dulu — diisi setelah domain aktif di Bagian 2 |
 
-   ⚠️ `NEXT_PUBLIC_API_URL` **wajib berakhiran `/api/v1`** dan **tanpa garis
-   miring di ujung**. Salah satu saja meleset, setiap permintaan dijawab `404`
-   dan seluruh halaman tampil sebagai galat.
+   ⚠️ Salin nilainya apa adanya. **Akhiran `/api/v1` wajib** dan **tidak boleh
+   ada garis miring di ujung** — alamat backend tanpa `/api/v1` dijawab `404`,
+   dan seluruh halaman akan tampil sebagai galat. Sudah diperiksa terhadap
+   backend yang berjalan: `/api/v1/health` menjawab `200`, akarnya `404`.
 
 5. **Deploy**. Selesai dalam beberapa menit, dan Anda mendapat alamat sementara
    seperti `kembangsari-digital-frontend.vercel.app`.
@@ -142,11 +143,37 @@ rusak.
 | Gejala | Sebabnya hampir selalu |
 |--------|------------------------|
 | Semua halaman galat, dashboard tidak bisa masuk | `NEXT_PUBLIC_API_URL` salah. Periksa akhiran `/api/v1` dan pastikan tidak ada garis miring di ujung. Buka URL itu langsung di browser — harus menjawab sesuatu, bukan galat koneksi. |
-| Halaman tampil tapi gambar rusak semua | Domain Supabase produksi berbeda dari yang terdaftar di `next.config.ts` → `images.remotePatterns`. Tambahkan hostname-nya di sana, commit, push. |
+| Halaman tampil tapi gambar rusak semua | Domain Supabase produksi berbeda dari yang terdaftar di `next.config.ts` → `images.remotePatterns`. Tambahkan hostname-nya di sana, commit, push. Per 10 Agustus 2026 sudah cocok: data production hanya memakai `ayaxcswxrchhjheamzaz.supabase.co` dan `picsum.photos`, keduanya sudah terdaftar. |
+| Halaman pertama yang dibuka lambat sekali (30–60 detik), berikutnya normal | Backend tidur. Paket gratis Render mematikan instansnya setelah ~15 menit tanpa permintaan. Lihat catatan di bawah. |
 | QR Code masih menunjuk `localhost` | `NEXT_PUBLIC_SITE_URL` belum diisi, atau sudah diisi tetapi belum **Redeploy**. |
 | Tautan di sitemap memakai `localhost` | Sama seperti di atas — `NEXT_PUBLIC_SITE_URL` dibaca saat build. |
 | Domain masih membuka halaman lama hosting | Record `A` untuk `@` masih menunjuk IP hosting, atau DNS belum menyebar. Tunggu, lalu periksa ulang di **Vercel → Settings → Domains**. |
 | Build gagal di Vercel tapi lolos di komputer | Hampir selalu `package-lock.json` tidak ikut ter-commit setelah menambah dependensi. |
+
+## Catatan: backend yang tidur
+
+Kalau backend berjalan di **paket gratis Render**, instansnya dimatikan setelah
+sekitar 15 menit tanpa permintaan, dan permintaan berikutnya harus menunggu ia
+menyala kembali — biasanya 30–60 detik.
+
+Akibatnya di portal ini lebih terasa daripada di aplikasi lain: **seluruh
+pengambilan data terjadi di server**, jadi yang menunggu bukan browser warga
+yang bisa menampilkan pemuat, melainkan Vercel yang belum bisa mengirim apa
+pun. Warga melihat layar putih hampir satu menit, lalu menutupnya.
+
+Untuk portal padukuhan yang dibuka beberapa kali sehari, ini praktis berarti
+**hampir setiap pengunjung pertama mengalaminya.**
+
+Tiga jalan keluarnya, dari yang paling murah:
+
+1. **Panggil backend secara berkala** agar tidak sempat tidur — misalnya
+   [cron-job.org](https://cron-job.org) yang gratis, menembak
+   `https://kembangsari-backend.onrender.com/api/v1/health` tiap 10 menit.
+   Menyelesaikan gejalanya, tidak menambah biaya.
+2. **Naikkan Render ke paket berbayar** yang tidak tidur.
+3. **Pindahkan backend** ke penyedia yang paket gratisnya tidak tidur.
+
+Kalau backend sudah di paket berbayar, abaikan bagian ini.
 
 ## Yang berubah kalau backend pindah alamat
 
