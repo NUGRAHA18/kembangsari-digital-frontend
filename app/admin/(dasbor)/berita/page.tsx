@@ -9,6 +9,7 @@ import { FilterChips } from "@/components/ui/filter-chips";
 import { Pagination } from "@/components/ui/pagination";
 import { SearchInput } from "@/components/ui/search-input";
 import { EmptyState, ErrorState } from "@/components/ui/states";
+import { PUBLISH_STATUS, readStatus, statusOptions } from "@/features/admin/status-filter";
 import { safeFetch } from "@/lib/api";
 import { fetchAsAdmin } from "@/lib/admin-fetch";
 import { formatDateShort } from "@/lib/format";
@@ -37,18 +38,29 @@ export default async function AdminNewsPage({
   const page = readPage(params);
   const search = readParam(params, "search");
   const categorySlug = readParam(params, "kategori");
+  const status = readStatus(params, PUBLISH_STATUS);
   const message = MESSAGES[readParam(params, "pesan") ?? ""];
 
   const categories = await safeFetch(getNewsCategories());
   const activeCategory = (categories.data ?? []).find((item) => item.slug === categorySlug);
 
   const news = await fetchAsAdmin(
-    getAllNews({ page, limit: PER_PAGE, search, categoryId: activeCategory?.id }, token),
+    getAllNews(
+      {
+        page,
+        limit: PER_PAGE,
+        search,
+        categoryId: activeCategory?.id,
+        published: status.value,
+      },
+      token,
+    ),
   );
 
   const activeParams = {
     search,
     kategori: activeCategory?.slug,
+    status: status.param,
     page: page > 1 ? String(page) : undefined,
   };
 
@@ -58,7 +70,9 @@ export default async function AdminNewsPage({
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Berita</h1>
           <p className="mt-1 text-muted">
-            {news.meta.total} berita, termasuk draf yang belum terlihat warga.
+            {status.value === undefined
+              ? `${news.meta.total} berita, termasuk draf yang belum terlihat warga.`
+              : `${news.meta.total} berita ${status.value ? "terbit" : "berupa draf"}.`}
           </p>
         </div>
 
@@ -76,12 +90,20 @@ export default async function AdminNewsPage({
           defaultValue={search}
           placeholder="Cari judul atau isi berita…"
           label="Cari berita"
-          hiddenFields={{ kategori: activeCategory?.slug }}
+          hiddenFields={{ kategori: activeCategory?.slug, status: status.param }}
         />
 
-        {/* Tidak ada saringan status terbit/draf: `GET /news` hanya menerima
-            page, limit, search, dan categoryId. Menyaring status di sini hanya
-            akan menyaring satu halaman hasil dan membuat jumlahnya menyesatkan. */}
+        {/* Saringan status menyaring di backend, bukan di sini — jadi
+            `meta.total` dan jumlah halamannya ikut menyesuaikan. */}
+        <FilterChips
+          label="Status berita"
+          basePath="/admin/berita"
+          paramName="status"
+          activeValue={status.param}
+          searchParams={activeParams}
+          options={statusOptions(PUBLISH_STATUS)}
+        />
+
         {categories.data && categories.data.length > 0 ? (
           <FilterChips
             label="Kategori berita"
@@ -166,9 +188,17 @@ export default async function AdminNewsPage({
         </>
       ) : (
         <EmptyState
-          title={search ? `Tidak ada berita untuk "${search}"` : "Belum ada berita"}
+          title={
+            search
+              ? `Tidak ada berita untuk "${search}"`
+              : status.param || activeCategory
+                ? "Tidak ada berita yang cocok"
+                : "Belum ada berita"
+          }
           description={
-            search ? "Coba kata kunci lain." : "Mulai dengan menulis berita pertama."
+            search || status.param || activeCategory
+              ? "Coba ubah kata kunci atau saringannya."
+              : "Mulai dengan menulis berita pertama."
           }
         />
       )}

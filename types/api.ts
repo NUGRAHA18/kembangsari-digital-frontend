@@ -8,6 +8,10 @@
  * `Date`. JSON tidak punya tipe tanggal, jadi yang sampai ke frontend adalah
  * string ISO 8601 (contoh: "2026-08-01T09:30:58.790Z"). Bungkus dengan
  * `new Date(...)` sendiri kalau perlu diolah.
+ *
+ * Berkas ini disusun manual, sedangkan `openapi.json` dihasilkan langsung
+ * dari kode backend (`npm run openapi`). Kalau keduanya berbeda, yang
+ * benar adalah `openapi.json`.
  */
 
 // ============================================================
@@ -51,7 +55,7 @@ export interface PaginationQuery {
 }
 
 /**
- * Query untuk GET /news/published dan GET /news.
+ * Query untuk GET /news/published (publik).
  * Catatan: sejak backend memakai forbidNonWhitelisted, parameter di luar
  * daftar ini dijawab 400, bukan diabaikan diam-diam.
  */
@@ -60,9 +64,80 @@ export interface NewsQuery extends PaginationQuery {
   categoryId?: string;
 }
 
-/** Query untuk GET /potential/active dan GET /potential. */
+/** Query untuk GET /potential/active (publik). */
 export interface PotentialQuery extends PaginationQuery {
   category?: PotentialCategory;
+}
+
+/** Query untuk GET /gallery/album, /gallery/item/*, /agenda, /umkm/active, /announcement/active. */
+export type SimpleListQuery = PaginationQuery;
+
+/** Query untuk GET /kkn/program/active (publik). */
+export interface KKNProgramQuery extends PaginationQuery {
+  subProgram?: KKNSubProgram;
+}
+
+// ------------------------------------------------------------
+// Query khusus daftar bertoken (dashboard)
+//
+// Saringan status sengaja HANYA ada di daftar bertoken. Mengirimnya ke
+// endpoint publik pasangannya dijawab 400 — di sana ia tidak punya arti.
+//
+// Di semua saringan status berlaku hal yang sama: tidak dikirim berarti
+// "semua". Jadi untuk menghitung berapa yang draf/disembunyikan, kirim
+// `false` lalu baca `meta.total` — tidak perlu mengunduh seluruh data.
+// ------------------------------------------------------------
+
+/** Query untuk GET /news (bertoken). */
+export interface AdminNewsQuery extends NewsQuery {
+  /** true = sudah terbit, false = masih draf, tidak dikirim = semua. */
+  published?: boolean;
+}
+
+/**
+ * Query untuk GET /monography (bertoken).
+ * `search` ikut diterima tetapi tidak berpengaruh — monografi tidak punya
+ * kolom teks untuk dicari.
+ */
+export interface AdminMonographyQuery extends PaginationQuery {
+  /** true = sudah terbit, false = belum, tidak dikirim = semua. */
+  published?: boolean;
+}
+
+/** Query untuk GET /announcement (bertoken). */
+export interface AdminAnnouncementQuery extends PaginationQuery {
+  /** true = tampil, false = disembunyikan, tidak dikirim = semua. */
+  isActive?: boolean;
+}
+
+/** Query untuk GET /umkm (bertoken). */
+export interface AdminUmkmQuery extends PaginationQuery {
+  isActive?: boolean;
+}
+
+/** Query untuk GET /potential (bertoken). */
+export interface AdminPotentialQuery extends PotentialQuery {
+  isActive?: boolean;
+}
+
+/**
+ * Query untuk GET /kkn/program (bertoken).
+ * Menggantikan GET /kkn/program/sub/:subProgram untuk kebutuhan dashboard:
+ * di sini saringan sub-program bisa digabung dengan saringan status.
+ */
+export interface AdminKKNProgramQuery extends KKNProgramQuery {
+  isActive?: boolean;
+}
+
+/**
+ * Query untuk GET /maps/marker (bertoken).
+ * Menggantikan GET /maps/marker/category/:categoryId untuk kebutuhan
+ * dashboard, dengan alasan yang sama seperti di atas.
+ */
+export interface AdminMarkerQuery extends PaginationQuery {
+  /** Saring berdasarkan id kategori (ambil dari GET /maps/category). */
+  categoryId?: string;
+  isActive?: boolean;
 }
 
 // ============================================================
@@ -204,6 +279,11 @@ export interface Announcement {
 // PROFIL PADUKUHAN
 // ============================================================
 
+/**
+ * Dibaca dengan slug (`GET /profile/:slug`). Sejak putaran perbaikan kedua,
+ * `PATCH` dan `DELETE` menerima id **maupun** slug pada URL yang sama, jadi
+ * form profil tidak perlu lagi membawa id sebagai input tersembunyi.
+ */
 export interface Profile {
   id: string;
   slug: string;
@@ -277,6 +357,14 @@ export interface MapCategory {
   icon: string | null;
   createdAt: string;
   updatedAt: string;
+  /**
+   * Hadir pada GET /maps/category dan GET /maps/category/:id.
+   *
+   * Menghapus kategori peta ikut menghapus seluruh markernya — jadi angka
+   * ini untuk memperingatkan pengelola, bukan untuk mematikan tombol hapus
+   * seperti pada kategori berita.
+   */
+  _count?: { markers: number };
 }
 
 export interface MapMarker {
@@ -334,6 +422,15 @@ export interface UMKMImage {
   id: string;
   url: string;
   caption: string | null;
+  /**
+   * Dijaga backend, tidak perlu ditambal dari frontend:
+   * - gambar pertama sebuah UMKM otomatis menjadi utama
+   * - mengirim `isPrimary: true` melepas penanda gambar lain dalam satu transaksi
+   * - menghapus gambar utama mengangkat gambar teratas berikutnya
+   * - mengirim `isPrimary: false` pada satu-satunya gambar dijawab 400
+   *
+   * Artinya: selama sebuah UMKM punya gambar, tepat satu di antaranya utama.
+   */
   isPrimary: boolean;
   umkmId: string;
   createdAt: string;
@@ -376,6 +473,7 @@ export interface PotentialImage {
   id: string;
   url: string;
   caption: string | null;
+  /** Dijaga backend dengan aturan yang sama persis seperti `UMKMImage.isPrimary`. */
   isPrimary: boolean;
   potentialId: string;
   createdAt: string;
@@ -447,7 +545,26 @@ export interface Setting {
   updatedAt: string;
 }
 
-/** Key yang tersedia dari seed backend. */
+/**
+ * Badan permintaan `PATCH /settings/:key`. Hanya `value` — `key` sudah ada
+ * di URL, dan mengirimnya lagi di badan permintaan dijawab 400.
+ */
+export interface UpdateSettingBody {
+  /**
+   * Selalu teks. Angka dan koordinat pun dikirim sebagai teks,
+   * misalnya "15" atau "-7.795580".
+   */
+  value: string;
+}
+
+/**
+ * Key yang tersedia dari seed backend.
+ *
+ * Daftar ini tidak tertutup: `PATCH /settings/:key` bersifat **upsert**,
+ * jadi key yang belum ada akan dibuatkan, bukan dijawab 404. Menambah key
+ * baru (misalnya "tiktok") cukup lewat endpoint itu — tanpa seed baru dan
+ * tanpa perlu meminta tambahan ke tim backend.
+ */
 export type SettingKey =
   | 'site_name'
   | 'site_description'
@@ -481,6 +598,14 @@ export type UploadFolder =
   | 'pengaturan'
   | 'umum';
 
+/**
+ * Sejak putaran perbaikan kedua, frontend **tidak perlu** membersihkan
+ * bucket sendiri. Backend menghapus berkasnya bersamaan dengan record-nya,
+ * dan juga saat sebuah gambar diganti dengan yang lain.
+ *
+ * `DELETE /upload` kini hanya untuk satu keadaan: berkas yang terlanjur
+ * terunggah tetapi batal dipakai karena pengelola menutup form.
+ */
 export interface UploadedFile {
   /** Path objek di dalam bucket, dipakai untuk menghapus. */
   path: string;

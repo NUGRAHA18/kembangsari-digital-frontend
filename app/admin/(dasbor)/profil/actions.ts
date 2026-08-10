@@ -31,6 +31,11 @@ function toMessage(error: unknown): string {
     if (error.status === 409) {
       return "Slug itu sudah dipakai halaman profil lain. Ubah slug-nya agar unik.";
     }
+    // Record ditelusuri lewat slug yang berlaku saat halaman dibuka; `404`
+    // berarti slug itu sudah berubah atau halamannya dihapus dari tab lain.
+    if (error.isNotFound) {
+      return "Halaman profil ini sudah tidak ada — slug-nya berubah atau sudah dihapus. Muat ulang daftar profil.";
+    }
     return error.messages.join(" ");
   }
 
@@ -53,7 +58,9 @@ export async function saveProfileAction(
 
   const read = (key: string) => String(formData.get(key) ?? "").trim();
 
-  const id = read("id");
+  // Slug saat halaman dibuka, bukan slug yang sedang diketik — yang kedua
+  // boleh berubah dan tidak bisa dipakai menemukan record-nya.
+  const currentSlug = read("currentSlug");
   const title = read("title");
   const content = read("content");
   const slug = slugify(read("slug") || title);
@@ -97,9 +104,9 @@ export async function saveProfileAction(
   };
 
   try {
-    if (id) {
-      // `PATCH` memakai id, bukan slug — berbeda dari `GET` di modul yang sama.
-      await updateProfile(id, payload, token);
+    if (currentSlug) {
+      // `PATCH /profile/:idOrSlug` menerima slug, sama seperti `GET`.
+      await updateProfile(currentSlug, payload, token);
     } else {
       await createProfile(payload, token);
     }
@@ -108,20 +115,23 @@ export async function saveProfileAction(
     return { error: toMessage(error), values };
   }
 
+  // Slug lama ikut disegarkan: kalau pengelola mengubahnya, halaman lamanya
+  // sekarang 404 dan cache-nya tidak boleh menyajikan isi yang sudah pindah.
   revalidateProfiles(slug);
-  redirect(`/admin/profil/${slug}?pesan=${id ? "diperbarui" : "dibuat"}`);
+  if (currentSlug && currentSlug !== slug) revalidateProfiles(currentSlug);
+
+  redirect(`/admin/profil/${slug}?pesan=${currentSlug ? "diperbarui" : "dibuat"}`);
 }
 
 export async function deleteProfileAction(formData: FormData) {
   const { token } = await requireSession();
 
-  const id = String(formData.get("id") ?? "");
   const slug = String(formData.get("slug") ?? "");
 
-  if (!id) redirect("/admin/profil");
+  if (!slug) redirect("/admin/profil");
 
   try {
-    await deleteProfile(id, token);
+    await deleteProfile(slug, token);
   } catch (error) {
     redirectIfExpired(error);
     throw error;

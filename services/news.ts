@@ -1,5 +1,5 @@
 import { del, getList, getOne, getPaginated, patch, post } from "@/lib/api";
-import type { Category, News, NewsQuery, Paginated } from "@/types/api";
+import type { AdminNewsQuery, Category, News, NewsQuery, Paginated } from "@/types/api";
 
 /**
  * Daftar berita terbit — bentuk `{ data, meta }`. Pencarian menyasar `title` dan `content`.
@@ -50,8 +50,14 @@ export function getNewsCategoryById(id: string) {
 // sana bisa ikut tersaji ke pengunjung biasa.
 // ============================================================
 
-/** Seluruh berita termasuk draf. `GET /news` menjawab 401 tanpa token. */
-export function getAllNews(query: NewsQuery, token: string): Promise<Paginated<News>> {
+/**
+ * Seluruh berita termasuk draf. `GET /news` menjawab 401 tanpa token.
+ *
+ * `published` menyaring terbit/draf dan boleh digabung dengan `categoryId`.
+ * Tidak dikirim berarti semua — dan `meta.total` ikut menyesuaikan, jadi
+ * `?published=false&limit=1` cukup untuk sekadar menghitung draf.
+ */
+export function getAllNews(query: AdminNewsQuery, token: string): Promise<Paginated<News>> {
   return getPaginated<News>("/news", query, { token });
 }
 

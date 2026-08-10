@@ -13,7 +13,6 @@ import {
   createKknProgram,
   deleteKknActivity,
   deleteKknProgram,
-  getKknProgramBySlugAsAdmin,
   updateKknActivity,
   updateKknProgram,
   type KknActivityInput,
@@ -139,14 +138,12 @@ export async function saveKknProgramAction(
 }
 
 /**
- * Menghapus program — hanya bila kegiatannya sudah kosong.
+ * Menghapus program **beserta seluruh kegiatannya**.
  *
- * `KKNActivity.programId` adalah relasi wajib, dan tidak ada catatan bahwa
- * backend menghapusnya berantai seperti gambar UMKM. Dua kemungkinannya
- * sama-sama buruk kalau dibiarkan: database menolak dengan "Referensi data
- * tidak valid" yang tidak menjelaskan apa pun, atau seluruh dokumentasi
- * kegiatan lenyap tanpa pengelola pernah memintanya. Jadi kegiatannya dihapus
- * lebih dulu satu per satu, sadar, seperti pola kategori berita.
+ * Backend menghapusnya berantai dalam satu transaksi, sama seperti gambar
+ * UMKM — jadi tidak ada pemeriksaan jumlah kegiatan di sini. Yang menanggung
+ * beban memberi tahu adalah halaman konfirmasinya, yang menyebut berapa
+ * kegiatan akan ikut hilang.
  */
 export async function deleteKknProgramAction(formData: FormData) {
   const { token } = await requireSession();
@@ -154,16 +151,9 @@ export async function deleteKknProgramAction(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   const slug = String(formData.get("slug") ?? "");
 
-  if (!id || !slug) redirect("/admin/program-kkn");
+  if (!id) redirect("/admin/program-kkn");
 
   try {
-    // Diperiksa ulang di sini: halaman konfirmasinya bisa saja dimuat sebelum
-    // kegiatan terakhir ditambahkan.
-    const program = await getKknProgramBySlugAsAdmin(slug, token);
-    if ((program.activities?.length ?? 0) > 0) {
-      redirect(`/admin/program-kkn/${slug}/hapus?pesan=masih-ada-kegiatan`);
-    }
-
     await deleteKknProgram(id, token);
   } catch (error) {
     redirectIfExpired(error);

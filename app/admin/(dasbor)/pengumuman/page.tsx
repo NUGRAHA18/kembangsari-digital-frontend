@@ -5,9 +5,11 @@ import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { Card, CardBody } from "@/components/ui/card";
+import { FilterChips } from "@/components/ui/filter-chips";
 import { Pagination } from "@/components/ui/pagination";
 import { SearchInput } from "@/components/ui/search-input";
 import { EmptyState } from "@/components/ui/states";
+import { readStatus, statusOptions, VISIBILITY_STATUS } from "@/features/admin/status-filter";
 import { fetchAsAdmin } from "@/lib/admin-fetch";
 import { excerpt, formatDateShort } from "@/lib/format";
 import { readPage, readParam, type RawSearchParams } from "@/lib/page-params";
@@ -34,13 +36,18 @@ export default async function AdminAnnouncementPage({
 
   const page = readPage(params);
   const search = readParam(params, "search");
+  const status = readStatus(params, VISIBILITY_STATUS);
   const message = MESSAGES[readParam(params, "pesan") ?? ""];
 
   const announcements = await fetchAsAdmin(
-    getAllAnnouncements({ page, limit: PER_PAGE, search }, token),
+    getAllAnnouncements({ page, limit: PER_PAGE, search, isActive: status.value }, token),
   );
 
-  const activeParams = { search, page: page > 1 ? String(page) : undefined };
+  const activeParams = {
+    search,
+    status: status.param,
+    page: page > 1 ? String(page) : undefined,
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -48,7 +55,9 @@ export default async function AdminAnnouncementPage({
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Pengumuman</h1>
           <p className="mt-1 text-muted">
-            {announcements.meta.total} pengumuman, termasuk yang tidak ditampilkan.
+            {status.value === undefined
+              ? `${announcements.meta.total} pengumuman, termasuk yang tidak ditampilkan.`
+              : `${announcements.meta.total} pengumuman ${status.value ? "yang tampil" : "yang disembunyikan"}.`}
           </p>
         </div>
 
@@ -60,12 +69,24 @@ export default async function AdminAnnouncementPage({
 
       {message ? <Alert tone="success">{message}</Alert> : null}
 
-      <SearchInput
-        action="/admin/pengumuman"
-        defaultValue={search}
-        placeholder="Cari judul atau isi pengumuman…"
-        label="Cari pengumuman"
-      />
+      <div className="flex flex-col gap-4">
+        <SearchInput
+          action="/admin/pengumuman"
+          defaultValue={search}
+          placeholder="Cari judul atau isi pengumuman…"
+          label="Cari pengumuman"
+          hiddenFields={{ status: status.param }}
+        />
+
+        <FilterChips
+          label="Status pengumuman"
+          basePath="/admin/pengumuman"
+          paramName="status"
+          activeValue={status.param}
+          searchParams={activeParams}
+          options={statusOptions(VISIBILITY_STATUS)}
+        />
+      </div>
 
       {announcements.data.length > 0 ? (
         <>
@@ -121,10 +142,16 @@ export default async function AdminAnnouncementPage({
         </>
       ) : (
         <EmptyState
-          title={search ? `Tidak ada pengumuman untuk "${search}"` : "Belum ada pengumuman"}
-          description={
+          title={
             search
-              ? "Coba kata kunci lain."
+              ? `Tidak ada pengumuman untuk "${search}"`
+              : status.param
+                ? "Tidak ada pengumuman yang cocok"
+                : "Belum ada pengumuman"
+          }
+          description={
+            search || status.param
+              ? "Coba ubah kata kunci atau saringannya."
               : "Pengumuman yang aktif akan tampil di beranda portal warga."
           }
         />

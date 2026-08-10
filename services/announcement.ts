@@ -1,5 +1,5 @@
 import { del, getOne, getPaginated, patch, post } from "@/lib/api";
-import type { Announcement, PaginationQuery } from "@/types/api";
+import type { AdminAnnouncementQuery, Announcement, PaginationQuery } from "@/types/api";
 
 /** Hanya pengumuman yang masih aktif — inilah yang tampil di beranda. */
 export function getActiveAnnouncements(query: PaginationQuery = {}) {
@@ -21,8 +21,11 @@ export interface AnnouncementInput {
   isActive?: boolean;
 }
 
-/** Seluruh pengumuman termasuk yang nonaktif. `GET /announcement` menjawab 401 tanpa token. */
-export function getAllAnnouncements(query: PaginationQuery, token: string) {
+/**
+ * Seluruh pengumuman termasuk yang nonaktif. `GET /announcement` menjawab 401
+ * tanpa token; `isActive` menyaringnya.
+ */
+export function getAllAnnouncements(query: AdminAnnouncementQuery, token: string) {
   return getPaginated<Announcement>("/announcement", query, { token });
 }
 

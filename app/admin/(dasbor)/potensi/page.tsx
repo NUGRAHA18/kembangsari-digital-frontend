@@ -9,6 +9,7 @@ import { FilterChips } from "@/components/ui/filter-chips";
 import { Pagination } from "@/components/ui/pagination";
 import { SearchInput } from "@/components/ui/search-input";
 import { EmptyState } from "@/components/ui/states";
+import { readStatus, statusOptions, VISIBILITY_STATUS } from "@/features/admin/status-filter";
 import {
   POTENTIAL_CATEGORIES,
   potentialCategorySlug,
@@ -41,15 +42,17 @@ export default async function AdminPotentialPage({
   // Kategori yang tidak dikenal dijawab backend 400, jadi nilai dari query
   // string diterjemahkan dulu ke enum yang sah — sama seperti halaman publik.
   const category = readPotentialCategory(readParam(params, "kategori"));
+  const status = readStatus(params, VISIBILITY_STATUS);
   const message = MESSAGES[readParam(params, "pesan") ?? ""];
 
   const potentials = await fetchAsAdmin(
-    getAllPotentials({ page, limit: PER_PAGE, search, category }, token),
+    getAllPotentials({ page, limit: PER_PAGE, search, category, isActive: status.value }, token),
   );
 
   const activeParams = {
     search,
     kategori: category ? potentialCategorySlug(category) : undefined,
+    status: status.param,
     page: page > 1 ? String(page) : undefined,
   };
 
@@ -59,7 +62,9 @@ export default async function AdminPotentialPage({
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Potensi</h1>
           <p className="mt-1 text-muted">
-            {potentials.meta.total} potensi padukuhan, termasuk yang tidak ditampilkan.
+            {status.value === undefined
+              ? `${potentials.meta.total} potensi padukuhan, termasuk yang tidak ditampilkan.`
+              : `${potentials.meta.total} potensi ${status.value ? "yang tampil" : "yang disembunyikan"}.`}
           </p>
         </div>
 
@@ -77,7 +82,16 @@ export default async function AdminPotentialPage({
           defaultValue={search}
           placeholder="Cari nama atau deskripsi potensi…"
           label="Cari potensi"
-          hiddenFields={{ kategori: activeParams.kategori }}
+          hiddenFields={{ kategori: activeParams.kategori, status: status.param }}
+        />
+
+        <FilterChips
+          label="Status potensi"
+          basePath="/admin/potensi"
+          paramName="status"
+          activeValue={status.param}
+          searchParams={activeParams}
+          options={statusOptions(VISIBILITY_STATUS)}
         />
 
         <FilterChips
@@ -170,9 +184,17 @@ export default async function AdminPotentialPage({
         </>
       ) : (
         <EmptyState
-          title={search ? `Tidak ada potensi untuk "${search}"` : "Belum ada potensi"}
+          title={
+            search
+              ? `Tidak ada potensi untuk "${search}"`
+              : status.param || category
+                ? "Tidak ada potensi yang cocok"
+                : "Belum ada potensi"
+          }
           description={
-            search ? "Coba kata kunci lain." : "Tambahkan potensi padukuhan yang pertama."
+            search || status.param || category
+              ? "Coba ubah kata kunci atau saringannya."
+              : "Tambahkan potensi padukuhan yang pertama."
           }
         />
       )}

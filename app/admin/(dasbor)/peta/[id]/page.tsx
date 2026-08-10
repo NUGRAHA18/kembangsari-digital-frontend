@@ -6,7 +6,7 @@ import { MarkerForm } from "@/features/admin/marker-form";
 import { fetchAsAdmin } from "@/lib/admin-fetch";
 import { formatDate, googleMapsPointLink } from "@/lib/format";
 import { requireSession } from "@/lib/session";
-import { getMapCategories, getMarkerById } from "@/services/maps";
+import { getMapCategoriesUncached, getMarkerById } from "@/services/maps";
 
 export const metadata: Metadata = { title: "Ubah Lokasi" };
 
@@ -20,7 +20,7 @@ export default async function EditMarkerPage({ params }: Props) {
     // Tanpa token, marker yang disembunyikan tidak terbaca — halaman ini justru
     // harus bisa menampilkannya kembali.
     fetchAsAdmin(getMarkerById(id, token)),
-    fetchAsAdmin(getMapCategories()),
+    fetchAsAdmin(getMapCategoriesUncached()),
   ]);
 
   return (

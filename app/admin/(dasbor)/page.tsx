@@ -17,16 +17,17 @@ export const metadata: Metadata = { title: "Ringkasan" };
 export default async function DashboardHomePage() {
   const { token, user } = await requireSession();
 
-  // Satu permintaan berita saja: `meta.total` memberi jumlah seluruhnya, dan
-  // lima baris pertamanya sekaligus mengisi daftar "terakhir diperbarui".
-  // Sisanya hanya diambil untuk angkanya, jadi cukup satu baris per modul.
-  const [news, agenda, announcements] = await Promise.all([
+  // Yang diambil untuk angka saja cukup satu baris: `meta.total` sudah ikut
+  // menyesuaikan saringannya, jadi `?published=false&limit=1` menghitung
+  // seluruh draf tanpa mengunduh satu pun isinya.
+  const [news, drafts, agenda, announcements] = await Promise.all([
     fetchAsAdmin(getAllNews({ limit: 5 }, token)),
+    fetchAsAdmin(getAllNews({ published: false, limit: 1 }, token)),
     safeFetch(getUpcomingAgenda({ limit: 1 })),
     safeFetch(getActiveAnnouncements({ limit: 1 })),
   ]);
 
-  const draftCount = news.data.filter((item) => !item.published).length;
+  const draftCount = drafts.meta.total;
 
   const stats = [
     { label: "Total berita", value: news.meta.total, Icon: FileText },
@@ -82,12 +83,13 @@ export default async function DashboardHomePage() {
           </Link>
         </div>
 
-        {/* Jumlah draf yang disebut di sini sengaja dibatasi pada lima baris
-            yang tampil — `GET /news` tidak punya filter status, jadi menghitung
-            seluruh draf berarti mengunduh semua berita hanya untuk satu angka. */}
         {draftCount > 0 ? (
           <p className="mb-3 text-muted">
-            {draftCount} dari {news.data.length} berita terbaru masih berupa draf.
+            {draftCount} dari {news.meta.total} berita masih berupa draf.{" "}
+            <Link href="/admin/berita?status=draf" className="text-accent">
+              Lihat drafnya
+            </Link>
+            .
           </p>
         ) : null}
 

@@ -36,14 +36,13 @@ export default async function DeleteUmkmImagePage({ params }: Props) {
 
       {image.isPrimary ? (
         <Alert>
-          Ini gambar utama. Setelah dihapus, gambar tersisa yang pertama otomatis
-          menggantikannya sebagai gambar utama.
+          Ini gambar utama. Setelah dihapus, backend otomatis mengangkat gambar teratas
+          berikutnya sebagai gambar utama.
         </Alert>
       ) : null}
 
       <form action={deleteUmkmImageAction} className="flex flex-wrap gap-3">
         <input type="hidden" name="id" value={image.id} />
-        <input type="hidden" name="umkmId" value={image.umkmId} />
         <input type="hidden" name="umkmSlug" value={slug} />
 
         <Button type="submit" size="lg" className="bg-error hover:brightness-95">

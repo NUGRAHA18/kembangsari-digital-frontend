@@ -67,7 +67,12 @@ export function ProfileForm({ profile }: { profile?: Profile }) {
 
   return (
     <form action={formAction} className="flex flex-col gap-6">
-      {profile ? <input type="hidden" name="id" value={profile.id} /> : null}
+      {/* Slug yang berlaku saat halaman ini dibuka — penanda record bagi
+          `PATCH`, sekaligus penanda bahwa ini penyuntingan dan bukan
+          penambahan. Kolom `slug` di bawah boleh berubah; yang ini tidak.
+          Dulu di sini ada `id`, dan itu satu-satunya tempat modul profil
+          membawa dua jenis penanda sekaligus. */}
+      {profile ? <input type="hidden" name="currentSlug" value={profile.slug} /> : null}
       <input type="hidden" name="currentThumbnail" value={currentThumbnail} />
 
       {state.error ? <Alert tone="error">{state.error}</Alert> : null}

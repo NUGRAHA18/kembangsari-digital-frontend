@@ -8,7 +8,7 @@ import { MapCategoryForm } from "@/features/admin/map-category-form";
 import { fetchAsAdmin } from "@/lib/admin-fetch";
 import { readParam, type RawSearchParams } from "@/lib/page-params";
 import { requireSession } from "@/lib/session";
-import { getEveryMarker, getMapCategories } from "@/services/maps";
+import { getMapCategoriesUncached } from "@/services/maps";
 
 export const metadata: Metadata = { title: "Kategori Lokasi" };
 
@@ -23,21 +23,12 @@ export default async function MapCategoriesPage({
 }: {
   searchParams: Promise<RawSearchParams>;
 }) {
-  const { token } = await requireSession();
+  await requireSession();
   const message = MESSAGES[readParam(await searchParams, "pesan") ?? ""];
 
-  // `GET /maps/category` tidak menyertakan `_count` seperti kategori berita,
-  // jadi pemakaiannya dihitung sendiri dari daftar marker — lihat
-  // `getEveryMarker` di services/maps.ts.
-  const [categories, markers] = await Promise.all([
-    fetchAsAdmin(getMapCategories()),
-    fetchAsAdmin(getEveryMarker(token)),
-  ]);
-
-  const markerCounts = new Map<string, number>();
-  for (const marker of markers) {
-    markerCounts.set(marker.categoryId, (markerCounts.get(marker.categoryId) ?? 0) + 1);
-  }
+  // `_count.markers` datang langsung dari backend dan sudah menghitung marker
+  // yang disembunyikan.
+  const categories = await fetchAsAdmin(getMapCategoriesUncached());
 
   return (
     <div className="flex flex-col gap-6">
@@ -54,7 +45,8 @@ export default async function MapCategoriesPage({
         <p className="mt-1 text-muted text-pretty">
           Setiap titik di peta wajib punya kategori. Kategori juga menjadi tombol saringan di
           halaman peta, dan urutannya menentukan warna pin — menghapus satu kategori menggeser
-          warna kategori sesudahnya.
+          warna kategori sesudahnya. Menghapus kategori juga menghapus semua titik lokasi di
+          dalamnya.
         </p>
       </div>
 
@@ -75,7 +67,7 @@ export default async function MapCategoriesPage({
         {categories.length > 0 ? (
           <ul className="flex flex-col gap-3">
             {categories.map((category) => {
-              const markerCount = markerCounts.get(category.id) ?? 0;
+              const markerCount = category._count?.markers ?? 0;
 
               return (
                 <li key={category.id}>
@@ -100,27 +92,18 @@ export default async function MapCategoriesPage({
                           Ubah
                         </Link>
 
-                        {/* Kategori yang masih dipakai tidak bisa dihapus:
-                            `MapMarker.categoryId` relasi wajib, jadi database
-                            menolaknya dengan pesan yang tidak menjelaskan apa
-                            pun kepada pengelola. */}
-                        {markerCount === 0 ? (
-                          <Link
-                            href={`/admin/peta/kategori/${category.id}/hapus`}
-                            className="inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-error transition-colors hover:bg-error/10"
-                          >
-                            <Trash2 className="size-4" aria-hidden="true" />
-                            Hapus
-                          </Link>
-                        ) : (
-                          <span
-                            className="inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-muted"
-                            title="Masih dipakai titik lokasi, jadi belum bisa dihapus"
-                          >
-                            <Trash2 className="size-4" aria-hidden="true" />
-                            Hapus
-                          </span>
-                        )}
+                        {/* Tombolnya tidak pernah dimatikan: berbeda dari
+                            kategori berita, menghapus kategori peta TIDAK
+                            ditolak backend — seluruh titik di dalamnya ikut
+                            terhapus. Yang perlu pengelola tahu adalah
+                            akibatnya, dan itu disebut di halaman konfirmasi. */}
+                        <Link
+                          href={`/admin/peta/kategori/${category.id}/hapus`}
+                          className="inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-error transition-colors hover:bg-error/10"
+                        >
+                          <Trash2 className="size-4" aria-hidden="true" />
+                          Hapus
+                        </Link>
                       </div>
                     </CardBody>
                   </Card>

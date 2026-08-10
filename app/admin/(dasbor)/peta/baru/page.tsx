@@ -3,14 +3,14 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { MarkerForm } from "@/features/admin/marker-form";
 import { fetchAsAdmin } from "@/lib/admin-fetch";
-import { getMapCategories } from "@/services/maps";
+import { getMapCategoriesUncached } from "@/services/maps";
 
 export const metadata: Metadata = { title: "Tambah Lokasi" };
 
 export default async function NewMarkerPage() {
   // Kategori diambil di server, bukan di form: daftarnya dipakai juga oleh
   // Server Action untuk memeriksa id kategori yang dikirim.
-  const categories = await fetchAsAdmin(getMapCategories());
+  const categories = await fetchAsAdmin(getMapCategoriesUncached());
 
   return (
     <div className="flex flex-col gap-6">

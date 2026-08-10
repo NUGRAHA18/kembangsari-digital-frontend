@@ -1,5 +1,5 @@
 import { getList, patch } from "@/lib/api";
-import type { Setting, SettingKey } from "@/types/api";
+import type { Setting, SettingKey, UpdateSettingBody } from "@/types/api";
 
 /** Pengaturan situs berbentuk pasangan key-value. Perhatikan: ARRAY POLOS, bukan `{ data }`. */
 export function getSettings() {
@@ -74,10 +74,14 @@ export function getSettingsAsAdmin() {
 /**
  * Menyimpan satu pengaturan.
  *
- * Backend hanya menyediakan `PATCH /settings/:key` — tidak ada endpoint untuk
- * menambah atau menghapus key, jadi daftar key-nya tetap dan berasal dari seed
- * backend. Key yang belum ada di sana dijawab `404`, bukan dibuatkan.
+ * `PATCH /settings/:key` bersifat **upsert**: key yang belum ada dibuatkan,
+ * jadi menambah pengaturan baru (`tiktok`, misalnya) tidak perlu seed baru.
+ * Tidak ada `DELETE` dan itu disengaja — mengosongkan `value` lebih aman
+ * daripada menghilangkan key yang dipakai halaman publik.
+ *
+ * `value` selalu teks, termasuk untuk `map_zoom` dan koordinat.
  */
 export function updateSetting(key: string, value: string, token: string) {
-  return patch<Setting>(`/settings/${key}`, { value }, { token });
+  const body: UpdateSettingBody = { value };
+  return patch<Setting>(`/settings/${key}`, body, { token });
 }

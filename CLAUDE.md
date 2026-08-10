@@ -83,6 +83,8 @@ Field `thumbnail`, `image`, dan `url` berisi string URL. Untuk mengunggah, prose
 
 Saat mengirim `FormData`, **jangan** menyetel header `Content-Type` — browser perlu menuliskannya sendiri lengkap dengan boundary.
 
+Penghapusan berkas **bukan tugas frontend**. Backend membuang objek di bucket bersamaan dengan record-nya, dan juga saat sebuah gambar diganti lewat `PATCH`. `DELETE /upload` hanya untuk berkas yang terlanjur terunggah lalu batal dipakai.
+
 ### 4. Semua tanggal adalah string ISO
 
 `createdAt`, `startDate`, `date`, dan sejenisnya bertipe `string`, bukan `Date`. Bungkus sendiri kalau perlu diolah.
@@ -105,6 +107,30 @@ perlu lagi menyaring sendiri, cukup `fetchOrNotFound`.
 Parameter di luar daftar yang diterima kini dijawab **`400`** (`forbidNonWhitelisted`),
 bukan diabaikan diam-diam seperti dulu. Cek `openapi.json` sebelum menambah query baru.
 
+### 6. Saringan status hanya ada di daftar bertoken
+
+`GET /news` dan `/monography` menerima `?published=`; `/announcement`, `/umkm`, `/potential`,
+`/kkn/program`, dan `/maps/marker` menerima `?isActive=`. Tidak dikirim berarti "semua", dan
+`meta.total` ikut menyesuaikan — jadi `?published=false&limit=1` cukup untuk sekadar
+menghitung draf tanpa mengunduh isinya.
+
+Mengirimnya ke versi tersaring (`/news/published`, `/umkm/active`, …) dijawab **`400`**: di
+sana parameternya memang tidak punya arti. Itu sebabnya tipe query publik dan admin dipisah
+di `types/api.ts` (`NewsQuery` vs `AdminNewsQuery`), bukan disatukan dengan field opsional.
+
+`/maps/marker` juga menerima `?categoryId=` dan `/kkn/program` menerima `?subProgram=`, dan
+keduanya bisa digabung dengan saringan status — itulah yang tidak bisa dilakukan
+`/maps/marker/category/:id` maupun `/kkn/program/sub/:sub`, sehingga kedua endpoint terpisah
+itu tidak dipakai dashboard.
+
+### 7. Gambar utama dijaga backend
+
+`isPrimary` pada gambar UMKM dan potensi dijaga dalam satu transaksi: gambar pertama sebuah
+record otomatis menjadi utama, mengirim `isPrimary: true` melepas penanda gambar lain, dan
+menghapus gambar utama mengangkat gambar teratas berikutnya. **Jangan memasang penjagaan
+apa pun di frontend** — cukup satu `PATCH`. Melepas penanda pada satu-satunya gambar dijawab
+`400`; dashboard tidak menyediakan tombolnya.
+
 ## Referensi
 
 | Berkas | Isi | |
@@ -114,9 +140,22 @@ bukan diabaikan diam-diam seperti dulu. Cek `openapi.json` sebelum menambah quer
 | `FRONTEND_GUIDE.md` | Panduan lengkap: kontrak API, resep komponen per halaman, detail pedoman mobile-first | internal |
 | `LAPORAN-BACKEND.md` | Keterbatasan backend yang ditemukan saat implementasi, beserta usulan perbaikannya | internal |
 | `JAWABAN-LAPORAN-BACKEND.md` | Jawaban tim backend: seluruh butir laporan sudah dikerjakan, beserta kontrak barunya | internal |
+| `LAPORAN-BACKEND-2.md` | Laporan putaran kedua, disusun setelah dashboard selesai — temuan yang terbukti dari `openapi.json` dipisahkan dari asumsi yang masih perlu dikonfirmasi | internal |
+| `JAWABAN-LAPORAN-BACKEND-2.md` | Jawaban putaran kedua: A-1 sampai C-6 selesai dan diverifikasi terhadap backend yang berjalan | internal |
 
-Tiga berkas terakhir **sengaja tidak ikut di repo publik ini** (lihat `.gitignore`) dan
-dibagikan lewat jalur internal. Ketiganya tetap ada di komputer masing-masing anggota tim.
+Berkas selain dua yang teratas **sengaja tidak ikut di repo publik ini** (lihat `.gitignore`)
+dan dibagikan lewat jalur internal. Semuanya tetap ada di komputer masing-masing anggota tim.
+
+`openapi.json` kini memuat kontrak penuh: **103 respons berskema, 0 DTO kosong**, lengkap
+dengan keterangan dan contoh per properti. Ia dihasilkan langsung dari kode backend, jadi
+**kalau isinya berbeda dari `types/api.ts` yang disusun manual, yang benar `openapi.json`.**
+
+Cara memperbaruinya kalau skema backend berubah: jalankan `npm run openapi` di repo backend
+— tanpa database, Supabase, maupun server yang menyala — lalu salin `openapi.json`,
+`types/api.ts`, dan `FRONTEND_GUIDE.md` dari `frontend-handoff/` ke sini. **Jangan menyalin
+`CLAUDE.md` dari paket itu**: yang di sana adalah versi awal yang masih menyebut identitas
+visual belum ditentukan dan dashboard belum dirancang, dan akan memundurkan berkas ini jauh.
+Perubahan aturannya disalin manual.
 
 Kalau butuh tahu bentuk data suatu endpoint, baca `types/api.ts` lebih dulu sebelum menebak. Kalau backend sedang jalan, Swagger tersedia di http://localhost:3000/docs.
 
@@ -140,8 +179,17 @@ agenda, dan data pekerjaan di monografi.
 lengkap (tulis, ubah, hapus, unggah gambar), dan pengelolaan kategori berita. Menyusul
 agenda, pengumuman, galeri, UMKM, potensi, dan program KKN (4 Agustus 2026), lalu peta
 beserta kategori lokasinya, monografi, profil, dan pengaturan situs (7 Agustus 2026), lalu
-halaman QR Code monografi (8 Agustus 2026). **Seluruh modul dashboard sudah ada**, tetapi
-belum satu pun diuji dengan backend hidup.
+halaman QR Code monografi (8 Agustus 2026). **Seluruh modul dashboard sudah ada.**
+
+**Disesuaikan dengan kontrak putaran kedua** (8 Agustus 2026, `JAWABAN-LAPORAN-BACKEND-2.md`):
+penjagaan `isPrimary` dibuang dari frontend, `getEveryMarker` dibuang, saringan status dipasang
+di tujuh daftar dashboard, saringan kategori dipasang di daftar peta dan program KKN, blokir
+hapus program KKN dilonggarkan menjadi peringatan, profil disatukan ke slug, dan pesan
+"mintakan ke tim backend" pada pengaturan dicabut karena `PATCH` sudah upsert.
+
+**Belum ada satu pun modul dashboard yang diuji dengan backend hidup** — penyesuaian di atas
+mengikuti kontrak yang sudah backend verifikasi sendiri, tetapi alur tulisnya belum ditekan
+tombolnya dari sisi ini.
 
 ## Struktur berkas
 
@@ -274,50 +322,49 @@ Modul berita adalah contoh yang diikuti modul berikutnya. Polanya:
   diperiksa di browser **dan** di server: unggahan galeri paling berat di seluruh dashboard,
   dan menunggu sepuluh foto ponsel terkirim hanya untuk ditolak backend menyakitkan di
   jaringan padukuhan.
-- **`isPrimary` tidak dijaga backend.** Kolom itu sekadar disimpan, sehingga dua gambar bisa
-  sama-sama bertanda utama dan kartu daftar akan menampilkan salah satunya secara acak. Yang
-  menjaganya frontend: gambar pertama otomatis jadi utama, menandai yang baru melepas yang
-  lama satu per satu, dan menghapus gambar utama mengangkat sisa yang pertama sebagai gantinya.
-  Berlaku sama untuk potensi.
+- **`isPrimary` dijaga backend, jangan ikut menjaganya.** Lihat aturan 7 di atas. Server Action
+  gambar UMKM dan potensi tidak mengirim `isPrimary` saat menambah, mengirim satu `PATCH`
+  saat mengganti gambar utama, dan tidak melakukan apa pun setelah menghapus. Penjagaan lama
+  di frontend sudah dibuang seluruhnya — jangan dipasang kembali.
 - **Potensi punya dua jalur gambar.** `thumbnail` adalah satu URL di record itu sendiri
   (unggahan tunggal lewat form, sama seperti berita), sedangkan `/potential/image` adalah
   galeri dokumentasinya. Kartu daftar memakai `thumbnail` dan jatuh ke gambar `isPrimary`
-  bila kosong — itu sebabnya `isPrimary` tetap dijaga meski sampulnya terpisah.
+  bila kosong — itu sebabnya penanda utama tetap penting meski sampulnya terpisah.
 - **Kategori potensi divalidasi di Server Action**, bukan hanya di `<select>`. Nilainya enum
   huruf besar, dan yang di luar daftar dijawab backend `400` dengan pesan yang tidak
   menjelaskan apa pun. Daftar sahnya satu-satunya ada di `features/potential/categories.ts`.
   Hal yang sama berlaku untuk sub-program KKN di `features/kkn/sub-programs.ts` — label dan
   daftarnya sengaja dipisah dari `kkn-card.tsx` supaya Server Action tidak ikut menarik React.
-- **Menghapus program KKN diblokir selama masih punya kegiatan.** `KKNActivity.programId`
-  relasi wajib dan tidak ada catatan bahwa backend menghapusnya berantai seperti gambar UMKM.
-  Dua kemungkinannya sama-sama buruk: galat "Referensi data tidak valid" yang tidak
-  menjelaskan apa pun, atau seluruh dokumentasi lenyap tanpa diminta. **Belum diuji dengan
-  backend hidup** — kalau ternyata backend memang cascade, blokirnya boleh dilonggarkan
-  menjadi peringatan berisi jumlah kegiatan, seperti halaman hapus UMKM.
-- **Daftar program KKN di dashboard tidak punya saringan sub-program.** `GET /kkn/program`
-  hanya menerima `page`, `limit`, `search`. `/kkn/program/sub/:subProgram` bukan penggantinya
-  karena menyaring yang aktif saja — program tersembunyi justru lenyap saat dicari.
+- **Menghapus program KKN ikut menghapus kegiatannya**, berantai dalam satu transaksi seperti
+  gambar UMKM. Halaman konfirmasinya memperingatkan berapa kegiatan yang ikut hilang, bukan
+  memblokir; Server Action-nya tidak memeriksa apa pun lebih dulu.
 - **Tanggal tanpa jam** (`KKNActivity.date`) memakai `toDateInput`/`fromDateInput` di
   `lib/format.ts`, sepasang dengan `toDateTimeLocal`/`fromDateTimeLocal`. Penguncian ke WIB
   tetap perlu meski jamnya dibuang: yang tersimpan tetap sebuah momen, dan tanpa itu tanggal
   yang diketik bisa terbaca mundur sehari saat formulirnya dibuka kembali.
-- **Menghapus record tidak menghapus berkasnya di bucket.** Backend hanya membuang barisnya;
-  berkas yatim harus dibuang lewat `DELETE /upload` dengan `path`-nya. Belum ada yang
-  melakukannya otomatis — layak diusulkan ke backend.
+- **Pembersihan berkas di bucket bukan urusan frontend.** Menghapus record — dan mengganti
+  gambarnya lewat `PATCH` — membuat backend ikut membuang berkasnya. `DELETE /upload` tinggal
+  untuk satu keadaan: berkas yang terlanjur terunggah lalu batal dipakai. Jangan memanggilnya
+  setelah menghapus record.
 - **Kartu berulang memakai form server biasa**, bukan Client Component: kisi foto bisa berisi
   puluhan kartu, dan menjadikannya komponen klien mengirim semuanya ke browser demi dua isian.
-- **Relasi wajib memblokir penghapusan.** `News.categoryId` tidak boleh kosong, jadi kategori
-  yang masih dipakai ditolak database dengan pesan "Referensi data tidak valid" — kalimat yang
-  tidak menjelaskan apa pun kepada pengelola. Karena itu tombol hapusnya dimatikan lebih dulu
-  berdasarkan `_count.news`, dan halaman konfirmasinya memeriksa ulang. Pola yang sama berlaku
-  untuk modul lain yang punya relasi wajib.
-- **Kategori marker peta dihitung sendiri.** `GET /maps/category` tidak menyertakan `_count`
-  seperti kategori berita, padahal `MapMarker.categoryId` juga relasi wajib. Jumlah
-  pemakaiannya dihitung dari daftar marker (`getEveryMarker` di `services/maps.ts`, menyusuri
-  semua halaman `GET /maps/marker`) supaya tombol hapusnya bisa dimatikan lebih dulu. Dipakai
-  endpoint admin, bukan `/maps/marker/active`, agar marker yang disembunyikan ikut terhitung —
-  kalau tidak, kategori yang "kosong" akan tetap ditolak database saat dihapus. **Layak
-  diusulkan ke backend** supaya `_count` ikut dikirim.
+- **Hanya kategori berita yang benar-benar menolak dihapus.** `News.categoryId` tidak boleh
+  kosong, jadi kategori yang masih dipakai ditolak database dengan "Referensi data tidak
+  valid" — kalimat yang tidak menjelaskan apa pun kepada pengelola. Karena itu tombol hapusnya
+  dimatikan lebih dulu berdasarkan `_count.news`, dan halaman konfirmasinya memeriksa ulang.
+  **Sisanya berantai**, dan yang berantai diperingatkan, bukan diblokir:
+
+  | Model | `_count` | Perilaku hapus |
+  |-------|----------|----------------|
+  | `Category` (berita) | `news` | ditolak `400` — matikan tombolnya |
+  | `MapCategory` | `markers` | marker ikut terhapus — peringatkan |
+  | `GalleryAlbum` | `items` | item ikut terhapus — peringatkan |
+  | `UMKM`, `Potential` | `images` | gambar ikut terhapus — peringatkan |
+  | `KKNProgram` | `activities` | kegiatan ikut terhapus — peringatkan |
+- **`_count.markers` pada kategori peta dipakai untuk memperingatkan, bukan mematikan tombol.**
+  Ia datang langsung dari `GET /maps/category` dan sudah menghitung marker yang disembunyikan.
+  Jangan menghitungnya sendiri dari daftar marker — `getEveryMarker` yang dulu melakukan itu
+  sudah dibuang.
 - **`categoryId` marker divalidasi di Server Action**, seperti kategori potensi — id yang tidak
   ada dijawab backend dengan galat referensi yang tidak menjelaskan apa pun. Pemeriksaannya
   memakai `getMapCategoriesUncached`, bukan `getMapCategories` yang di-cache sepuluh menit:
@@ -326,10 +373,16 @@ Modul berita adalah contoh yang diikuti modul berikutnya. Polanya:
 - **Koordinat marker wajib, tidak seperti pada potensi dan UMKM.** Di sana koordinat hanya
   mengisi tombol "Petunjuk Arah" dan boleh kosong; marker peta tanpa lintang-bujur justru
   tersimpan tanpa pernah tampil di peta, dan pengelola tidak punya cara mengetahuinya.
-- **Daftar marker di dashboard tidak punya saringan kategori.** `GET /maps/marker` hanya
-  menerima `page`, `limit`, `search`. `/maps/marker/category/:categoryId` tidak dipakai sebagai
-  penggantinya karena tidak terdokumentasi apakah ia ikut menyembunyikan marker nonaktif —
-  masalah yang sama dengan `/kkn/program/sub/:subProgram`.
+- **Saringan daftar dashboard memakai chip ber-URL**, bukan `<select>` berstate: setiap
+  kombinasi saringan punya alamat sendiri yang bisa dibagikan antar pengelola, dan formnya
+  tetap bekerja tanpa JavaScript. Kosakata `?status=` ada di `features/admin/status-filter.ts`
+  (`terbit`/`draf` dan `tampil`/`tersembunyi`); nilai di luar kosakata diperlakukan sebagai
+  "semua", tidak diteruskan ke backend — `published` yang bukan true/false dijawab `400`, dan
+  halaman daftar tidak boleh runtuh karena salah ketik di alamat. Berkas itu sengaja bebas
+  React karena diimpor Server Component.
+- **Sub-program KKN memakai nilai enum apa adanya di URL** (`?sub=RUMAH_BELAJAR`), tidak
+  di-slug seperti kategori berita dan potensi: enum itu tidak punya slug di backend, dan
+  menambah satu lapis penerjemahan hanya menambah tempat yang bisa meleset.
 - **Warna pin peta berasal dari urutan kategori** (`colorForCategory` di
   `features/maps/map-view.tsx`), bukan dari kolom `icon`. Menghapus atau menambah kategori
   menggeser warna kategori sesudahnya — halaman kategori dan halaman hapusnya menyebutkan itu.
@@ -355,19 +408,21 @@ Modul berita adalah contoh yang diikuti modul berikutnya. Polanya:
   lambat ada kolom yang tampil di form tetapi tidak pernah ikut terkirim. Berkas itu sengaja
   bebas React karena Server Action mengimpornya.
 
-- **Profil ditelusuri lewat slug, tetapi disimpan lewat id.** `GET /profile/:slug`, sedangkan
-  `PATCH` dan `DELETE /profile/:id` — satu-satunya modul dengan dua jenis penanda seperti ini,
-  jadi form profil membawa `id` sebagai input tersembunyi meski alamat halamannya slug.
+- **Profil seluruhnya ditelusuri lewat slug.** `GET`, `PATCH`, dan `DELETE /profile/:idOrSlug`
+  sama-sama menerima slug, jadi form profil tidak lagi membawa `id`. Yang dibawanya
+  `currentSlug` — slug yang berlaku saat halaman dibuka, bukan slug yang sedang diketik di
+  kolomnya; kolom itu boleh berubah dan tidak bisa dipakai menemukan record-nya. `404` saat
+  menyimpan berarti slug-nya berubah dari tab lain, dan pesannya menyebut itu.
 - **Profil tidak punya status draf.** Model `Profile` memang tidak punya kolomnya, jadi tidak
   ada badge terbit/draf di daftarnya dan setiap simpanan langsung terbaca warga. Jangan
   menambahkan penyaring seolah-olah statusnya ada.
 - **Dashboard memakai `getProfilesAsAdmin`/`getProfileBySlugAsAdmin`**, bukan fungsi publik yang
   sama isinya. Bedanya hanya cache: versi publik menyimpan jawabannya satu jam, dan pengelola
   tidak boleh menunggu sejam untuk melihat tulisannya sendiri.
-- **Pengaturan hanya bisa diubah, tidak ditambah.** Backend cuma menyediakan
-  `PATCH /settings/:key`; daftar key-nya berasal dari seed dan ada di `SettingKey`
-  (`types/api.ts`). Key yang belum di-seed dijawab `404` — Server Action menerjemahkannya
-  menjadi permintaan agar tim backend menambahkannya, bukan galat mentah.
+- **`PATCH /settings/:key` bersifat upsert.** Key yang belum ada dibuatkan, jadi menambah
+  pengaturan baru tidak perlu seed backend. `SettingKey` (`types/api.ts`) adalah daftar yang
+  datang dari seed, bukan daftar tertutup. Tidak ada `DELETE`, dan itu disengaja —
+  mengosongkan `value` lebih aman. `value` selalu teks, termasuk `map_zoom` dan koordinat.
 - **Yang dikirim hanya pengaturan yang berubah.** Satu permintaan per key, jadi menyimpan
   ketujuh belasnya setiap kali tombol simpan ditekan berarti tujuh belas permintaan untuk satu
   perubahan kecil. Nilai tersimpan dibaca ulang di Server Action untuk membandingkannya.
@@ -399,6 +454,14 @@ Modul berita adalah contoh yang diikuti modul berikutnya. Polanya:
 
 - Seluruh daftar kebutuhan sudah tergarap, termasuk QR Code monografi (FR-052).
 - **Belum ada satu pun modul dashboard yang diuji dengan backend hidup.** Yang paling layak
-  diperiksa lebih dulu: bentuk body `PATCH /settings/:key` (diasumsikan `{ value }`),
-  `employmentData: null` pada monografi, dan apakah menghapus program KKN benar-benar
-  terhalang relasi kegiatannya.
+  ditekan tombolnya lebih dulu — bukan lagi karena kontraknya meragukan, melainkan karena
+  butir yang bergantung pada transaksi memang perlu dijalankan:
+  - alur gambar UMKM/potensi setelah penjagaan `isPrimary` dilepas ke backend;
+  - hapus kategori peta dan hapus program KKN, yang kini berantai;
+  - saringan status di ketujuh daftar (nilai boolean dikirim sebagai `"true"`/`"false"`
+    lewat query string oleh `buildUrl`);
+  - simpan profil setelah penandanya berpindah dari `id` ke slug.
+- **Untuk tim backend:** frontend **tidak pernah** mengirim `?search=` ke `/monography`.
+  `AdminMonographyQuery` di paket handoff masih memuatnya, tetapi `services/monography.ts`
+  menyempitkannya dengan `Omit<…, "search">` di kedua fungsinya. Jadi parameter itu aman
+  ditolak `400` seperti yang ditawarkan di B-2.

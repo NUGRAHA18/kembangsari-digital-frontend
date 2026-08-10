@@ -47,5 +47,7 @@ next-env.d.ts
 # komputer masing-masing dan dibagikan lewat jalur internal, bukan lewat repo
 # publik ini.
 /LAPORAN-BACKEND.md
+/LAPORAN-BACKEND-2.md
 /JAWABAN-LAPORAN-BACKEND.md
+/JAWABAN-LAPORAN-BACKEND-2.md
 /FRONTEND_GUIDE.md

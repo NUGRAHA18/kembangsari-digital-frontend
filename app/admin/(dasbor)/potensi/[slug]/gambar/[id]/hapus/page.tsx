@@ -36,14 +36,13 @@ export default async function DeletePotentialImagePage({ params }: Props) {
 
       {image.isPrimary ? (
         <Alert>
-          Ini gambar utama. Setelah dihapus, gambar tersisa yang pertama otomatis
-          menggantikannya sebagai gambar utama.
+          Ini gambar utama. Setelah dihapus, backend otomatis mengangkat gambar teratas
+          berikutnya sebagai gambar utama.
         </Alert>
       ) : null}
 
       <form action={deletePotentialImageAction} className="flex flex-wrap gap-3">
         <input type="hidden" name="id" value={image.id} />
-        <input type="hidden" name="potentialId" value={image.potentialId} />
         <input type="hidden" name="potentialSlug" value={slug} />
 
         <Button type="submit" size="lg" className="bg-error hover:brightness-95">
