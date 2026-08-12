@@ -3,6 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { ApiRequestError, ApiUnreachableError } from "@/lib/api";
+// Koordinat marker wajib diisi, tidak seperti pada potensi dan UMKM: tanpa
+// keduanya pin ini tidak punya tempat di peta sama sekali. Pembacaannya
+// dipakai bersama rumah warga, jadi tinggal di `lib/`.
+import { parseCoordinate, parseCoordinatePair } from "@/lib/coordinates";
 import { validateImage } from "@/lib/image";
 import { requireSession, SESSION_EXPIRED_PATH } from "@/lib/session";
 import {
@@ -43,22 +47,6 @@ function redirectIfExpired(error: unknown) {
   }
 }
 
-/**
- * Koordinat marker wajib diisi, tidak seperti pada potensi dan UMKM: tanpa
- * keduanya pin ini tidak punya tempat di peta sama sekali.
- */
-function parseCoordinate(value: string, label: string, max: number) {
-  // Papan ketik ponsel Indonesia banyak yang menuliskan desimal dengan koma,
-  // sedangkan `Number` hanya mengenal titik.
-  const parsed = Number(value.replace(",", "."));
-
-  if (!value || !Number.isFinite(parsed) || Math.abs(parsed) > max) {
-    return { value: null as number | null, error: `${label} wajib diisi dengan angka yang sah.` };
-  }
-
-  return { value: parsed, error: null as string | null };
-}
-
 export async function saveMarkerAction(
   _prevState: MarkerFormState,
   formData: FormData,
@@ -73,8 +61,13 @@ export async function saveMarkerAction(
   const categoryId = read("categoryId");
   const address = read("address");
   const phone = read("phone");
-  const rawLatitude = read("latitude");
-  const rawLongitude = read("longitude");
+  // Menekan lama di Google Maps menyalin kedua angka sekaligus, dan
+  // menempelkannya utuh ke kolom lintang adalah salah tempel yang paling
+  // sering terjadi. Kalau itu yang terkirim, angkanya dipisah di sini alih-alih
+  // ditolak dengan pesan yang membingungkan.
+  const pasted = parseCoordinatePair(read("latitude"));
+  const rawLatitude = pasted?.latitude ?? read("latitude");
+  const rawLongitude = pasted?.longitude ?? read("longitude");
   const isActive = formData.get("isActive") === "on";
 
   const values = {
