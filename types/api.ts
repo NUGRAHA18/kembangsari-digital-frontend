@@ -188,8 +188,11 @@ export type KKNSubProgram =
   | 'PENGELOLAAN_SAMPAH'
   | 'PENERANGAN_JALAN';
 
+/** Dipakai `Resident.gender`. */
+export type Gender = 'LAKI_LAKI' | 'PEREMPUAN';
+
 /**
- * Skema backend juga mendeklarasikan enum Gender, EducationLevel,
+ * Skema backend juga mendeklarasikan enum EducationLevel,
  * EmploymentStatus, Religion, dan MarkerCategory — tapi tidak satu pun
  * dipakai oleh field model, jadi sengaja tidak dituliskan di sini.
  */
@@ -217,6 +220,24 @@ export interface LoginResponse {
   accessToken: string;
   user: User;
 }
+
+/**
+ * Badan permintaan `POST /auth/ticket`, langkah terakhir alur masuk dengan
+ * akun Google. Tiket diambil dari query string pengalihan
+ * (`<FRONTEND_URL>/admin/login/google?ticket=...`), berlaku 2 menit, dan
+ * hangus setelah sekali tukar.
+ */
+export interface ExchangeTicketRequest {
+  ticket: string;
+}
+
+/**
+ * PERHATIAN — beda dari laporan: kuncinya `accessToken`, bukan `token`.
+ * Respons `POST /auth/ticket` sengaja dibuat sama persis dengan
+ * `POST /auth/login` supaya penyimpan cookie di frontend tidak perlu
+ * membedakan dari alur mana tokennya datang.
+ */
+export type ExchangeTicketResponse = LoginResponse;
 
 // ============================================================
 // BERITA
@@ -584,6 +605,96 @@ export type SettingKey =
   | 'map_zoom';
 
 // ============================================================
+// RUMAH WARGA (PETA DIGITAL)
+// ============================================================
+
+export type FamilyRelation =
+  | 'KEPALA_KELUARGA'
+  | 'ISTRI'
+  | 'SUAMI'
+  | 'ANAK'
+  | 'MENANTU'
+  | 'CUCU'
+  | 'ORANG_TUA'
+  | 'FAMILI_LAIN'
+  | 'LAINNYA';
+
+export interface Resident {
+  id: string;
+  name: string;
+  /**
+   * TAHUN lahir, bukan umur dan bukan tanggal. Umur dihitung sendiri di
+   * frontend saat menggambar — menyimpan umur akan membuat seluruh data
+   * salah setahun kemudian.
+   */
+  birthYear: number | null;
+  gender: Gender | null;
+  /**
+   * Yang ditebalkan di kartu rumah adalah penghuni ber-`KEPALA_KELUARGA`.
+   * Tepat satu per KK, dijaga backend — frontend tidak perlu menambalnya.
+   */
+  relation: FamilyRelation;
+  order: number;
+  familyId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Family {
+  id: string;
+  kkNumber: string | null;
+  order: number;
+  houseId: string;
+  /** Ikut pada `GET /house/:idOrSlug` dan respons create/update KK. */
+  residents?: Resident[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface HouseCount {
+  families: number;
+  residents: number;
+}
+
+export interface House {
+  id: string;
+  /** Dibuat backend dari `label`; tidak berubah walau `label` diperbaiki. */
+  slug: string;
+  label: string;
+  /** Teks, bukan angka — ada RT "6A" di beberapa padukuhan. */
+  rt: string;
+  rw: string;
+  latitude: number;
+  longitude: number;
+  address: string | null;
+  /** URL hasil `POST /upload?folder=rumah`. */
+  photo: string | null;
+  note: string | null;
+  /**
+   * Kapan datanya terakhir dicek pendata — inilah yang ditampilkan sebagai
+   * "Data diverifikasi 3 Agustus 2026". BUKAN `updatedAt`, yang ikut
+   * berubah setiap kali salah ketik dibetulkan.
+   */
+  dataVerifiedAt: string | null;
+  isActive: boolean;
+  /** Ikut pada GET /house, /house/active, dan /house/:idOrSlug. */
+  _count?: HouseCount;
+  /** Hanya pada `GET /house/:idOrSlug`. */
+  families?: Family[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Satu baris per RT, dari `GET /house/summary`. Hanya rumah aktif. */
+export interface HouseSummary {
+  rw: string;
+  rt: string;
+  houses: number;
+  families: number;
+  residents: number;
+}
+
+// ============================================================
 // UPLOAD
 // ============================================================
 
@@ -596,6 +707,8 @@ export type UploadFolder =
   | 'peta'
   | 'profil'
   | 'pengaturan'
+  /** Foto rumah warga, ditambahkan pada putaran perbaikan ketiga. */
+  | 'rumah'
   | 'umum';
 
 /**
@@ -641,6 +754,7 @@ export type MapMarkerListResponse = Paginated<MapMarker>;
 export type KKNProgramListResponse = Paginated<KKNProgram>;
 export type KKNActivityListResponse = Paginated<KKNActivity>;
 export type PopulationStatListResponse = Paginated<PopulationStat>;
+export type HouseListResponse = Paginated<House>;
 
 /**
  * Endpoint yang mengembalikan ARRAY POLOS, bukan { data, meta }.
@@ -648,6 +762,8 @@ export type PopulationStatListResponse = Paginated<PopulationStat>;
  *
  *   GET /maps/marker/active           -> MapMarker[]
  *   GET /maps/category                -> MapCategory[]
+ *   GET /house/active                 -> House[]
+ *   GET /house/summary                -> HouseSummary[]
  *   GET /news/category/all            -> Category[]
  *   GET /profile                      -> Profile[]
  *   GET /settings                     -> Setting[]

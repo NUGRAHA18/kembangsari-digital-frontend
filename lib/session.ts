@@ -40,18 +40,36 @@ export const LOGIN_PATH = "/admin/login";
  */
 export const SESSION_EXPIRED_PATH = `${LOGIN_PATH}?sesi=habis`;
 
+/**
+ * Bentuk cookie sesi, terpisah dari cara memasangnya.
+ *
+ * Ada dua tempat yang memasangnya dan keduanya bekerja berbeda: Server Action
+ * `loginAction` lewat `cookies()`, dan Route Handler balikan Google yang
+ * memasangnya langsung pada `NextResponse` yang ia kembalikan. Nilai dan
+ * pilihannya harus sama persis di keduanya — kalau `maxAge` atau `secure`
+ * meleset di salah satunya, sesinya berumur berbeda tergantung cara masuk.
+ */
+export function sessionCookie(login: LoginResponse) {
+  return {
+    name: COOKIE_NAME,
+    value: JSON.stringify({ token: login.accessToken, user: login.user }),
+    options: {
+      httpOnly: true,
+      sameSite: "lax",
+      // Di pengembangan situsnya diakses lewat http://localhost, dan cookie
+      // `secure` tidak akan pernah terkirim di sana.
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: MAX_AGE_SECONDS,
+    },
+  } as const;
+}
+
 export async function createSession(login: LoginResponse) {
   const store = await cookies();
+  const { name, value, options } = sessionCookie(login);
 
-  store.set(COOKIE_NAME, JSON.stringify({ token: login.accessToken, user: login.user }), {
-    httpOnly: true,
-    sameSite: "lax",
-    // Di pengembangan situsnya diakses lewat http://localhost, dan cookie
-    // `secure` tidak akan pernah terkirim di sana.
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: MAX_AGE_SECONDS,
-  });
+  store.set(name, value, options);
 }
 
 export async function destroySession() {

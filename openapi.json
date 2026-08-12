@@ -54,6 +54,130 @@
         ]
       }
     },
+    "/api/v1/auth/google": {
+      "get": {
+        "description": "Dibuka lewat pengalihan browser, bukan lewat fetch — jawabannya 302 ke layar persetujuan Google. `?redirect=` divalidasi terhadap daftar putih origin (GOOGLE_REDIRECT_ORIGINS, jatuh ke CORS_ORIGINS bila kosong).",
+        "operationId": "AuthController_startGoogle_v1",
+        "parameters": [
+          {
+            "name": "redirect",
+            "required": false,
+            "in": "query",
+            "description": "URL frontend yang dituju setelah alur selesai. Divalidasi terhadap daftar putih origin; tidak dikirim berarti memakai FRONTEND_URL + /admin/login/google.",
+            "schema": {
+              "example": "https://kembangsari-digital-frontend.vercel.app/admin/login/google",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "Pengalihan ke layar persetujuan Google."
+          }
+        },
+        "summary": "Mulai alur masuk dengan akun Google",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/google/callback": {
+      "get": {
+        "description": "Dipanggil Google, bukan frontend. Berakhir dengan 302 ke URL frontend beserta ?ticket=. Email yang tidak terdaftar di tabel User dijawab 403 — Google hanya menggantikan kata sandi, bukan menggantikan pendaftaran pengelola.",
+        "operationId": "AuthController_googleCallback_v1",
+        "parameters": [
+          {
+            "name": "code",
+            "required": false,
+            "in": "query",
+            "description": "Kode otorisasi dari Google",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "required": false,
+            "in": "query",
+            "description": "`state` yang dikirim balik Google",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "error",
+            "required": false,
+            "in": "query",
+            "description": "Terisi bila pengelola menekan \"Batal\" di layar Google",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "Pengalihan ke frontend beserta ?ticket= sekali pakai."
+          },
+          "403": {
+            "description": "Akun Google ini belum terdaftar sebagai pengelola portal.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorEntity"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Titik kembali dari Google",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/ticket": {
+      "post": {
+        "description": "Dipanggil Route Handler frontend, bukan browser. Tiket hangus setelah sekali tukar dan kedaluwarsa dalam 2 menit. Bentuk responsnya sama persis dengan POST /auth/login — kuncinya `accessToken`, bukan `token`.",
+        "operationId": "AuthController_exchangeTicket_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExchangeTicketDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponseEntity"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Tiket tidak dikenal, sudah dipakai, atau kedaluwarsa",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorEntity"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Tukar tiket sekali pakai menjadi token",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
     "/api/v1/health": {
       "get": {
         "description": "Tidak menyentuh database — menjawab 200 selama prosesnya berjalan.",
@@ -242,6 +366,16 @@
                 }
               }
             }
+          },
+          "403": {
+            "description": "Token sah tapi perannya EDITOR, bukan ADMIN.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorEntity"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -275,6 +409,7 @@
                 "peta",
                 "profil",
                 "pengaturan",
+                "rumah",
                 "umum"
               ],
               "type": "string"
@@ -379,6 +514,7 @@
                 "peta",
                 "profil",
                 "pengaturan",
+                "rumah",
                 "umum"
               ],
               "type": "string"
@@ -746,6 +882,16 @@
                 }
               }
             }
+          },
+          "403": {
+            "description": "Token sah tapi perannya EDITOR, bukan ADMIN.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorEntity"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -916,6 +1062,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CategoryEntity"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Token sah tapi perannya EDITOR, bukan ADMIN.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorEntity"
                 }
               }
             }
@@ -1206,6 +1362,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AgendaEntity"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Token sah tapi perannya EDITOR, bukan ADMIN.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorEntity"
                 }
               }
             }
@@ -1507,6 +1673,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AnnouncementEntity"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Token sah tapi perannya EDITOR, bukan ADMIN.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorEntity"
                 }
               }
             }
@@ -1855,6 +2031,16 @@
                 }
               }
             }
+          },
+          "403": {
+            "description": "Token sah tapi perannya EDITOR, bukan ADMIN.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorEntity"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -2023,6 +2209,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/MapCategoryEntity"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Token sah tapi perannya EDITOR, bukan ADMIN.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorEntity"
                 }
               }
             }
@@ -2374,6 +2570,16 @@
                 }
               }
             }
+          },
+          "403": {
+            "description": "Token sah tapi perannya EDITOR, bukan ADMIN.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorEntity"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -2384,6 +2590,615 @@
         "summary": "Hapus marker",
         "tags": [
           "Maps"
+        ]
+      }
+    },
+    "/api/v1/house": {
+      "post": {
+        "description": "`slug` tidak dikirim — backend membuatnya dari `label`, dan menomorinya bila sudah ada rumah ber-label sama.",
+        "operationId": "HouseController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateHouseDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HouseEntity"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tambah rumah warga",
+        "tags": [
+          "House"
+        ]
+      },
+      "get": {
+        "description": "Menerima ?rt=, ?rw=, ?isActive=, dan ?search=. Kata kunci dicocokkan ke label, alamat, catatan, dan nama penghuni — jadi \"cari rumah yang penghuninya bernama X\" cukup satu permintaan.",
+        "operationId": "HouseController_findAll_v1",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Halaman yang diminta, dimulai dari 1",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Jumlah data per halaman (maksimal 100)",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Kata kunci pencarian (tidak membedakan huruf besar/kecil)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "rt",
+            "required": false,
+            "in": "query",
+            "description": "Saring berdasarkan RT",
+            "schema": {
+              "example": "06",
+              "type": "string"
+            }
+          },
+          {
+            "name": "rw",
+            "required": false,
+            "in": "query",
+            "description": "Saring berdasarkan RW",
+            "schema": {
+              "example": "03",
+              "type": "string"
+            }
+          },
+          {
+            "name": "isActive",
+            "required": false,
+            "in": "query",
+            "description": "Saring berdasarkan status tampil: true hanya yang aktif, false hanya yang disembunyikan. Tidak dikirim berarti semua.",
+            "schema": {
+              "example": true,
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/HouseEntity"
+                      }
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMetaDto"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Daftar rumah untuk dashboard, termasuk yang disembunyikan",
+        "tags": [
+          "House"
+        ]
+      }
+    },
+    "/api/v1/house/active": {
+      "get": {
+        "description": "Array polos, sengaja tidak dipaginasi — peta butuh semua titik sekaligus. Menerima ?rt=, ?rw=, dan ?search=. Setiap rumah membawa `_count` sehingga kartunya bisa menulis \"2 KK · 5 jiwa\" tanpa mengunduh penghuninya.",
+        "operationId": "HouseController_findActive_v1",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Halaman yang diminta, dimulai dari 1",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Jumlah data per halaman (maksimal 100)",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Kata kunci pencarian (tidak membedakan huruf besar/kecil)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "rt",
+            "required": false,
+            "in": "query",
+            "description": "Saring berdasarkan RT",
+            "schema": {
+              "example": "06",
+              "type": "string"
+            }
+          },
+          {
+            "name": "rw",
+            "required": false,
+            "in": "query",
+            "description": "Saring berdasarkan RW",
+            "schema": {
+              "example": "03",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/HouseEntity"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Seluruh rumah aktif untuk digambar di peta publik",
+        "tags": [
+          "House"
+        ]
+      }
+    },
+    "/api/v1/house/summary": {
+      "get": {
+        "description": "Array polos untuk halaman monografi dan legenda peta. Hanya menghitung rumah yang aktif.",
+        "operationId": "HouseController_summary_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/HouseSummaryEntity"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Ringkasan jumlah rumah, KK, dan jiwa per RT",
+        "tags": [
+          "House"
+        ]
+      }
+    },
+    "/api/v1/house/family": {
+      "post": {
+        "description": "`order` tidak dikirim berarti KK diletakkan di urutan terakhir rumah itu.",
+        "operationId": "HouseController_createFamily_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFamilyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FamilyEntity"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tambah KK ke sebuah rumah",
+        "tags": [
+          "House"
+        ]
+      }
+    },
+    "/api/v1/house/family/{id}": {
+      "patch": {
+        "operationId": "HouseController_updateFamily_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateFamilyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FamilyEntity"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Ubah KK",
+        "tags": [
+          "House"
+        ]
+      },
+      "delete": {
+        "description": "Warga di dalamnya ikut terhapus dalam satu pernyataan — periksa jumlah jiwanya lebih dulu dan peringatkan pengelola.",
+        "operationId": "HouseController_removeFamily_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "KK terhapus, tidak ada isi respons."
+          },
+          "403": {
+            "description": "Token sah tapi perannya EDITOR, bukan ADMIN.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorEntity"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Hapus KK beserta seluruh warganya",
+        "tags": [
+          "House"
+        ]
+      }
+    },
+    "/api/v1/house/resident": {
+      "post": {
+        "description": "Menyetel `relation: KEPALA_KELUARGA` melepas penanda dari kepala keluarga lama dalam satu transaksi; yang lama menjadi LAINNYA supaya terbaca sebagai \"perlu dibetulkan pendata\". Warga pertama sebuah KK selalu menjadi kepala keluarga.",
+        "operationId": "HouseController_createResident_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateResidentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResidentEntity"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tambah warga ke sebuah KK",
+        "tags": [
+          "House"
+        ]
+      }
+    },
+    "/api/v1/house/resident/{id}": {
+      "patch": {
+        "description": "Melepas penanda kepala keluarga dari satu-satunya penghuni KK dijawab 400, bukan diterima lalu diam-diam dibatalkan.",
+        "operationId": "HouseController_updateResident_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateResidentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResidentEntity"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Ubah warga",
+        "tags": [
+          "House"
+        ]
+      },
+      "delete": {
+        "description": "Menghapus kepala keluarga mengangkat penghuni teratas berikutnya sebagai penggantinya, supaya KK tidak pernah tertinggal tanpa nama yang ditebalkan.",
+        "operationId": "HouseController_removeResident_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Warga terhapus, tidak ada isi respons."
+          },
+          "403": {
+            "description": "Token sah tapi perannya EDITOR, bukan ADMIN.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorEntity"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Hapus warga",
+        "tags": [
+          "House"
+        ]
+      }
+    },
+    "/api/v1/house/{idOrSlug}": {
+      "get": {
+        "description": "Menerima id maupun slug. `families[].residents[]` ikut lengkap, terurut menurut `order`. Tanpa token, rumah yang disembunyikan dijawab 404.",
+        "operationId": "HouseController_findOne_v1",
+        "parameters": [
+          {
+            "name": "idOrSlug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HouseEntity"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Detail satu rumah beserta KK dan warganya",
+        "tags": [
+          "House"
+        ]
+      }
+    },
+    "/api/v1/house/{id}": {
+      "patch": {
+        "description": "Mengganti `photo` ikut menghapus berkas lama dari bucket penyimpanan. `slug` tidak ikut berubah walau `label` diperbaiki — tautan yang sudah beredar tetap hidup.",
+        "operationId": "HouseController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateHouseDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HouseEntity"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Ubah rumah",
+        "tags": [
+          "House"
+        ]
+      },
+      "delete": {
+        "description": "Berantai ke `families` dan `residents`. Fotonya ikut dibuang dari bucket penyimpanan.",
+        "operationId": "HouseController_remove_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Rumah terhapus, tidak ada isi respons."
+          },
+          "403": {
+            "description": "Token sah tapi perannya EDITOR, bukan ADMIN.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorEntity"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Hapus rumah beserta seluruh KK dan warganya",
+        "tags": [
+          "House"
         ]
       }
     },
@@ -2590,6 +3405,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/GalleryAlbumEntity"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Token sah tapi perannya EDITOR, bukan ADMIN.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorEntity"
                 }
               }
             }
@@ -2886,6 +3711,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/GalleryItemEntity"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Token sah tapi perannya EDITOR, bukan ADMIN.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorEntity"
                 }
               }
             }
@@ -3194,6 +4029,16 @@
                 }
               }
             }
+          },
+          "403": {
+            "description": "Token sah tapi perannya EDITOR, bukan ADMIN.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorEntity"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -3374,6 +4219,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/UmkmImageEntity"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Token sah tapi perannya EDITOR, bukan ADMIN.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorEntity"
                 }
               }
             }
@@ -3723,6 +4578,16 @@
                 }
               }
             }
+          },
+          "403": {
+            "description": "Token sah tapi perannya EDITOR, bukan ADMIN.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorEntity"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -3906,6 +4771,16 @@
                 }
               }
             }
+          },
+          "403": {
+            "description": "Token sah tapi perannya EDITOR, bukan ADMIN.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorEntity"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -4008,6 +4883,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SettingEntity"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Token sah tapi perannya EDITOR, bukan ADMIN.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorEntity"
                 }
               }
             }
@@ -4427,6 +5312,16 @@
                 }
               }
             }
+          },
+          "403": {
+            "description": "Token sah tapi perannya EDITOR, bukan ADMIN.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorEntity"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -4653,6 +5548,16 @@
                 }
               }
             }
+          },
+          "403": {
+            "description": "Token sah tapi perannya EDITOR, bukan ADMIN.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorEntity"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -4800,6 +5705,19 @@
         "required": [
           "statusCode",
           "message"
+        ]
+      },
+      "ExchangeTicketDto": {
+        "type": "object",
+        "properties": {
+          "ticket": {
+            "type": "string",
+            "description": "Tiket sekali pakai dari query string pengalihan",
+            "example": "a3f1c9…"
+          }
+        },
+        "required": [
+          "ticket"
         ]
       },
       "HealthEntity": {
@@ -6349,6 +7267,541 @@
             "type": "string",
             "description": "id kategori peta, harus sudah ada",
             "example": "clx8f2k9a0007qw3h6b5n4m3l"
+          }
+        }
+      },
+      "CreateHouseDto": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "description": "Judul yang tampil di kartu peta. Slug dibuat backend dari nilai ini.",
+            "example": "Rumah Agung & Melia"
+          },
+          "rt": {
+            "type": "string",
+            "description": "Nomor RT sebagai teks, bukan angka — ada RT \"6A\" di beberapa padukuhan.",
+            "example": "06"
+          },
+          "rw": {
+            "type": "string",
+            "description": "Nomor RW sebagai teks",
+            "example": "03"
+          },
+          "latitude": {
+            "type": "number",
+            "description": "Lintang dalam derajat desimal",
+            "example": -7.690025
+          },
+          "longitude": {
+            "type": "number",
+            "description": "Bujur dalam derajat desimal",
+            "example": 110.228583
+          },
+          "address": {
+            "type": "string",
+            "description": "Alamat rumah",
+            "nullable": true,
+            "example": "Kembangsari RT 06 / RW 03"
+          },
+          "photo": {
+            "type": "string",
+            "description": "URL publik foto rumah, diambil dari respons POST /upload?folder=rumah",
+            "nullable": true
+          },
+          "note": {
+            "type": "string",
+            "description": "Catatan pendata",
+            "nullable": true,
+            "example": "Rumah paling ujung, sebelah pohon sawo."
+          },
+          "dataVerifiedAt": {
+            "type": "string",
+            "description": "Kapan datanya terakhir dicek pendata, format ISO 8601. Berbeda dari updatedAt, yang ikut berubah setiap kali salah ketik dibetulkan.",
+            "nullable": true,
+            "example": "2026-08-03T00:00:00.000Z"
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "false menyembunyikan rumah dari peta publik. Bawaan: true.",
+            "default": true,
+            "example": true
+          }
+        },
+        "required": [
+          "label",
+          "rt",
+          "rw",
+          "latitude",
+          "longitude"
+        ]
+      },
+      "HouseCountEntity": {
+        "type": "object",
+        "properties": {
+          "families": {
+            "type": "number",
+            "description": "Jumlah KK di rumah ini",
+            "example": 2
+          },
+          "residents": {
+            "type": "number",
+            "description": "Jumlah jiwa di rumah ini, dijumlahkan dari seluruh KK-nya",
+            "example": 5
+          }
+        },
+        "required": [
+          "families",
+          "residents"
+        ]
+      },
+      "ResidentEntity": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "clx8f2k9a000jqw3h9i0j1k2l"
+          },
+          "name": {
+            "type": "string",
+            "example": "Antonius"
+          },
+          "birthYear": {
+            "type": "object",
+            "description": "TAHUN lahir, bukan umur. Umur ditampilkan frontend dengan menghitung selisihnya terhadap tahun berjalan.",
+            "nullable": true,
+            "example": 1982
+          },
+          "gender": {
+            "type": "string",
+            "enum": [
+              "LAKI_LAKI",
+              "PEREMPUAN"
+            ],
+            "nullable": true
+          },
+          "relation": {
+            "type": "string",
+            "description": "Penghuni ber-KEPALA_KELUARGA adalah yang ditebalkan di kartu rumah. Tepat satu per KK.",
+            "enum": [
+              "KEPALA_KELUARGA",
+              "ISTRI",
+              "SUAMI",
+              "ANAK",
+              "MENANTU",
+              "CUCU",
+              "ORANG_TUA",
+              "FAMILI_LAIN",
+              "LAINNYA"
+            ],
+            "example": "KEPALA_KELUARGA"
+          },
+          "order": {
+            "type": "number",
+            "description": "Urutan tampil di dalam KK",
+            "example": 0
+          },
+          "familyId": {
+            "type": "string",
+            "example": "clx8f2k9a000iqw3h5f6g7h8i"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "relation",
+          "order",
+          "familyId",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "FamilyEntity": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "clx8f2k9a000iqw3h5f6g7h8i"
+          },
+          "kkNumber": {
+            "type": "object",
+            "nullable": true,
+            "example": "3403011234560001"
+          },
+          "order": {
+            "type": "number",
+            "description": "Urutan tampil di kartu rumah",
+            "example": 0
+          },
+          "houseId": {
+            "type": "string",
+            "example": "clx8f2k9a000hqw3h2b3c4d5e"
+          },
+          "residents": {
+            "description": "Terurut menaik menurut `order`, lalu `createdAt`. Ikut terkirim pada GET /house/:idOrSlug dan pada respons create/update KK.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ResidentEntity"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "order",
+          "houseId",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "HouseEntity": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "clx8f2k9a000hqw3h2b3c4d5e"
+          },
+          "slug": {
+            "type": "string",
+            "description": "Dibuat backend dari `label`, bernomor bila berulang",
+            "example": "rumah-agung-melia"
+          },
+          "label": {
+            "type": "string",
+            "example": "Rumah Agung & Melia"
+          },
+          "rt": {
+            "type": "string",
+            "description": "Teks, bukan angka",
+            "example": "06"
+          },
+          "rw": {
+            "type": "string",
+            "description": "Teks, bukan angka",
+            "example": "03"
+          },
+          "latitude": {
+            "type": "number",
+            "example": -7.690025
+          },
+          "longitude": {
+            "type": "number",
+            "example": 110.228583
+          },
+          "address": {
+            "type": "object",
+            "nullable": true,
+            "example": "Kembangsari RT 06 / RW 03"
+          },
+          "photo": {
+            "type": "object",
+            "nullable": true,
+            "description": "URL publik foto rumah di bucket penyimpanan"
+          },
+          "note": {
+            "type": "object",
+            "nullable": true
+          },
+          "dataVerifiedAt": {
+            "type": "string",
+            "description": "Kapan datanya terakhir dicek pendata. Inilah yang dimaksud \"Data diverifikasi 3 Agustus 2026\" — bukan `updatedAt`.",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "false berarti rumah tidak digambar di peta publik",
+            "example": true
+          },
+          "_count": {
+            "description": "Ikut terkirim pada GET /house, GET /house/active, dan GET /house/:idOrSlug — cukup untuk menulis \"2 KK · 5 jiwa\" tanpa mengunduh penghuninya.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/HouseCountEntity"
+              }
+            ]
+          },
+          "families": {
+            "description": "Hanya pada GET /house/:idOrSlug. Terurut menaik menurut `order`, lalu `createdAt`.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FamilyEntity"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "label",
+          "rt",
+          "rw",
+          "latitude",
+          "longitude",
+          "isActive",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "HouseSummaryEntity": {
+        "type": "object",
+        "properties": {
+          "rw": {
+            "type": "string",
+            "example": "03"
+          },
+          "rt": {
+            "type": "string",
+            "example": "06"
+          },
+          "houses": {
+            "type": "number",
+            "description": "Jumlah rumah aktif di RT ini",
+            "example": 17
+          },
+          "families": {
+            "type": "number",
+            "example": 19
+          },
+          "residents": {
+            "type": "number",
+            "example": 61
+          }
+        },
+        "required": [
+          "rw",
+          "rt",
+          "houses",
+          "families",
+          "residents"
+        ]
+      },
+      "CreateFamilyDto": {
+        "type": "object",
+        "properties": {
+          "houseId": {
+            "type": "string",
+            "description": "id rumah induk, harus sudah ada",
+            "example": "clx8f2k9a000hqw3h2b3c4d5e"
+          },
+          "kkNumber": {
+            "type": "string",
+            "description": "Nomor Kartu Keluarga, boleh kosong",
+            "nullable": true,
+            "example": "3403011234560001"
+          },
+          "order": {
+            "type": "number",
+            "description": "Urutan tampil di kartu rumah (\"KK 1\", \"KK 2\"). Tidak dikirim berarti diletakkan di urutan terakhir.",
+            "minimum": 0,
+            "example": 0
+          }
+        },
+        "required": [
+          "houseId"
+        ]
+      },
+      "UpdateFamilyDto": {
+        "type": "object",
+        "properties": {
+          "kkNumber": {
+            "type": "string",
+            "description": "Nomor Kartu Keluarga, boleh kosong",
+            "nullable": true,
+            "example": "3403011234560001"
+          },
+          "order": {
+            "type": "number",
+            "description": "Urutan tampil di kartu rumah (\"KK 1\", \"KK 2\"). Tidak dikirim berarti diletakkan di urutan terakhir.",
+            "minimum": 0,
+            "example": 0
+          }
+        }
+      },
+      "CreateResidentDto": {
+        "type": "object",
+        "properties": {
+          "familyId": {
+            "type": "string",
+            "description": "id KK induk, harus sudah ada",
+            "example": "clx8f2k9a000iqw3h5f6g7h8i"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nama penghuni",
+            "example": "Antonius"
+          },
+          "birthYear": {
+            "type": "number",
+            "description": "TAHUN lahir, bukan umur dan bukan tanggal. Umur dihitung frontend saat menggambar, sehingga datanya tidak basi tahun depan.",
+            "nullable": true,
+            "minimum": 1900,
+            "example": 1982
+          },
+          "gender": {
+            "type": "string",
+            "enum": [
+              "LAKI_LAKI",
+              "PEREMPUAN"
+            ],
+            "nullable": true,
+            "example": "LAKI_LAKI"
+          },
+          "relation": {
+            "type": "string",
+            "description": "Hubungan dengan kepala keluarga. Tepat satu penghuni per KK boleh ber-KEPALA_KELUARGA; backend yang menjaganya.",
+            "enum": [
+              "KEPALA_KELUARGA",
+              "ISTRI",
+              "SUAMI",
+              "ANAK",
+              "MENANTU",
+              "CUCU",
+              "ORANG_TUA",
+              "FAMILI_LAIN",
+              "LAINNYA"
+            ],
+            "example": "KEPALA_KELUARGA"
+          },
+          "order": {
+            "type": "number",
+            "description": "Urutan tampil di dalam KK. Tidak dikirim berarti diletakkan di urutan terakhir.",
+            "minimum": 0,
+            "example": 0
+          }
+        },
+        "required": [
+          "familyId",
+          "name",
+          "relation"
+        ]
+      },
+      "UpdateResidentDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Nama penghuni",
+            "example": "Antonius"
+          },
+          "birthYear": {
+            "type": "number",
+            "description": "TAHUN lahir, bukan umur dan bukan tanggal. Umur dihitung frontend saat menggambar, sehingga datanya tidak basi tahun depan.",
+            "nullable": true,
+            "minimum": 1900,
+            "example": 1982
+          },
+          "gender": {
+            "type": "string",
+            "enum": [
+              "LAKI_LAKI",
+              "PEREMPUAN"
+            ],
+            "nullable": true,
+            "example": "LAKI_LAKI"
+          },
+          "relation": {
+            "type": "string",
+            "description": "Hubungan dengan kepala keluarga. Tepat satu penghuni per KK boleh ber-KEPALA_KELUARGA; backend yang menjaganya.",
+            "enum": [
+              "KEPALA_KELUARGA",
+              "ISTRI",
+              "SUAMI",
+              "ANAK",
+              "MENANTU",
+              "CUCU",
+              "ORANG_TUA",
+              "FAMILI_LAIN",
+              "LAINNYA"
+            ],
+            "example": "KEPALA_KELUARGA"
+          },
+          "order": {
+            "type": "number",
+            "description": "Urutan tampil di dalam KK. Tidak dikirim berarti diletakkan di urutan terakhir.",
+            "minimum": 0,
+            "example": 0
+          }
+        }
+      },
+      "UpdateHouseDto": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "description": "Judul yang tampil di kartu peta. Slug dibuat backend dari nilai ini.",
+            "example": "Rumah Agung & Melia"
+          },
+          "rt": {
+            "type": "string",
+            "description": "Nomor RT sebagai teks, bukan angka — ada RT \"6A\" di beberapa padukuhan.",
+            "example": "06"
+          },
+          "rw": {
+            "type": "string",
+            "description": "Nomor RW sebagai teks",
+            "example": "03"
+          },
+          "latitude": {
+            "type": "number",
+            "description": "Lintang dalam derajat desimal",
+            "example": -7.690025
+          },
+          "longitude": {
+            "type": "number",
+            "description": "Bujur dalam derajat desimal",
+            "example": 110.228583
+          },
+          "address": {
+            "type": "string",
+            "description": "Alamat rumah",
+            "nullable": true,
+            "example": "Kembangsari RT 06 / RW 03"
+          },
+          "photo": {
+            "type": "string",
+            "description": "URL publik foto rumah, diambil dari respons POST /upload?folder=rumah",
+            "nullable": true
+          },
+          "note": {
+            "type": "string",
+            "description": "Catatan pendata",
+            "nullable": true,
+            "example": "Rumah paling ujung, sebelah pohon sawo."
+          },
+          "dataVerifiedAt": {
+            "type": "string",
+            "description": "Kapan datanya terakhir dicek pendata, format ISO 8601. Berbeda dari updatedAt, yang ikut berubah setiap kali salah ketik dibetulkan.",
+            "nullable": true,
+            "example": "2026-08-03T00:00:00.000Z"
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "false menyembunyikan rumah dari peta publik. Bawaan: true.",
+            "default": true,
+            "example": true
           }
         }
       },
