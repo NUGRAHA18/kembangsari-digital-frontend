@@ -2,17 +2,19 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
-import { Eye, EyeOff, MapPin, Navigation, Phone, Search, X } from "lucide-react";
+import Link from "next/link";
+import { Eye, EyeOff, MapPin, Navigation, Phone, Search, Users, X } from "lucide-react";
 import { Card, CardBody } from "@/components/ui/card";
 import { ShareButton } from "@/components/ui/share-button";
 import { EmptyState } from "@/components/ui/states";
 import { useBoundaries } from "@/hooks/use-boundaries";
 import { useHydrated } from "@/hooks/use-hydrated";
 import { boundaryColor, type BoundaryFeature } from "@/features/maps/boundaries";
+import { colorForRt, compareArea, houseTally, rtsOf } from "@/features/house/house";
 import { MapCanvas } from "@/features/maps/map-canvas";
 import { googleMapsDirectionsLink, telLink } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import type { MapCategory, MapMarker } from "@/types/api";
+import type { House, HouseSummary, MapCategory, MapMarker } from "@/types/api";
 
 /**
  * Peta digital lengkap: filter kategori, pencarian, peta, dan daftar lokasi.
@@ -33,17 +35,28 @@ import type { MapCategory, MapMarker } from "@/types/api";
 export function DigitalMap({
   markers,
   categories,
+  houses = [],
+  summary = [],
   center,
   zoom,
 }: {
   markers: MapMarker[];
   categories: MapCategory[];
+  houses?: House[];
+  summary?: HouseSummary[];
   center: [number, number];
   zoom: number;
 }) {
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [showBoundaries, setShowBoundaries] = useState(true);
+  const [showHouses, setShowHouses] = useState(true);
+  const [focusedHouse, setFocusedHouse] = useState<House | null>(null);
+
+  // Warna ikon rumah ditentukan urutan RT yang benar-benar ada, bukan angkanya
+  // — RT di Kembangsari bernomor 05–08, dan memetakan "05" ke indeks 5 akan
+  // menyisakan lima warna pertama tidak terpakai.
+  const rtOrder = useMemo(() => rtsOf(houses), [houses]);
 
   // Berkas batas wilayah boleh saja belum diisi; selama itu sakelar dan
   // legendanya tidak ditampilkan sama sekali, bukan tampil tanpa isi.
@@ -144,8 +157,22 @@ export function DigitalMap({
             focusedMarker={focusedMarker}
             onMarkerSelect={setPicked}
             boundaries={showBoundaries ? boundaries : []}
+            houses={showHouses ? houses : []}
+            rtOrder={rtOrder}
+            focusedHouseId={focusedHouse?.id ?? null}
+            onHouseSelect={setFocusedHouse}
             className="h-[60vh] lg:h-[70vh]"
           />
+
+          {houses.length > 0 ? (
+            <HouseLegend
+              rtOrder={rtOrder}
+              summary={summary}
+              total={houses.length}
+              isShown={showHouses}
+              onToggle={() => setShowHouses((shown) => !shown)}
+            />
+          ) : null}
 
           {boundaries.length > 0 ? (
             <BoundaryLegend
@@ -163,6 +190,10 @@ export function DigitalMap({
             daftar yang terdorong. Semakin banyak lokasi yang tampil semakin
             jauh tersembunyinya, itulah sebabnya hanya muncul pada "Semua". */}
         <div className="flex min-w-0 flex-col gap-3 lg:max-h-[70vh]">
+          {focusedHouse ? (
+            <HouseDetail house={focusedHouse} onClose={() => setFocusedHouse(null)} />
+          ) : null}
+
           {focusedMarker ? (
             <MarkerDetail marker={focusedMarker} onClose={() => setPicked(null)} />
           ) : null}
@@ -260,6 +291,142 @@ function BoundaryLegend({
         </ul>
       ) : null}
     </div>
+  );
+}
+
+/**
+ * Legenda rumah warga per RT, sekaligus sakelarnya.
+ *
+ * Jumlah rumah dan jiwa diambil dari `GET /house/summary`, bukan dihitung dari
+ * daftar rumah yang sedang digambar — dengan begitu angka di sini selalu sama
+ * dengan yang dipakai halaman monografi, dan tidak ikut berubah kalau suatu
+ * saat peta hanya memuat sebagian rumah.
+ */
+function HouseLegend({
+  rtOrder,
+  summary,
+  total,
+  isShown,
+  onToggle,
+}: {
+  rtOrder: string[];
+  summary: HouseSummary[];
+  total: number;
+  isShown: boolean;
+  onToggle: () => void;
+}) {
+  const sorted = [...summary].sort((a, b) => compareArea(a.rw, b.rw) || compareArea(a.rt, b.rt));
+
+  return (
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-border bg-surface px-4 py-2">
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-pressed={isShown}
+        className="inline-flex min-h-11 items-center gap-2 font-medium transition-colors hover:text-accent"
+      >
+        {isShown ? (
+          <Eye className="size-5" aria-hidden="true" />
+        ) : (
+          <EyeOff className="size-5" aria-hidden="true" />
+        )}
+        Rumah warga
+        <span className="text-sm text-muted">{total}</span>
+      </button>
+
+      {isShown && sorted.length > 0 ? (
+        <ul className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted">
+          {sorted.map((row) => (
+            <li key={`${row.rw}-${row.rt}`} className="flex items-center gap-1.5">
+              <span
+                aria-hidden="true"
+                className="inline-block size-3 rounded-sm"
+                style={{ backgroundColor: colorForRt(row.rt, rtOrder) }}
+              />
+              RT {row.rt}
+              <span className="text-xs">
+                ({row.houses} rumah · {row.residents} jiwa)
+              </span>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
+  );
+}
+
+/**
+ * Kartu rumah di samping peta.
+ *
+ * Sengaja hanya ringkasan: `GET /house/active` membawa `_count`, bukan daftar
+ * penghuninya. Mengambil seluruh penghuni ketujuh puluh rumah hanya untuk
+ * berjaga-jaga kalau salah satunya diketuk adalah unduhan yang tidak masuk
+ * akal di jaringan padukuhan — jadi nama-namanya menyusul di halamannya
+ * sendiri, yang sekaligus alamat yang bisa dibagikan.
+ */
+function HouseDetail({ house, onClose }: { house: House; onClose: () => void }) {
+  return (
+    <Card className="border-primary lg:shrink-0">
+      {house.photo ? (
+        <div className="relative aspect-3/2 w-full bg-surface-muted">
+          <Image
+            src={house.photo}
+            alt={`Foto ${house.label}`}
+            fill
+            loading="lazy"
+            sizes="(min-width: 1024px) 24rem, 100vw"
+            className="object-cover"
+          />
+        </div>
+      ) : null}
+
+      <CardBody className="p-4">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <h2 className="font-semibold text-pretty">{house.label}</h2>
+            <p className="text-sm text-muted">
+              RT {house.rt} / RW {house.rw} · {houseTally(house)}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Tutup detail rumah"
+            className="-mt-1 -mr-1 inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-xl hover:bg-surface-muted"
+          >
+            <X className="size-5" aria-hidden="true" />
+          </button>
+        </div>
+
+        {house.address ? (
+          <p className="mt-2 flex items-start gap-1.5 text-sm text-muted">
+            <MapPin className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+            {house.address}
+          </p>
+        ) : null}
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Link
+            href={`/peta/rumah/${house.slug}`}
+            className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-4 font-medium text-white transition-colors hover:bg-primary-hover"
+          >
+            <Users className="size-4" aria-hidden="true" />
+            Lihat Penghuni
+          </Link>
+
+          <a
+            href={googleMapsDirectionsLink(house.latitude, house.longitude)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-border px-4 font-medium transition-colors hover:bg-surface-muted"
+          >
+            <Navigation className="size-4" aria-hidden="true" />
+            Petunjuk Arah
+          </a>
+        </div>
+      </CardBody>
+    </Card>
   );
 }
 
