@@ -156,6 +156,7 @@ apa pun di frontend** — cukup satu `PATCH`. Melepas penanda pada satu-satunya 
 | `JAWABAN-LAPORAN-BACKEND-2.md` | Jawaban putaran kedua: A-1 sampai C-6 selesai dan diverifikasi terhadap backend yang berjalan | internal |
 | `LAPORAN-BACKEND-3.md` | Laporan putaran ketiga: `500` pada unggahan folder `peta`, model rumah warga, dan login Google — beserta daftar hal yang **tidak** perlu backend kerjakan | internal |
 | `EVALUASI-MONOGRAFI.md` | Pencocokan portal dengan `monografi-idea.md` per bagian, memisahkan yang layak dikerjakan dari yang sengaja tidak dilanjutkan | internal |
+| `JAWABAN-LAPORAN-BACKEND-3.md` | Jawaban putaran ketiga: A-1, B, dan C selesai. **Baca C-4** — `POST /auth/ticket` menjawab `accessToken`, bukan `token` | internal |
 
 Berkas selain dua yang teratas **sengaja tidak ikut di repo publik ini** (lihat `.gitignore`)
 dan dibagikan lewat jalur internal. Semuanya tetap ada di komputer masing-masing anggota tim.
@@ -222,6 +223,16 @@ Server Action, rute `/admin/keluar` dihapus seluruhnya, dan pembuangan cookie ba
 **Ditambahkan pada sesi yang sama:** batas wilayah/jalan/gang lewat GeoJSON statis, dan
 portal bisa dipasang sebagai aplikasi di layar utama (PWA).
 
+**Kontrak putaran ketiga dikerjakan** (12 Agustus 2026, `JAWABAN-LAPORAN-BACKEND-3.md`):
+
+- **Rumah warga** — `services/house.ts`, `features/house/`, modul dashboard di `/admin/rumah`
+  beserta pengelolaan KK dan penghuninya, ikon rumah berwarna per RT di peta, dan halaman
+  `/peta/rumah/[slug]` yang bisa dibagikan.
+- **Login dengan akun Google** — tombol di `/admin/login` dan Route Handler
+  `/admin/login/google` yang menukar tiket sekali pakai menjadi cookie sesi.
+- **Unggahan gambar** tidak perlu diubah: `500` yang kemarin ternyata `SUPABASE_URL`
+  bertanda kutip di Render, bukan folder `peta`. Folder `rumah` sudah ditambahkan backend.
+
 **Belum ada satu pun modul dashboard yang diuji dengan backend hidup** — penyesuaian di atas
 mengikuti kontrak yang sudah backend verifikasi sendiri, tetapi alur tulisnya belum ditekan
 tombolnya dari sisi ini.
@@ -247,7 +258,10 @@ components/layout/      Navbar, Footer, penyedia tema
 features/<modul>/       Komponen khusus satu modul, termasuk features/admin/
 services/<modul>.ts     Satu berkas per modul backend — semua pemanggilan API lewat sini
 lib/api.ts              Klien HTTP tunggal
-lib/session.ts          Cookie sesi admin (server saja)
+lib/session.ts          Cookie sesi admin (server saja). `sessionCookie` dipakai
+                        dua pemasang: Server Action login, dan Route Handler
+                        balikan Google yang menempelkannya ke NextResponse
+lib/coordinates.ts      Pembacaan lintang/bujur, dipakai peta dan rumah warga
 lib/format.ts           Tanggal, angka, tautan WhatsApp/Maps — semuanya locale id-ID
 types/api.ts            Kontrak tipe dari backend
 ```
@@ -544,6 +558,43 @@ Modul berita adalah contoh yang diikuti modul berikutnya. Polanya:
 - **`print:hidden` di bilah atas dan sidebar** (`app/admin/(dasbor)/layout.tsx`) supaya yang
   tercetak hanya lembar QR-nya. Koreksi galatnya **Q** (pulih 25%), bukan `M` bawaan: kertas
   yang ditempel di balai padukuhan akan kotor dan tersenggol.
+- **Rumah warga: `birthYear`, bukan umur; `dataVerifiedAt`, bukan `updatedAt`.** Yang
+  tersimpan tahun lahir dan umurnya dihitung `ageFromBirthYear` saat menggambar — menyimpan
+  umur membuat seluruh data salah setahun kemudian. `dataVerifiedAt` menyatakan kapan pendata
+  terakhir memeriksanya, sedangkan `updatedAt` ikut berubah setiap salah ketik dibetulkan;
+  yang ditampilkan sebagai "Data diverifikasi …" adalah yang pertama.
+- **Kepala keluarga dijaga backend, jangan ikut menjaganya** — persis seperti `isPrimary` pada
+  gambar UMKM. Warga pertama sebuah KK otomatis menjadi kepala keluarga, menyetel yang baru
+  melepas penanda yang lama, dan menghapusnya mengangkat penghuni teratas menurut `order`.
+  **`LAINNYA` bukan sekadar salah satu pilihan**: itu yang disetel backend pada kepala
+  keluarga lama, dan artinya "hubungan aslinya menunggu dibetulkan pendata". Karena itu
+  `needsRelationReview` menampilkannya sebagai peringatan, bukan keterangan biasa yang mudah
+  terlewat.
+- **KK dan penghuni memakai form server biasa**, sama alasannya dengan kartu gambar UMKM: satu
+  rumah bisa berisi beberapa KK dan belasan warga, masing-masing dengan formnya sendiri.
+  Akibatnya galat dibawa lewat `?galat=` pada alamat halaman rumahnya, bukan dikembalikan
+  sebagai state — dan `redirect()` di dalamnya **wajib berada di luar blok `try`**, karena ia
+  bekerja dengan melempar dan akan tertangkap `catch`-nya sendiri.
+- **`DELETE` rumah, KK, dan warga menuntut peran `ADMIN`**, bukan sekadar token yang sah.
+  `403` diterjemahkan menjadi kalimat yang menyebut apa yang harus dilakukan pengelola, bukan
+  diteruskan apa adanya.
+- **`GET /house/active` dan `GET /house/summary` ARRAY POLOS.** Ringkasan per RT selalu
+  diambil dari `/house/summary`, tidak pernah dijumlahkan sendiri dari daftar rumah: yang
+  pertama hanya menghitung rumah aktif dan urutannya numerik, dan angkanya harus sama dengan
+  yang dipakai halaman monografi.
+- **Warna ikon rumah berasal dari urutan RT yang benar-benar ada** (`colorForRt`), bukan dari
+  angkanya. RT Kembangsari bernomor 05–08; memetakan "05" ke indeks 5 akan menyisakan lima
+  warna pertama tidak terpakai sementara RT-nya berdesakan di ujung palet.
+- **Masuk dengan Google berakhir di Route Handler, bukan halaman.** `/admin/login/google`
+  menukar tiket sekali pakai lalu menyetel cookie — dan Server Component memang tidak boleh
+  menyetel cookie. Ini **tidak** melanggar aturan "tidak ada `GET` yang menyentuh sesi": rute
+  keluar yang dulu dihapus *mengakhiri* sesi sehingga satu prefetch cukup melempar pengelola
+  keluar, sedangkan yang ini *membuat* sesi dan hanya berhasil dengan tiket sah yang baru
+  diterbitkan untuk peramban itu. Tetap: **jangan pernah memasang `<Link>` ke alamat itu.**
+  `proxy.ts` membuka jalannya lewat `pathname.startsWith("/admin/login/")` — tanpa itu
+  balikan Google dipantulkan ke form masuk dan tiketnya hangus tanpa pernah ditukar.
+- **`POST /auth/ticket` menjawab `accessToken`, bukan `token`** — sengaja sama persis dengan
+  `POST /auth/login`, sehingga `sessionCookie` yang sama dipakai kedua alur.
 - **Batas ukuran unggahan datang dari Server Action, bukan dari backend.** Seluruh unggahan
   gambar dashboard menumpang Server Action, dan Vercel menolak badan permintaan di atas
   **4,5 MB** di lapisan platformnya — jauh sebelum Next.js sempat membacanya. `bodySizeLimit`
@@ -557,11 +608,13 @@ Modul berita adalah contoh yang diikuti modul berikutnya. Polanya:
 ## Yang belum dikerjakan
 
 - Seluruh daftar kebutuhan sudah tergarap, termasuk QR Code monografi (FR-052).
-- **Menunggu backend** (`LAPORAN-BACKEND-3.md`): `500` pada `POST /upload?folder=peta`,
-  model `House`/`Family`/`Resident` untuk memetakan rumah warga, dan login lewat akun Google.
-  Ketiganya tidak bisa dikerjakan dari sisi ini.
-- **Menunggu pengelola:** `public/data/batas-wilayah.geojson` masih kosong, dan sepuluh
-  marker di produksi masih data seed yang berjarak ±13,8 km dari padukuhan yang sebenarnya.
+- **Menunggu deploy backend.** Kode putaran ketiga sudah ada di `feat/phase2-modules-and-deploy`
+  dan sudah di-push, tetapi produksi masih menjawab `404` untuk `/house/*` dan `/auth/google` —
+  Render belum menerbitkan versi itu. Seluruh modul rumah warga dan login Google di frontend
+  dibangun terhadap `openapi.json`, bukan terhadap backend yang berjalan.
+- **Menunggu pengelola:** `public/data/batas-wilayah.geojson` masih kosong, sepuluh marker di
+  produksi masih data seed yang berjarak ±13,8 km dari padukuhan yang sebenarnya, dan
+  `SUPABASE_URL` di Render masih bertanda kutip (kodenya sudah menambal, nilainya belum).
 - Prioritas selanjutnya dan yang sengaja **tidak** dilanjutkan: `EVALUASI-MONOGRAFI.md`.
 - **Belum ada satu pun modul dashboard yang diuji dengan backend hidup.** Yang paling layak
   ditekan tombolnya lebih dulu — bukan lagi karena kontraknya meragukan, melainkan karena
