@@ -154,6 +154,8 @@ apa pun di frontend** — cukup satu `PATCH`. Melepas penanda pada satu-satunya 
 | `JAWABAN-LAPORAN-BACKEND.md` | Jawaban tim backend: seluruh butir laporan sudah dikerjakan, beserta kontrak barunya | internal |
 | `LAPORAN-BACKEND-2.md` | Laporan putaran kedua, disusun setelah dashboard selesai — temuan yang terbukti dari `openapi.json` dipisahkan dari asumsi yang masih perlu dikonfirmasi | internal |
 | `JAWABAN-LAPORAN-BACKEND-2.md` | Jawaban putaran kedua: A-1 sampai C-6 selesai dan diverifikasi terhadap backend yang berjalan | internal |
+| `LAPORAN-BACKEND-3.md` | Laporan putaran ketiga: `500` pada unggahan folder `peta`, model rumah warga, dan login Google — beserta daftar hal yang **tidak** perlu backend kerjakan | internal |
+| `EVALUASI-MONOGRAFI.md` | Pencocokan portal dengan `monografi-idea.md` per bagian, memisahkan yang layak dikerjakan dari yang sengaja tidak dilanjutkan | internal |
 
 Berkas selain dua yang teratas **sengaja tidak ikut di repo publik ini** (lihat `.gitignore`)
 dan dibagikan lewat jalur internal. Semuanya tetap ada di komputer masing-masing anggota tim.
@@ -204,6 +206,22 @@ masuk di setiap menu karena prefetch `<Link>` memanggil rute keluar. Tombol kelu
 Server Action, rute `/admin/keluar` dihapus seluruhnya, dan pembuangan cookie basi pindah ke
 `proxy.ts`. Diuji terhadap build produksi dengan backend tiruan yang menjawab `401`.
 
+**Laporan bug dari produksi dikerjakan** (11 Agustus 2026), setelah portal dipakai sungguhan:
+
+- **Peta beranda tidak pernah muncul.** `LazyMount` memasang `IntersectionObserver` pada
+  elemen ber-`display: contents`, yang tidak menghasilkan kotak layout — targetnya karena itu
+  tidak pernah dilaporkan terlihat dan petanya berhenti di rangka pemuat selamanya.
+- **Pin di luar layar.** Titik tengah di Pengaturan diketik tangan dan bisa berjarak
+  kilometer dari pin yang terdata. `AutoFit` di `map-view.tsx` sekarang memaskan peta ke
+  seluruh pin kalau titik tengahnya jatuh di luar sebarannya.
+- **Kolom keterangan `/peta` colaps.** Kartu detail ikut berada di dalam area gulir, jadi
+  memilih lokasi dari bagian bawah daftar menyisipkannya di atas posisi gulir yang terlihat.
+- **Unggahan gambar gagal diam-diam** di atas 1 MB — lihat aturan Server Action di bawah.
+- **Alamat di footer** kini tautan ke Google Maps, memakai koordinat yang sama dengan peta.
+
+**Ditambahkan pada sesi yang sama:** batas wilayah/jalan/gang lewat GeoJSON statis, dan
+portal bisa dipasang sebagai aplikasi di layar utama (PWA).
+
 **Belum ada satu pun modul dashboard yang diuji dengan backend hidup** — penyesuaian di atas
 mengikuti kontrak yang sudah backend verifikasi sendiri, tetapi alur tulisnya belum ditekan
 tombolnya dari sisi ini.
@@ -216,6 +234,12 @@ app/(publik)/           Portal warga. Layout-nya yang memasang Navbar & Footer.
 app/admin/              Dashboard. (dasbor)/ memakai kerangka bersidebar;
                         login/ sengaja di luarnya
 app/layout.tsx          Hanya dokumen: bahasa, font, tema, metadata
+app/manifest.ts         Keterangan pemasangan sebagai aplikasi (PWA)
+app/ikon/[ukuran]/      Ikon aplikasi 192 & 512, dibangkitkan saat build
+app/luring/             Halaman saat sambungan putus — DI LUAR (publik)/,
+                        karena layout itu memanggil GET /settings
+public/sw.js            Service worker: hanya cadangan luring, tanpa cache halaman
+public/data/            Batas wilayah, jalan, dan gang sebagai GeoJSON statis
 proxy.ts                Penjaga /admin — memeriksa ada tidaknya cookie sesi,
                         sekaligus satu-satunya tempat cookie basi dibuang
 components/ui/          Komponen dasar lintas modul
@@ -253,6 +277,43 @@ Jangan "memperbaiki" hal-hal berikut tanpa membaca alasannya dulu:
 
 - **Peta memakai Leaflet + OpenStreetMap**, bukan Google Maps: tanpa API key dan tanpa billing.
   Tombol "Petunjuk Arah" tetap mengarah ke Google Maps karena aplikasi itu yang ada di ponsel warga.
+- **Batas wilayah, jalan, dan gang adalah berkas statis**, bukan data backend:
+  `public/data/batas-wilayah.geojson`, petunjuk pengisiannya di `public/data/README.md`.
+  Ketiganya berubah sekali dalam sepuluh tahun, sedangkan penyunting polygon di dashboard
+  adalah pekerjaan tersendiri yang besar. Berkasnya diambil di browser lewat
+  `hooks/use-boundaries.ts`, bukan diimpor sebagai JSON di Server Component — polygon bisa
+  berisi ribuan koordinat, dan mengimpornya menyalin seluruh angka itu ke muatan halaman yang
+  diunduh setiap pengunjung, termasuk yang tidak pernah membuka petanya. Berkas yang kosong
+  atau gagal dibaca diperlakukan sebagai "belum ada batas wilayah"; peta tidak boleh runtuh.
+- **`LazyMount` tidak boleh memakai `display: contents`.** Elemen ber-`display: contents`
+  tidak menghasilkan kotak layout, dan IntersectionObserver menghitung perpotongan dari kotak
+  itu — targetnya tidak pernah dilaporkan terlihat dan isinya tidak pernah dipasang. Ini
+  pernah benar-benar terjadi: peta beranda berhenti di rangka pemuat selamanya.
+- **Peta memaskan diri ke pin kalau titik tengahnya jatuh jauh** (`AutoFit` di
+  `map-view.tsx`). Titik tengah di Pengaturan diketik tangan; ketika ia berjarak kilometer
+  dari pin yang terdata, peta terbuka dengan benar tetapi layarnya kosong — dan itu terbaca
+  sebagai "petanya tidak muncul". Titik tengah pilihan admin tetap dihormati selama berada di
+  sekitar sebaran pin. Marker berkoordinat bukan-angka dibuang sebelum digambar, karena satu
+  saja cukup membuat Leaflet melempar dan menjatuhkan seluruh peta.
+- **Lokasi yang sedang dibuka ikut ditulis ke alamat** sebagai `/peta?lokasi=<id>`, dan itu
+  satu-satunya pengecualian dari "filter peta memakai state klien, bukan URL". Penulisannya
+  memakai `history.replaceState`, bukan router Next.js, jadi tidak ada permintaan yang
+  berangkat dan `/peta` tetap dipranyatakan statis. Alamatnya juga **dibaca lewat
+  `window.location`, bukan `useSearchParams`** — hook itu memaksa halamannya dirender per
+  permintaan. Bacaannya dijaga `useHydrated` supaya HTML dari server dan render pertama di
+  browser tetap sama, dan effect penulisnya berhenti lebih dulu sebelum hydration selesai —
+  tanpa itu ia justru menghapus `?lokasi=` dari tautan yang baru saja dibuka.
+- **`components/ui/share-button.tsx` punya dua jalur, dan keduanya perlu ada.** Di ponsel
+  `navigator.share` membuka lembar berbagi bawaan sistem; di komputer API itu hampir selalu
+  tidak ada dan yang tersisa menyalin tautan ke papan klip. Menutup lembar berbagi
+  (`AbortError`) bukan kegagalan dan tidak boleh berakhir dengan tautan yang diam-diam
+  tersalin. Komponen ini dibuat umum karena rumah warga nanti memerlukannya juga.
+- **Portal bisa dipasang sebagai aplikasi**, tetapi service worker-nya sengaja **tidak
+  menyimpan halaman ke cache** (`public/sw.js`). Ia hanya menyediakan cadangan luring dan
+  memenuhi syarat Chrome memunculkan ajakan pasang. Berita, agenda, dan pengumuman harus
+  terbaca terkini, dan `/admin` tidak disentuh sama sekali. Halaman luringnya di `app/luring/`
+  berada **di luar route group `(publik)`** karena layout itu memanggil `GET /settings` —
+  permintaan yang justru mustahil berhasil saat halaman itu dibutuhkan.
 - **Tanpa TanStack Query, Axios, Zustand, Framer Motion** meski disebut di dokumen arsitektur.
   Halaman publik memakai Server Component + `fetch`, jadi pustaka itu hanya menambah berkas
   yang harus diunduh tanpa memberi manfaat. Pertimbangkan lagi saat membangun dashboard admin.
@@ -483,10 +544,25 @@ Modul berita adalah contoh yang diikuti modul berikutnya. Polanya:
 - **`print:hidden` di bilah atas dan sidebar** (`app/admin/(dasbor)/layout.tsx`) supaya yang
   tercetak hanya lembar QR-nya. Koreksi galatnya **Q** (pulih 25%), bukan `M` bawaan: kertas
   yang ditempel di balai padukuhan akan kotor dan tersenggol.
+- **Batas ukuran unggahan datang dari Server Action, bukan dari backend.** Seluruh unggahan
+  gambar dashboard menumpang Server Action, dan Vercel menolak badan permintaan di atas
+  **4,5 MB** di lapisan platformnya — jauh sebelum Next.js sempat membacanya. `bodySizeLimit`
+  di `next.config.ts` karena itu dipatok 4 MB (bawaannya hanya **1 MB**, dan tanpa baris itu
+  foto ponsel biasa gagal tanpa pesan yang menyebut ukuran). Batas yang benar-benar
+  diberlakukan ke pengelola ada di `lib/image.ts`: `IMAGE_MAX_BYTES` per berkas dan
+  `validateImageBatch` untuk **jumlah** seluruh berkas pada unggahan banyak gambar — sepuluh
+  foto yang masing-masing lolos tetap bisa menembus batas kalau ditotal. Angkanya jangan
+  ditulis ulang di komponen; pakai `IMAGE_MAX_LABEL`.
 
 ## Yang belum dikerjakan
 
 - Seluruh daftar kebutuhan sudah tergarap, termasuk QR Code monografi (FR-052).
+- **Menunggu backend** (`LAPORAN-BACKEND-3.md`): `500` pada `POST /upload?folder=peta`,
+  model `House`/`Family`/`Resident` untuk memetakan rumah warga, dan login lewat akun Google.
+  Ketiganya tidak bisa dikerjakan dari sisi ini.
+- **Menunggu pengelola:** `public/data/batas-wilayah.geojson` masih kosong, dan sepuluh
+  marker di produksi masih data seed yang berjarak ±13,8 km dari padukuhan yang sebenarnya.
+- Prioritas selanjutnya dan yang sengaja **tidak** dilanjutkan: `EVALUASI-MONOGRAFI.md`.
 - **Belum ada satu pun modul dashboard yang diuji dengan backend hidup.** Yang paling layak
   ditekan tombolnya lebih dulu — bukan lagi karena kontraknya meragukan, melainkan karena
   butir yang bergantung pada transaksi memang perlu dijalankan:
