@@ -42,9 +42,11 @@ export function LazyMount({
     return () => observer.disconnect();
   }, [rootMargin]);
 
-  return (
-    <div ref={containerRef} className="contents">
-      {isVisible ? children : fallback}
-    </div>
-  );
+  // Pembungkusnya WAJIB punya kotak sendiri. Sebelumnya di sini ada
+  // `className="contents"` agar susunan induknya tidak bergeser — tetapi
+  // `display: contents` membuat elemen tidak menghasilkan kotak layout sama
+  // sekali, dan IntersectionObserver menghitung perpotongan dari kotak itu.
+  // Targetnya karena itu tidak pernah dilaporkan terlihat, `isVisible` tetap
+  // false selamanya, dan peta beranda berhenti pada rangka pemuatnya.
+  return <div ref={containerRef}>{isVisible ? children : fallback}</div>;
 }

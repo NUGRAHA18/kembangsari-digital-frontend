@@ -4,6 +4,7 @@ import { useState } from "react";
 import dynamic from "next/dynamic";
 import { Hand } from "lucide-react";
 import { Skeleton } from "@/components/ui/states";
+import type { BoundaryFeature } from "@/features/maps/boundaries";
 import { cn } from "@/lib/utils";
 import type { MapMarker } from "@/types/api";
 
@@ -26,6 +27,7 @@ export function MapCanvas({
   zoom,
   focusedMarker = null,
   onMarkerSelect,
+  boundaries,
   className,
 }: {
   markers: MapMarker[];
@@ -34,6 +36,7 @@ export function MapCanvas({
   zoom: number;
   focusedMarker?: MapMarker | null;
   onMarkerSelect?: (marker: MapMarker) => void;
+  boundaries?: BoundaryFeature[];
   className?: string;
 }) {
   const [isInteractive, setIsInteractive] = useState(false);
@@ -56,6 +59,7 @@ export function MapCanvas({
         interactive={isInteractive}
         focusedMarker={focusedMarker}
         onMarkerSelect={onMarkerSelect}
+        boundaries={boundaries}
       />
 
       {!isInteractive ? (

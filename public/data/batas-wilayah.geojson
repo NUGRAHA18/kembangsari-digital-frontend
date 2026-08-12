@@ -1,0 +1,5 @@
+{
+  "type": "FeatureCollection",
+  "catatan": "Batas wilayah Padukuhan Kembangsari beserta jalan dan gang. Cara mengisinya ada di public/data/README.md. Selama features masih kosong, sakelar dan legendanya tidak ditampilkan di halaman peta.",
+  "features": []
+}
