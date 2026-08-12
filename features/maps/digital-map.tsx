@@ -1,10 +1,14 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
-import { MapPin, Navigation, Phone, Search, X } from "lucide-react";
+import { Eye, EyeOff, MapPin, Navigation, Phone, Search, X } from "lucide-react";
 import { Card, CardBody } from "@/components/ui/card";
+import { ShareButton } from "@/components/ui/share-button";
 import { EmptyState } from "@/components/ui/states";
+import { useBoundaries } from "@/hooks/use-boundaries";
+import { useHydrated } from "@/hooks/use-hydrated";
+import { boundaryColor, type BoundaryFeature } from "@/features/maps/boundaries";
 import { MapCanvas } from "@/features/maps/map-canvas";
 import { googleMapsDirectionsLink, telLink } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -20,6 +24,11 @@ import type { MapCategory, MapMarker } from "@/types/api";
  * Filter di sini memakai state klien, bukan URL, karena peta memang komponen
  * interaktif yang menuntut JavaScript — menyimpan filternya ke URL hanya akan
  * memuat ulang halaman setiap kali kategori diganti.
+ *
+ * Satu pengecualian: **lokasi yang sedang dibuka ikut ditulis ke alamat**
+ * sebagai `?lokasi=<id>`, supaya satu titik bisa dibagikan lewat tautan.
+ * Penulisannya memakai `history.replaceState`, bukan router Next.js, sehingga
+ * tidak ada permintaan apa pun yang berangkat dan alasan di atas tetap utuh.
  */
 export function DigitalMap({
   markers,
@@ -34,7 +43,39 @@ export function DigitalMap({
 }) {
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
-  const [focusedMarker, setFocusedMarker] = useState<MapMarker | null>(null);
+  const [showBoundaries, setShowBoundaries] = useState(true);
+
+  // Berkas batas wilayah boleh saja belum diisi; selama itu sakelar dan
+  // legendanya tidak ditampilkan sama sekali, bukan tampil tanpa isi.
+  const boundaries = useBoundaries();
+
+  const hydrated = useHydrated();
+
+  // Alamat dibaca saat render, bukan lewat `useSearchParams`: hook itu memaksa
+  // `/peta` dirender per permintaan, padahal halamannya sekarang dipranyatakan
+  // statis. Sebelum hydration nilainya sengaja kosong supaya HTML dari server
+  // dan render pertama di browser tetap sama.
+  const sharedId = hydrated ? new URLSearchParams(window.location.search).get("lokasi") : null;
+
+  // `undefined` berarti pengguna belum menyentuh apa pun, jadi yang berlaku
+  // masih pilihan dari tautan yang dibagikan. `null` berarti ia menutupnya
+  // sendiri — dan itu harus mengalahkan isi alamat, bukan dibatalkan olehnya.
+  const [picked, setPicked] = useState<MapMarker | null | undefined>(undefined);
+
+  const focusedMarker =
+    picked !== undefined ? picked : (markers.find((marker) => marker.id === sharedId) ?? null);
+
+  useEffect(() => {
+    // Sebelum hydration `focusedMarker` selalu null, dan menulisnya ke alamat
+    // justru akan menghapus `?lokasi=` dari tautan yang baru saja dibuka.
+    if (!hydrated) return;
+
+    const url = new URL(window.location.href);
+    if (focusedMarker) url.searchParams.set("lokasi", focusedMarker.id);
+    else url.searchParams.delete("lokasi");
+
+    window.history.replaceState(null, "", url);
+  }, [focusedMarker, hydrated]);
 
   const categoryIds = useMemo(() => categories.map((category) => category.id), [categories]);
 
@@ -94,21 +135,36 @@ export function DigitalMap({
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+        <div className="flex flex-col gap-3 lg:col-span-2">
           <MapCanvas
             markers={filtered}
             categoryIds={categoryIds}
             center={focusedMarker ? [focusedMarker.latitude, focusedMarker.longitude] : center}
             zoom={zoom}
             focusedMarker={focusedMarker}
-            onMarkerSelect={setFocusedMarker}
+            onMarkerSelect={setPicked}
+            boundaries={showBoundaries ? boundaries : []}
             className="h-[60vh] lg:h-[70vh]"
           />
+
+          {boundaries.length > 0 ? (
+            <BoundaryLegend
+              boundaries={boundaries}
+              isShown={showBoundaries}
+              onToggle={() => setShowBoundaries((shown) => !shown)}
+            />
+          ) : null}
         </div>
 
-        <div className="flex flex-col gap-3 lg:max-h-[70vh] lg:overflow-y-auto">
+        {/* Yang menggulir hanya daftarnya, bukan seluruh kolom. Ketika kartu
+            detail masih ikut berada di dalam area gulir, memilih lokasi dari
+            bagian bawah daftar menyisipkan kartu itu di atas posisi gulir yang
+            sedang dilihat — kartunya tersembunyi dan yang terlihat hanya
+            daftar yang terdorong. Semakin banyak lokasi yang tampil semakin
+            jauh tersembunyinya, itulah sebabnya hanya muncul pada "Semua". */}
+        <div className="flex min-w-0 flex-col gap-3 lg:max-h-[70vh]">
           {focusedMarker ? (
-            <MarkerDetail marker={focusedMarker} onClose={() => setFocusedMarker(null)} />
+            <MarkerDetail marker={focusedMarker} onClose={() => setPicked(null)} />
           ) : null}
 
           <h2 className="font-semibold">
@@ -121,12 +177,15 @@ export function DigitalMap({
               description="Coba kata kunci lain atau pilih kategori Semua."
             />
           ) : (
-            <ul className="flex flex-col gap-2">
+            // `min-h-0` wajib: anak dari flex container tidak boleh menyusut di
+            // bawah tinggi isinya secara bawaan, sehingga tanpa ini area gulir
+            // memanjang dan `max-h` induknya tidak pernah berlaku.
+            <ul className="flex flex-col gap-2 lg:min-h-0 lg:overflow-y-auto">
               {filtered.map((marker) => (
                 <li key={marker.id}>
                   <button
                     type="button"
-                    onClick={() => setFocusedMarker(marker)}
+                    onClick={() => setPicked(marker)}
                     aria-pressed={focusedMarker?.id === marker.id}
                     className={cn(
                       "flex w-full min-h-11 items-start gap-3 rounded-xl border p-3 text-left transition-colors",
@@ -149,6 +208,57 @@ export function DigitalMap({
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+/**
+ * Legenda batas wilayah, sekaligus sakelarnya.
+ *
+ * Garis batas menumpuk di atas pin dan jalan, dan tidak semua orang yang
+ * membuka peta sedang mencari wilayah — jadi harus bisa dimatikan. Sakelarnya
+ * disatukan dengan legenda karena keduanya menjawab pertanyaan yang sama:
+ * garis warna ini artinya apa, dan bagaimana menghilangkannya.
+ */
+function BoundaryLegend({
+  boundaries,
+  isShown,
+  onToggle,
+}: {
+  boundaries: BoundaryFeature[];
+  isShown: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-border bg-surface px-4 py-2">
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-pressed={isShown}
+        className="inline-flex min-h-11 items-center gap-2 font-medium transition-colors hover:text-accent"
+      >
+        {isShown ? (
+          <Eye className="size-5" aria-hidden="true" />
+        ) : (
+          <EyeOff className="size-5" aria-hidden="true" />
+        )}
+        Batas wilayah
+      </button>
+
+      {isShown ? (
+        <ul className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted">
+          {boundaries.map((feature, index) => (
+            <li key={`${feature.properties.nama}-${index}`} className="flex items-center gap-1.5">
+              <span
+                aria-hidden="true"
+                className="inline-block h-0.5 w-5 rounded-full"
+                style={{ backgroundColor: boundaryColor(feature, index) }}
+              />
+              {feature.properties.nama}
+            </li>
+          ))}
+        </ul>
+      ) : null}
     </div>
   );
 }
@@ -184,7 +294,10 @@ function CategoryChip({
 
 function MarkerDetail({ marker, onClose }: { marker: MapMarker; onClose: () => void }) {
   return (
-    <Card className="border-primary">
+    // `shrink-0` menjaga kartu tetap seukuran isinya ketika kolomnya sudah
+    // mentok `max-h`; tanpa itu kartu yang dipilih ikut dipipihkan dan
+    // deskripsinya terpotong — yang menyisakan sisa gejala bug yang sama.
+    <Card className="border-primary lg:shrink-0">
       {marker.image ? (
         <div className="relative aspect-3/2 w-full bg-surface-muted">
           <Image
@@ -202,9 +315,7 @@ function MarkerDetail({ marker, onClose }: { marker: MapMarker; onClose: () => v
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
             <h2 className="font-semibold text-pretty">{marker.name}</h2>
-            {marker.category ? (
-              <p className="text-sm text-muted">{marker.category.name}</p>
-            ) : null}
+            {marker.category ? <p className="text-sm text-muted">{marker.category.name}</p> : null}
           </div>
 
           <button
@@ -250,6 +361,15 @@ function MarkerDetail({ marker, onClose }: { marker: MapMarker; onClose: () => v
               {marker.phone}
             </a>
           ) : null}
+
+          {/* Tautannya membuka peta dengan lokasi ini sudah terpilih, bukan
+              sekadar halaman petanya. */}
+          <ShareButton
+            url={`/peta?lokasi=${marker.id}`}
+            title={marker.name}
+            text={marker.address ?? undefined}
+            label="Bagikan"
+          />
         </div>
       </CardBody>
     </Card>

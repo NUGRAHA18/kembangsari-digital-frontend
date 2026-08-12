@@ -8,7 +8,7 @@ import { Button, ButtonLink } from "@/components/ui/button";
 import { Card, CardBody } from "@/components/ui/card";
 import { Field, inputClasses } from "@/components/ui/field";
 import { saveMarkerAction, type MarkerFormState } from "@/app/admin/(dasbor)/peta/actions";
-import { validateImage } from "@/lib/image";
+import { IMAGE_MAX_LABEL, validateImage } from "@/lib/image";
 import { cn } from "@/lib/utils";
 import type { MapCategory, MapMarker } from "@/types/api";
 
@@ -234,7 +234,7 @@ export function MarkerForm({
           <Field
             label="Pilih gambar"
             htmlFor="imageFile"
-            hint="JPG, PNG, WEBP, GIF, atau AVIF. Maksimal 5 MB."
+            hint={`JPG, PNG, WEBP, GIF, atau AVIF. Maksimal ${IMAGE_MAX_LABEL}.`}
           >
             <input
               id="imageFile"

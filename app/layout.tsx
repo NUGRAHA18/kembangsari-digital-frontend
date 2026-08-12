@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import { ThemeProvider } from "@/components/layout/theme-provider";
 import { getSettingsMap } from "@/services/settings";
@@ -12,6 +12,21 @@ const geistSans = Geist({
 
 /** Dipakai untuk membentuk URL absolut pada tag Open Graph dan sitemap. */
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3001";
+
+/**
+ * Mewarnai bilah status ponsel — terutama ketika portal dibuka dari layar
+ * utama sebagai aplikasi, di mana bilah itu satu-satunya kerangka yang tersisa.
+ *
+ * Dua nilai, bukan satu: hijau di atas latar terang punya kontras yang cukup,
+ * sedangkan di mode gelap bilah status yang tetap hijau terang tampak seperti
+ * potongan yang tertinggal dari tema lain.
+ */
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#15803D" },
+    { media: "(prefers-color-scheme: dark)", color: "#020617" },
+  ],
+};
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSettingsMap();

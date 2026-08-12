@@ -1,4 +1,5 @@
 import { Footer } from "@/components/layout/footer";
+import { InstallPrompt } from "@/components/layout/install-prompt";
 import { Navbar } from "@/components/layout/navbar";
 import { getSettingsMap } from "@/services/settings";
 
@@ -30,6 +31,10 @@ export default async function PublicLayout({ children }: { children: React.React
       </main>
 
       <Footer settings={settings} />
+
+      {/* Hanya di portal warga. Dashboard dibuka pengelola dari peramban di
+          komputer, dan ajakan memasang aplikasi di sana hanya menutupi form. */}
+      <InstallPrompt />
     </>
   );
 }

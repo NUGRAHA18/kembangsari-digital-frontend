@@ -6,11 +6,6 @@ export function getActiveAnnouncements(query: PaginationQuery = {}) {
   return getPaginated<Announcement>("/announcement/active", query, { revalidate: 300 });
 }
 
-/** Pengumuman nonaktif dijawab 404 untuk pemanggil tanpa token. */
-export function getAnnouncementById(id: string) {
-  return getOne<Announcement>(`/announcement/${id}`, { revalidate: 300 });
-}
-
 // ============================================================
 // DASHBOARD ADMIN
 // ============================================================

@@ -12,7 +12,7 @@ import {
   type KknActivityFormState,
 } from "@/app/admin/(dasbor)/program-kkn/actions";
 import { toDateInput } from "@/lib/format";
-import { validateImage } from "@/lib/image";
+import { IMAGE_MAX_LABEL, validateImage } from "@/lib/image";
 import { cn } from "@/lib/utils";
 import type { KKNActivity } from "@/types/api";
 
@@ -147,7 +147,7 @@ export function KknActivityForm({
           <Field
             label="Pilih foto"
             htmlFor="imageFile"
-            hint="JPG, PNG, WEBP, GIF, atau AVIF. Maksimal 5 MB."
+            hint={`JPG, PNG, WEBP, GIF, atau AVIF. Maksimal ${IMAGE_MAX_LABEL}.`}
           >
             <input
               id="imageFile"

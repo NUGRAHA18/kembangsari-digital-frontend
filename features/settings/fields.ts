@@ -119,8 +119,3 @@ export const SETTING_GROUPS: SettingGroup[] = [
 ];
 
 export const SETTING_FIELDS: SettingField[] = SETTING_GROUPS.flatMap((group) => group.fields);
-
-/** Key yang berisi URL gambar, bukan teks yang diketik langsung. */
-export const IMAGE_SETTING_KEYS: SettingKey[] = SETTING_FIELDS.filter(
-  (field) => field.kind === "image",
-).map((field) => field.key);

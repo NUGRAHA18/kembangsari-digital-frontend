@@ -6,7 +6,7 @@ import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Field, inputClasses } from "@/components/ui/field";
 import type { FormState } from "@/lib/form-state";
-import { validateImage } from "@/lib/image";
+import { IMAGE_MAX_LABEL, validateImageBatch } from "@/lib/image";
 import { cn } from "@/lib/utils";
 import { UPLOAD_MAX_FILES } from "@/types/api";
 
@@ -47,8 +47,9 @@ export function ImageUploadForm({
       return;
     }
 
-    const rejected = files.map((file) => [file, validateImage(file)] as const).find(([, e]) => e);
-    setLocalError(rejected ? `${rejected[0].name}: ${rejected[1]}` : null);
+    // Yang diperiksa termasuk JUMLAH ukuran seluruh berkas, bukan hanya yang
+    // terbesar: kesepuluhnya berangkat dalam satu badan permintaan.
+    setLocalError(validateImageBatch(files));
   }
 
   return (
@@ -66,7 +67,7 @@ export function ImageUploadForm({
         htmlFor="images"
         hint={
           hint ??
-          `Bisa memilih beberapa sekaligus, maksimal ${UPLOAD_MAX_FILES} gambar per unggahan dan 5 MB per gambar.`
+          `Bisa memilih beberapa sekaligus, maksimal ${UPLOAD_MAX_FILES} gambar per unggahan dan ${IMAGE_MAX_LABEL} untuk seluruhnya.`
         }
       >
         <input

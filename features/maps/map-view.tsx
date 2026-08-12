@@ -4,7 +4,8 @@ import "leaflet/dist/leaflet.css";
 
 import { useEffect } from "react";
 import L from "leaflet";
-import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
+import { GeoJSON, MapContainer, Marker, Popup, TileLayer, Tooltip, useMap } from "react-leaflet";
+import { boundaryStyle, type BoundaryFeature } from "@/features/maps/boundaries";
 import type { MapMarker } from "@/types/api";
 
 /**
@@ -70,6 +71,89 @@ function FocusMarker({ marker }: { marker: MapMarker | null }) {
   return null;
 }
 
+/**
+ * Menjaga agar pin selalu berada di dalam layar.
+ *
+ * Titik tengah di Pengaturan diketik tangan dan bisa berjarak kilometer dari
+ * pin yang sudah terdata. Ketika itu terjadi peta sebenarnya terbuka dengan
+ * benar, tetapi yang tampak hanya petak kosong tanpa satu pun pin — dan itu
+ * terbaca pengelola sebagai "petanya tidak muncul". Karena itu titik tengah
+ * pilihan admin hanya dihormati kalau memang berada di sekitar pin-nya; kalau
+ * tidak, peta dipaskan ke seluruh pin yang sedang ditampilkan.
+ *
+ * Seluruh propnya angka, bukan array atau objek: identitas array berubah pada
+ * setiap render induknya, dan effect ini akan berjalan terus-menerus.
+ */
+function AutoFit({
+  south,
+  west,
+  north,
+  east,
+  latitude,
+  longitude,
+  zoom,
+  isFocused,
+}: {
+  south: number | null;
+  west: number;
+  north: number;
+  east: number;
+  latitude: number;
+  longitude: number;
+  zoom: number;
+  isFocused: boolean;
+}) {
+  const map = useMap();
+
+  useEffect(() => {
+    // Marker yang sedang dibuka detailnya sudah diurus FocusMarker.
+    if (isFocused) return;
+
+    if (south === null) {
+      map.setView([latitude, longitude], zoom);
+      return;
+    }
+
+    const bounds = L.latLngBounds([south, west], [north, east]);
+
+    // `pad` memberi kelonggaran: titik tengah yang berada tepat di tepi
+    // sebaran pin tetap dianggap sah, bukan dilempar ke fitBounds.
+    if (bounds.pad(0.25).contains([latitude, longitude])) {
+      map.setView([latitude, longitude], zoom);
+      return;
+    }
+
+    map.fitBounds(bounds, { padding: [40, 40], maxZoom: zoom });
+  }, [south, west, north, east, latitude, longitude, zoom, isFocused, map]);
+
+  return null;
+}
+
+/**
+ * Batas padukuhan, RW, dan RT, beserta ruas jalan dan gang.
+ *
+ * Digambar di `overlayPane` bawaan Leaflet (z-index 400) sedangkan pin berada
+ * di `markerPane` (600), jadi pin selalu berada di atas garis tanpa perlu
+ * diatur — urutan penulisannya di sini tidak menentukan apa pun.
+ */
+function BoundaryLayers({ boundaries }: { boundaries: BoundaryFeature[] }) {
+  return (
+    <>
+      {boundaries.map((feature, index) => (
+        <GeoJSON
+          // `GeoJSON` membaca `data` sekali saat dipasang dan mengabaikan
+          // perubahan berikutnya; `key` yang ikut berubah memaksanya dibuat ulang.
+          key={`${feature.properties.nama}-${index}`}
+          data={feature}
+          style={boundaryStyle(feature, index)}
+        >
+          <Tooltip sticky>{feature.properties.nama}</Tooltip>
+        </GeoJSON>
+      ))}
+    </>
+  );
+}
+
 export default function MapView({
   markers,
   categoryIds,
@@ -78,6 +162,7 @@ export default function MapView({
   interactive,
   focusedMarker,
   onMarkerSelect,
+  boundaries = [],
 }: {
   markers: MapMarker[];
   categoryIds: string[];
@@ -86,7 +171,18 @@ export default function MapView({
   interactive: boolean;
   focusedMarker: MapMarker | null;
   onMarkerSelect?: (marker: MapMarker) => void;
+  boundaries?: BoundaryFeature[];
 }) {
+  // Koordinat yang bukan angka membuat Leaflet melempar saat menggambar pin,
+  // dan yang runtuh bukan satu pin itu melainkan seluruh peta. Marker seperti
+  // itu dibuang di sini, bukan dibiarkan menjatuhkan halaman.
+  const drawable = markers.filter(
+    (marker) => Number.isFinite(marker.latitude) && Number.isFinite(marker.longitude),
+  );
+
+  const latitudes = drawable.map((marker) => marker.latitude);
+  const longitudes = drawable.map((marker) => marker.longitude);
+
   return (
     <MapContainer
       center={center}
@@ -106,8 +202,20 @@ export default function MapView({
 
       <InteractionGate enabled={interactive} />
       <FocusMarker marker={focusedMarker} />
+      <AutoFit
+        south={latitudes.length > 0 ? Math.min(...latitudes) : null}
+        west={Math.min(...longitudes)}
+        north={Math.max(...latitudes)}
+        east={Math.max(...longitudes)}
+        latitude={center[0]}
+        longitude={center[1]}
+        zoom={zoom}
+        isFocused={focusedMarker !== null}
+      />
 
-      {markers.map((marker) => (
+      <BoundaryLayers boundaries={boundaries} />
+
+      {drawable.map((marker) => (
         <Marker
           key={marker.id}
           position={[marker.latitude, marker.longitude]}

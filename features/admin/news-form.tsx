@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardBody } from "@/components/ui/card";
 import { Field, inputClasses } from "@/components/ui/field";
 import { saveNewsAction, type NewsFormState } from "@/app/admin/(dasbor)/berita/actions";
-import { validateImage } from "@/lib/image";
+import { IMAGE_MAX_LABEL, validateImage } from "@/lib/image";
 import { slugify } from "@/lib/slug";
 import { cn } from "@/lib/utils";
 import type { Category, News } from "@/types/api";
@@ -174,7 +174,7 @@ export function NewsForm({ news, categories }: { news?: News; categories: Catego
           <Field
             label="Pilih gambar"
             htmlFor="thumbnailFile"
-            hint="JPG, PNG, WEBP, GIF, atau AVIF. Maksimal 5 MB."
+            hint={`JPG, PNG, WEBP, GIF, atau AVIF. Maksimal ${IMAGE_MAX_LABEL}.`}
           >
             <input
               id="thumbnailFile"

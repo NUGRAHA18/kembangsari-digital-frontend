@@ -17,16 +17,6 @@ export function getKknProgramBySlug(slug: string) {
   return getOne<KKNProgram>(`/kkn/program/${slug}`, { revalidate: 600 });
 }
 
-export function getKknProgramsBySubProgram(subProgram: KKNSubProgram, query: PaginationQuery = {}) {
-  return getPaginated<KKNProgram>(`/kkn/program/sub/${subProgram}`, query, { revalidate: 600 });
-}
-
-export function getKknActivitiesByProgram(programId: string, query: PaginationQuery = {}) {
-  return getPaginated<KKNActivity>(`/kkn/activity/program/${programId}`, query, {
-    revalidate: 600,
-  });
-}
-
 // ============================================================
 // DASHBOARD ADMIN
 // ============================================================
