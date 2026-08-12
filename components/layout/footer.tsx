@@ -3,8 +3,8 @@ import { Mail, MapPin, Phone } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { FacebookIcon, InstagramIcon, YoutubeIcon } from "@/components/ui/social-icons";
 import { NAV_ITEMS, isNavGroup } from "@/lib/navigation";
-import { telLink } from "@/lib/format";
-import type { SettingsMap } from "@/services/settings";
+import { googleMapsPointLink, telLink } from "@/lib/format";
+import { getMapView, type SettingsMap } from "@/services/settings";
 
 /**
  * Footer diisi dari `GET /settings` supaya alamat, kontak, dan media sosial
@@ -22,6 +22,12 @@ export function Footer({ settings }: { settings: SettingsMap }) {
 
   // Grup diratakan jadi satu daftar tautan cepat.
   const quickLinks = NAV_ITEMS.flatMap((item) => (isNavGroup(item) ? item.children : [item]));
+
+  // Alamat di footer memakai koordinat yang sama dengan titik tengah peta
+  // digital, jadi satu kolom di Pengaturan mengatur keduanya sekaligus.
+  // `getMapView` selalu mengembalikan koordinat yang sah — kalau kolomnya
+  // kosong atau salah ketik, yang dipakai koordinat Padukuhan Kembangsari.
+  const [latitude, longitude] = getMapView(settings).center;
 
   return (
     <footer className="mt-auto border-t border-border bg-surface">
@@ -84,9 +90,22 @@ export function Footer({ settings }: { settings: SettingsMap }) {
             <h2 className="font-semibold">Kontak</h2>
             <ul className="mt-4 flex flex-col gap-3 text-muted">
               {settings.address ? (
-                <li className="flex gap-3">
-                  <MapPin className="mt-0.5 size-5 shrink-0" aria-hidden="true" />
-                  <span>{settings.address}</span>
+                <li>
+                  {/* Peta portal memakai OpenStreetMap, tetapi alamat yang
+                      diketuk warga dibuka di Google Maps — aplikasi itulah
+                      yang sudah terpasang di ponselnya. */}
+                  <a
+                    href={googleMapsPointLink(latitude, longitude)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex min-h-11 gap-3 transition-colors hover:text-accent"
+                  >
+                    <MapPin className="mt-0.5 size-5 shrink-0" aria-hidden="true" />
+                    <span>
+                      {settings.address}
+                      <span className="sr-only"> — buka di Google Maps</span>
+                    </span>
+                  </a>
                 </li>
               ) : null}
               {/* Nomor telepon dan surel adalah tautan yang benar-benar diketuk
