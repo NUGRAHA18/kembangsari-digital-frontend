@@ -15,11 +15,6 @@ export function getPublishedMonography(query: Omit<PaginationQuery, "search"> = 
   return getPaginated<PopulationStat>("/monography/published", query, { revalidate: 3600 });
 }
 
-/** Satu tahun statistik — objek tunggal, bukan `{ data, meta }`. */
-export function getMonographyByYear(year: number) {
-  return getOne<PopulationStat>(`/monography/year/${year}`, { revalidate: 3600 });
-}
-
 // ============================================================
 // DASHBOARD ADMIN — semuanya butuh token
 //

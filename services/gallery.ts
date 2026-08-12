@@ -16,10 +16,6 @@ export function getFeaturedGalleryItems(query: PaginationQuery = {}) {
   return getPaginated<GalleryItem>("/gallery/item/featured", query, { revalidate: 600 });
 }
 
-export function getGalleryItemsByAlbum(albumId: string, query: PaginationQuery = {}) {
-  return getPaginated<GalleryItem>(`/gallery/item/album/${albumId}`, query, { revalidate: 600 });
-}
-
 // ============================================================
 // DASHBOARD ADMIN
 //

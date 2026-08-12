@@ -32,11 +32,6 @@ export function getMapCategoriesUncached() {
   return getList<MapCategory>("/maps/category");
 }
 
-/** Satu kategori marker. Publik, tidak butuh token. */
-export function getMapCategoryById(id: string) {
-  return getOne<MapCategory>(`/maps/category/${id}`, { revalidate: 600 });
-}
-
 /** Versi tanpa cache, dengan alasan yang sama seperti `getMapCategoriesUncached`. */
 export function getMapCategoryByIdUncached(id: string) {
   return getOne<MapCategory>(`/maps/category/${id}`);
