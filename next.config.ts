@@ -13,6 +13,22 @@ const nextConfig: NextConfig = {
   // Hanya berpengaruh pada `next dev`; build produksi mengabaikannya.
   allowedDevOrigins: ["192.168.0.*", "192.168.1.*", "10.0.0.*", "172.20.10.*"],
 
+  experimental: {
+    serverActions: {
+      // Seluruh unggahan gambar dashboard menumpang Server Action, dan batas
+      // bawaannya hanya 1 MB. Foto ponsel biasa 2–4 MB, jadi tanpa baris ini
+      // unggahan gagal SEBELUM permintaannya sampai ke backend — dan galatnya
+      // tidak menyebut ukuran sama sekali.
+      //
+      // 4 MB, bukan lebih: Vercel menolak body permintaan di atas 4,5 MB di
+      // lapisan platformnya sendiri, jauh sebelum Next.js sempat membacanya.
+      // Menaikkan angka di sini tidak menembus batas itu. Batas yang benar-benar
+      // diberlakukan ke pengelola ada di `lib/image.ts`, sedikit di bawah angka
+      // ini untuk memberi ruang bagi kolom form lain dan pembatas multipart.
+      bodySizeLimit: "4mb",
+    },
+  },
+
   images: {
     // Backend menyimpan gambar sebagai URL, bukan berkas. Dua sumber yang mungkin:
     // Supabase Storage (unggahan asli) dan picsum.photos (data seed).

@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardBody } from "@/components/ui/card";
 import { Field, inputClasses } from "@/components/ui/field";
 import { saveProfileAction, type ProfileFormState } from "@/app/admin/(dasbor)/profil/actions";
-import { validateImage } from "@/lib/image";
+import { IMAGE_MAX_LABEL, validateImage } from "@/lib/image";
 import { slugify } from "@/lib/slug";
 import { cn } from "@/lib/utils";
 import type { Profile } from "@/types/api";
@@ -163,7 +163,7 @@ export function ProfileForm({ profile }: { profile?: Profile }) {
           <Field
             label="Pilih gambar"
             htmlFor="thumbnailFile"
-            hint="JPG, PNG, WEBP, GIF, atau AVIF. Maksimal 5 MB."
+            hint={`JPG, PNG, WEBP, GIF, atau AVIF. Maksimal ${IMAGE_MAX_LABEL}.`}
           >
             <input
               id="thumbnailFile"

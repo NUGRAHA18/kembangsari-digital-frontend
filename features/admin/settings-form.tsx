@@ -11,7 +11,7 @@ import {
   type SettingsFormState,
 } from "@/app/admin/(dasbor)/pengaturan/actions";
 import { SETTING_GROUPS, type SettingField } from "@/features/settings/fields";
-import { validateImage } from "@/lib/image";
+import { IMAGE_MAX_LABEL, validateImage } from "@/lib/image";
 import { cn } from "@/lib/utils";
 import type { Setting } from "@/types/api";
 
@@ -151,7 +151,7 @@ function ImageSetting({ field, current }: { field: SettingField; current: string
       <Field
         label={`Pilih berkas ${field.label.toLowerCase()}`}
         htmlFor={fileId}
-        hint="JPG, PNG, WEBP, GIF, atau AVIF. Maksimal 5 MB."
+        hint={`JPG, PNG, WEBP, GIF, atau AVIF. Maksimal ${IMAGE_MAX_LABEL}.`}
       >
         <input
           id={fileId}

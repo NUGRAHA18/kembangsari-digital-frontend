@@ -10,7 +10,7 @@ import { Field, inputClasses } from "@/components/ui/field";
 import { savePotentialAction, type PotentialFormState } from "@/app/admin/(dasbor)/potensi/actions";
 import { POTENTIAL_CATEGORIES } from "@/features/potential/categories";
 import { humanizeEnum } from "@/lib/format";
-import { validateImage } from "@/lib/image";
+import { IMAGE_MAX_LABEL, validateImage } from "@/lib/image";
 import { slugify } from "@/lib/slug";
 import { cn } from "@/lib/utils";
 import type { Potential } from "@/types/api";
@@ -188,7 +188,7 @@ export function PotentialForm({ potential }: { potential?: Potential }) {
           <Field
             label="Pilih gambar"
             htmlFor="thumbnailFile"
-            hint="JPG, PNG, WEBP, GIF, atau AVIF. Maksimal 5 MB."
+            hint={`JPG, PNG, WEBP, GIF, atau AVIF. Maksimal ${IMAGE_MAX_LABEL}.`}
           >
             <input
               id="thumbnailFile"

@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { POTENTIAL_CATEGORIES } from "@/features/potential/categories";
 import { ApiRequestError, ApiUnreachableError } from "@/lib/api";
 import type { FormState } from "@/lib/form-state";
-import { validateImage } from "@/lib/image";
+import { validateImage, validateImageBatch } from "@/lib/image";
 import { requireSession, SESSION_EXPIRED_PATH } from "@/lib/session";
 import { slugify } from "@/lib/slug";
 import {
@@ -224,10 +224,8 @@ export async function addPotentialImagesAction(
     };
   }
 
-  for (const file of files) {
-    const invalid = validateImage(file);
-    if (invalid) return { error: `${file.name}: ${invalid}` };
-  }
+  const invalidBatch = validateImageBatch(files);
+  if (invalidBatch) return { error: invalidBatch };
 
   try {
     const uploaded = await uploadImages(files, "potensi", token);

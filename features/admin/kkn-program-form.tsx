@@ -12,7 +12,7 @@ import {
   type KknProgramFormState,
 } from "@/app/admin/(dasbor)/program-kkn/actions";
 import { KKN_SUB_PROGRAMS, SUB_PROGRAM_LABELS } from "@/features/kkn/sub-programs";
-import { validateImage } from "@/lib/image";
+import { IMAGE_MAX_LABEL, validateImage } from "@/lib/image";
 import { slugify } from "@/lib/slug";
 import { cn } from "@/lib/utils";
 import type { KKNProgram } from "@/types/api";
@@ -215,7 +215,7 @@ export function KknProgramForm({ program }: { program?: KKNProgram }) {
           <Field
             label="Pilih gambar"
             htmlFor="thumbnailFile"
-            hint="JPG, PNG, WEBP, GIF, atau AVIF. Maksimal 5 MB."
+            hint={`JPG, PNG, WEBP, GIF, atau AVIF. Maksimal ${IMAGE_MAX_LABEL}.`}
           >
             <input
               id="thumbnailFile"

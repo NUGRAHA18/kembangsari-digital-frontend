@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { ApiRequestError, ApiUnreachableError } from "@/lib/api";
 import type { FormState } from "@/lib/form-state";
-import { validateImage } from "@/lib/image";
+import { validateImageBatch } from "@/lib/image";
 import { requireSession, SESSION_EXPIRED_PATH } from "@/lib/session";
 import { slugify } from "@/lib/slug";
 import { uploadImages } from "@/services/upload";
@@ -220,10 +220,8 @@ export async function addUmkmImagesAction(
     };
   }
 
-  for (const file of files) {
-    const invalid = validateImage(file);
-    if (invalid) return { error: `${file.name}: ${invalid}` };
-  }
+  const invalid = validateImageBatch(files);
+  if (invalid) return { error: invalid };
 
   try {
     const uploaded = await uploadImages(files, "umkm", token);

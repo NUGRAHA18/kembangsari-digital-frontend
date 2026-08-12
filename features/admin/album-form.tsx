@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardBody } from "@/components/ui/card";
 import { Field, inputClasses } from "@/components/ui/field";
 import { saveAlbumAction, type AlbumFormState } from "@/app/admin/(dasbor)/galeri/actions";
-import { validateImage } from "@/lib/image";
+import { IMAGE_MAX_LABEL, validateImage } from "@/lib/image";
 import { slugify } from "@/lib/slug";
 import { cn } from "@/lib/utils";
 import type { GalleryAlbum } from "@/types/api";
@@ -141,7 +141,7 @@ export function AlbumForm({ album }: { album?: GalleryAlbum }) {
           <Field
             label="Pilih sampul"
             htmlFor="thumbnailFile"
-            hint="JPG, PNG, WEBP, GIF, atau AVIF. Maksimal 5 MB."
+            hint={`JPG, PNG, WEBP, GIF, atau AVIF. Maksimal ${IMAGE_MAX_LABEL}.`}
           >
             <input
               id="thumbnailFile"
