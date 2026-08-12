@@ -33,9 +33,18 @@ function backToLogin(request: NextRequest, reason: string) {
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
 
-  // Pengelola menekan "Batal" di layar Google. Bukan galat, jadi tidak
-  // ditampilkan sebagai galat.
-  if (searchParams.get("error")) return backToLogin(request, "dibatalkan");
+  const error = searchParams.get("error");
+  if (error) {
+    // Membatalkan di layar Google bukan galat, dan tidak boleh ditampilkan
+    // sebagai galat. Sebab lain — terutama akun yang belum terdaftar sebagai
+    // pengelola — justru harus disebut apa adanya, karena yang harus
+    // dilakukan berikutnya berbeda sama sekali.
+    //
+    // Dua nilai diterima: `akses_ditolak` dari backend, dan `access_denied`
+    // milik Google sendiri, kalau suatu saat diteruskan apa adanya.
+    const cancelled = error === "akses_ditolak" || error === "access_denied";
+    return backToLogin(request, cancelled ? "dibatalkan" : "ditolak");
+  }
 
   const ticket = searchParams.get("ticket");
   if (!ticket) return backToLogin(request, "tanpa-tiket");

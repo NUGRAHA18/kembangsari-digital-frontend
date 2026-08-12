@@ -19,6 +19,8 @@ import { googleSignInUrl } from "@/services/auth";
  */
 const GOOGLE_MESSAGES: Record<string, string> = {
   dibatalkan: "Masuk dengan Google dibatalkan. Silakan coba lagi bila mau.",
+  ditolak:
+    "Google menolak permintaan masuk ini. Kemungkinan terbesar: akun Google Anda belum terdaftar sebagai pengelola portal — gunakan email dan kata sandi, atau mintakan pendaftarannya lebih dulu.",
   "tiket-hangus":
     "Tautan masuknya sudah tidak berlaku — hanya bertahan dua menit dan sekali pakai. Silakan ulangi dari awal.",
   "tanpa-tiket": "Balasan dari Google tidak lengkap. Silakan ulangi dari awal.",
