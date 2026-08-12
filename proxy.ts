@@ -58,8 +58,13 @@ const LOGIN_PATH = "/admin/login";
 export function proxy(request: NextRequest) {
   const { pathname, search, searchParams } = request.nextUrl;
 
-  if (pathname === LOGIN_PATH) {
-    // Halaman masuk harus bisa dibuka tanpa sesi — tidak ada penjagaan di sini.
+  // Halaman masuk **beserta jalur di bawahnya** harus bisa dibuka tanpa sesi.
+  // Yang di bawahnya itu `/admin/login/google`, tempat pengelola mendarat
+  // sepulang dari layar persetujuan Google — belum punya cookie apa pun, dan
+  // memang itulah yang sedang ia usahakan. Tanpa pengecualian ini penjagaan di
+  // bawah memantulkannya kembali ke form masuk beserta `?next=`, dan tiketnya
+  // hangus tanpa pernah ditukar.
+  if (pathname === LOGIN_PATH || pathname.startsWith(`${LOGIN_PATH}/`)) {
     if (searchParams.get("sesi") !== "habis") return NextResponse.next();
 
     // Dibuang dua kali, dan keduanya perlu:
