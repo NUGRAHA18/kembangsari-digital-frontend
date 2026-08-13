@@ -158,6 +158,7 @@ apa pun di frontend** — cukup satu `PATCH`. Melepas penanda pada satu-satunya 
 | `EVALUASI-MONOGRAFI.md` | Pencocokan portal dengan `monografi-idea.md` per bagian, memisahkan yang layak dikerjakan dari yang sengaja tidak dilanjutkan | internal |
 | `JAWABAN-LAPORAN-BACKEND-3.md` | Jawaban putaran ketiga: A-1, B, dan C selesai. **Baca C-4** — `POST /auth/ticket` menjawab `accessToken`, bukan `token` | internal |
 | `LAPORAN-BACKEND-4.md` | Laporan putaran keempat: unggahan gambar gagal karena Node.js di Render di bawah 22, **bukan** karena `SUPABASE_URL` seperti yang disebut pesan galatnya | internal |
+| `JAWABAN-LAPORAN-BACKEND-4.md` | Jawaban putaran keempat: A-1 selesai sebelum laporannya ditulis (backend memakai `StorageClient`, bukan `createClient`). **Baca bagian C** — login Google di produksi selalu gagal, dan itu bug backend yang sudah diperbaiki; frontend tidak perlu berubah | internal |
 
 Berkas selain dua yang teratas **sengaja tidak ikut di repo publik ini** (lihat `.gitignore`)
 dan dibagikan lewat jalur internal. Semuanya tetap ada di komputer masing-masing anggota tim.
@@ -702,9 +703,16 @@ Modul berita adalah contoh yang diikuti modul berikutnya. Polanya:
   dan sudah di-push, tetapi produksi masih menjawab `404` untuk `/house/*` dan `/auth/google` —
   Render belum menerbitkan versi itu. Seluruh modul rumah warga dan login Google di frontend
   dibangun terhadap `openapi.json`, bukan terhadap backend yang berjalan.
-- **Menunggu pengelola:** `public/data/batas-wilayah.geojson` masih kosong, sepuluh marker di
-  produksi masih data seed yang berjarak ±13,8 km dari padukuhan yang sebenarnya, dan
-  `SUPABASE_URL` di Render masih bertanda kutip (kodenya sudah menambal, nilainya belum).
+- **Menunggu pengelola:** `public/data/batas-wilayah.geojson` baru berisi batas luar
+  padukuhan — RW dan RT-nya belum digambar.
+- **Sebelas baris UMKM & Potensi di produksi masih berkoordinat data seed**, 13,6–13,9 km
+  dari padukuhan (`JAWABAN-LAPORAN-BACKEND-4.md` bagian D). Penanda peta, rumah warga, dan
+  titik tengah peta sudah bersih. **Yang salah di sini bukan pin melainkan tombol "Petunjuk
+  Arah"**: `/umkm/[slug]` dan `/potensi/[slug]` mengubah koordinat itu menjadi tautan
+  `google.com/maps/dir/`, jadi warga yang mengetuknya benar-benar dinavigasikan ke kapanewon
+  lain. Karena `hasCoordinates` menyembunyikan tombolnya saat koordinatnya `null`,
+  **mengosongkan koordinatnya lebih benar daripada menggesernya** — digeser berarti tombol
+  itu tetap ada dan mengarah ke titik karangan di dalam padukuhan, yang justru terbaca sah.
 - Prioritas selanjutnya dan yang sengaja **tidak** dilanjutkan: `EVALUASI-MONOGRAFI.md`.
 - **Belum ada satu pun modul dashboard yang diuji dengan backend hidup.** Yang paling layak
   ditekan tombolnya lebih dulu — bukan lagi karena kontraknya meragukan, melainkan karena
