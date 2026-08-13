@@ -4,12 +4,13 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronDown, Menu, X } from "lucide-react";
+import { SiteLogo } from "@/components/layout/site-logo";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { Container } from "@/components/ui/container";
 import { NAV_ITEMS, isActivePath, isNavGroup, type NavItem } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 
-export function Navbar({ siteName }: { siteName: string }) {
+export function Navbar({ siteName, logo }: { siteName: string; logo?: string }) {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -50,12 +51,7 @@ export function Navbar({ siteName }: { siteName: string }) {
             className="flex min-h-11 items-center gap-2 font-semibold tracking-tight"
             aria-label={`${siteName} — kembali ke beranda`}
           >
-            <span
-              aria-hidden="true"
-              className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary text-sm font-bold text-white"
-            >
-              KD
-            </span>
+            <SiteLogo src={logo} siteName={siteName} />
             <span className="hidden truncate sm:inline">{siteName}</span>
           </Link>
 

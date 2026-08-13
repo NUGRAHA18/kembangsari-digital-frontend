@@ -233,6 +233,14 @@ portal bisa dipasang sebagai aplikasi di layar utama (PWA).
 - **Unggahan gambar** tidak perlu diubah: `500` yang kemarin ternyata `SUPABASE_URL`
   bertanda kutip di Render, bukan folder `peta`. Folder `rumah` sudah ditambahkan backend.
 
+**Logo dan favicon akhirnya terpakai** (13 Agustus 2026). `site_logo` dan `site_favicon` sudah
+bisa diunggah pengelola sejak modul Pengaturan dibuat, tetapi tidak ada satu pun tempat yang
+membacanya: navbar dan footer memasang monogram "KD" apa adanya, dan ikon tab peramban datang
+dari `app/icon.tsx` yang dibangkitkan saat build. Sekarang navbar dan footer memakai
+`components/layout/site-logo.tsx` — monogramnya tinggal cadangan saat logo belum diunggah — dan
+ikon tab mengikuti `site_favicon`. Diuji terhadap backend tiruan yang menjawab `GET /settings`
+berisi kedua URL itu.
+
 **Belum ada satu pun modul dashboard yang diuji dengan backend hidup** — penyesuaian di atas
 mengikuti kontrak yang sudah backend verifikasi sendiri, tetapi alur tulisnya belum ditekan
 tombolnya dari sisi ini.
@@ -246,7 +254,9 @@ app/admin/              Dashboard. (dasbor)/ memakai kerangka bersidebar;
                         login/ sengaja di luarnya
 app/layout.tsx          Hanya dokumen: bahasa, font, tema, metadata
 app/manifest.ts         Keterangan pemasangan sebagai aplikasi (PWA)
-app/ikon/[ukuran]/      Ikon aplikasi 192 & 512, dibangkitkan saat build
+app/ikon/[ukuran]/      Seluruh ikon monogram cadangan (32, 180, 192, 512),
+                        dibangkitkan saat build. Yang dipakai ditentukan
+                        `icons` di app/layout.tsx, bukan konvensi berkas
 app/luring/             Halaman saat sambungan putus — DI LUAR (publik)/,
                         karena layout itu memanggil GET /settings
 public/sw.js            Service worker: hanya cadangan luring, tanpa cache halaman
@@ -336,6 +346,19 @@ Jangan "memperbaiki" hal-hal berikut tanpa membaca alasannya dulu:
   diunduh browser warga; `qrcode` hanya dipanggil `lib/qr.ts` dari Server Component dan Route
   Handler, sehingga yang sampai ke ponsel cuma SVG atau PNG jadi. Menulis encoder QR sendiri
   berarti memelihara Reed-Solomon dan masking sendiri — satu bit meleset, QR-nya tidak terbaca.
+- **Ikon peramban dideklarasikan lewat `icons` di `app/layout.tsx`, bukan `app/icon.tsx`.** Logo
+  dan favicon adalah isi Pengaturan, jadi keduanya hanya bisa masuk lewat `generateMetadata`.
+  Konvensi berkas Next.js tidak bisa hidup berdampingan dengannya: resolver metadata menaruh
+  ikon konvensi-berkas **di depan** daftar `icons`, sehingga favicon pengelola dan monogram
+  bawaan sama-sama tercetak sebagai `<link rel="icon">` dan peramban bebas memilih yang mana —
+  itulah sebabnya favicon yang sudah diunggah tetap tidak tampak. Lebih halus lagi: begitu
+  `icons` disetel, seluruh ikon konvensi-berkas justru **dibuang**, termasuk `apple-icon.tsx`
+  yang tidak ada hubungannya. Karena itu `app/icon.tsx` dan `app/apple-icon.tsx` dihapus,
+  monogramnya pindah ke `app/ikon/[ukuran]`, dan `apple` ikut ditulis di `icons` meski isinya
+  tidak berubah-ubah. Jangan menambahkan kembali berkas `icon.tsx`/`apple-icon.tsx`.
+- **Ikon layar utama tetap monogram, tidak mengikuti `site_logo`.** iOS dan peluncur Android
+  memotong sudutnya dan menaruh logo berlatar tembus pandang di atas hitam; lambang yang bagus
+  di navbar belum tentu selamat di sana. Yang mengikuti Pengaturan hanya ikon tab peramban.
 - **Grafik monografi dibuat dari CSS**, bukan pustaka grafik: angkanya tetap terbaca mesin
   pencari dan halaman tidak perlu jadi Client Component.
 - **Agenda dikelompokkan per bulan**, bukan kisi kalender 7 kolom yang tidak terbaca di 320px.

@@ -34,6 +34,31 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     metadataBase: new URL(SITE_URL),
+    // Ikon tab peramban mengikuti `site_favicon` di Pengaturan, dan jatuh ke
+    // monogram yang dibangkitkan kalau pengelola belum mengunggahnya.
+    //
+    // Dideklarasikan di sini, bukan lewat `app/icon.tsx`, karena konvensi
+    // berkas itu selalu diselipkan **di depan** daftar `icons`: kedua ikon akan
+    // sama-sama tercetak sebagai `<link rel="icon">` dan peramban bebas memilih
+    // yang mana. Itu sebabnya favicon yang sudah diunggah tetap tidak tampak.
+    //
+    // `apple` ikut ditulis di sini meski isinya tidak berubah-ubah: begitu
+    // `icons` disetel, Next.js membuang seluruh ikon konvensi-berkas — termasuk
+    // `apple-icon.tsx` yang dulu berdiri sendiri. Tanpa baris ini, yang dipasang
+    // di layar utama iPhone kembali jadi potongan tangkapan layar halaman.
+    //
+    // Ikon layar utama sengaja tetap monogram, tidak ikut `site_logo`: iOS dan
+    // peluncur Android memotong sudutnya dan menaruhnya di atas latar hitam
+    // kalau berlatar tembus pandang — logo yang bagus di navbar belum tentu
+    // selamat di sana. `type` juga tidak disetel untuk berkas unggahan: yang
+    // tersimpan bisa PNG, JPEG, atau SVG, dan menebaknya salah justru membuat
+    // sebagian peramban melewatkan ikonnya.
+    icons: {
+      icon: settings.site_favicon
+        ? [{ url: settings.site_favicon }]
+        : [{ url: "/ikon/32", sizes: "32x32", type: "image/png" }],
+      apple: [{ url: "/ikon/180", sizes: "180x180", type: "image/png" }],
+    },
     title: {
       default: `${siteName} — Portal Informasi Padukuhan`,
       // Halaman lain cukup menyetel judulnya sendiri, nama situs ditambahkan otomatis.

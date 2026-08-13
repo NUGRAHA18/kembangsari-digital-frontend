@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Mail, MapPin, Phone } from "lucide-react";
+import { SiteLogo } from "@/components/layout/site-logo";
 import { Container } from "@/components/ui/container";
 import { FacebookIcon, InstagramIcon, YoutubeIcon } from "@/components/ui/social-icons";
 import { NAV_ITEMS, isNavGroup } from "@/lib/navigation";
@@ -35,12 +36,10 @@ export function Footer({ settings }: { settings: SettingsMap }) {
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4 lg:gap-12">
           <div className="lg:col-span-2">
             <div className="flex items-center gap-2">
-              <span
-                aria-hidden="true"
-                className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary text-sm font-bold text-white"
-              >
-                KD
-              </span>
+              <SiteLogo
+                src={settings.site_logo}
+                siteName={settings.site_name ?? "Kembangsari Digital"}
+              />
               <span className="font-semibold">{settings.site_name}</span>
             </div>
             {settings.about_us ? (
