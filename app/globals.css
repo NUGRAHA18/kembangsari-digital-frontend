@@ -20,11 +20,22 @@
   --border: #e2e8f0;
 
   /* Hijau tetap #15803D di kedua mode: dipakai sebagai latar tombol dengan
-     teks putih, dan rasio kontrasnya 4.6:1 — di atas ambang WCAG AA. */
+     teks putih, dan rasio kontrasnya 5.02:1 — di atas ambang WCAG AA.
+
+     `design-idea.md` §1.1 meminta Green 600 (#16A34A) sebagai latar tombol
+     utama. Itu tidak dipakai, dan alasannya terukur: #16A34A dengan teks putih
+     hanya 3.30:1, di bawah ambang 4.5:1 — sementara §26 dokumen yang sama
+     menuntut kontras yang cukup. Green 600 tetap terpakai, tetapi hanya di
+     tempat yang tidak memikul teks: cincin fokus dan aksen dekoratif. */
   --primary: #15803d;
   --primary-hover: #166534;
   --primary-soft: #dcfce7;
   --primary-soft-foreground: #14532d;
+
+  /* Green 200 — tepi kartu saat disentuh kursor (§20). */
+  --primary-border-hover: #bbf7d0;
+  /* Green 600, hanya untuk cincin fokus (§9). Tidak pernah memikul teks. */
+  --ring: rgb(22 163 74 / 0.16);
 
   /* Hijau untuk teks & ikon di atas latar halaman — lebih terang di mode gelap. */
   --accent: #15803d;
@@ -54,6 +65,10 @@
   --primary-soft: #14532d;
   --primary-soft-foreground: #bbf7d0;
 
+  /* Di mode gelap tepi hijau muda justru menyala; yang dipakai hijau tua. */
+  --primary-border-hover: #166534;
+  --ring: rgb(74 222 128 / 0.2);
+
   --accent: #4ade80;
 
   --secondary: #f59e0b;
@@ -76,6 +91,7 @@
   --color-primary-hover: var(--primary-hover);
   --color-primary-soft: var(--primary-soft);
   --color-primary-soft-foreground: var(--primary-soft-foreground);
+  --color-primary-border-hover: var(--primary-border-hover);
   --color-accent: var(--accent);
 
   --color-secondary: var(--secondary);
@@ -88,10 +104,20 @@
 
   --font-sans: var(--font-geist-sans);
 
-  /* Dokumen UI/UX meminta sudut membulat ~16px sebagai gaya dasar. */
-  --radius-xl: 1rem;
-  --radius-2xl: 1.5rem;
+  /* Tangga sudut membulat, `design-idea.md` §18. Sengaja hanya lima anak
+     tangga — dokumen itu sendiri meminta variasinya jangan banyak-banyak. */
+  --radius-sm: 0.5rem; /* 8px  — badge, chip kecil */
+  --radius-lg: 0.75rem; /* 12px — tombol, isian form */
+  --radius-xl: 1rem; /* 16px — kartu, gaya dasar portal */
+  --radius-2xl: 1.25rem; /* 20px — hero */
   --radius-3xl: 2rem;
+
+  /* Bayangan sangat tipis (§19): dua lapis, keduanya nyaris tak terlihat.
+     Yang membentuk kedalaman di portal ini garis tepi, bukan bayangan. */
+  --shadow-sm:
+    0 1px 3px rgb(15 23 42 / 0.04), 0 4px 12px rgb(15 23 42 / 0.04);
+  --shadow-md:
+    0 2px 6px rgb(15 23 42 / 0.06), 0 12px 24px rgb(15 23 42 / 0.06);
 }
 
 @layer base {

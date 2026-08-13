@@ -23,9 +23,18 @@ const SIZES: Record<Size, string> = {
   icon: "min-h-11 min-w-11 p-0",
 };
 
+/**
+ * `active:scale-[0.98]` adalah satu-satunya gerakan pada tombol (§22): ditekan
+ * lalu mengecil sedikit. Bounce dan glow sengaja tidak ada — dokumen desain
+ * menyebut keduanya secara khusus sebagai yang harus dihindari.
+ *
+ * `rounded-lg` (12px), bukan 16px seperti kartu: §18 memberi tombol dan isian
+ * form anak tangga yang lebih rapat daripada kartu yang menaunginya.
+ */
 const BASE =
-  "inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-colors " +
-  "disabled:pointer-events-none disabled:opacity-50";
+  "inline-flex items-center justify-center gap-2 rounded-lg font-medium " +
+  "transition-[background-color,border-color,color,transform] duration-150 active:scale-[0.98] " +
+  "disabled:pointer-events-none disabled:opacity-50 disabled:active:scale-100";
 
 export function buttonClasses({
   variant = "primary",
