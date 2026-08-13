@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Trash2 } from "lucide-react";
 import { Alert } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { Card, CardBody } from "@/components/ui/card";
 import { deleteAlbumAction } from "@/app/admin/(dasbor)/galeri/actions";
 import { fetchAsAdmin } from "@/lib/admin-fetch";
@@ -45,10 +45,10 @@ export default async function DeleteAlbumPage({ params }: Props) {
         <input type="hidden" name="id" value={album.id} />
         <input type="hidden" name="slug" value={album.slug} />
 
-        <Button type="submit" size="lg" className="bg-error hover:brightness-95">
+        <SubmitButton size="lg" pendingLabel="Menghapus…" className="bg-error hover:brightness-95">
           <Trash2 className="size-5" aria-hidden="true" />
           Ya, Hapus Album
-        </Button>
+        </SubmitButton>
 
         <Link
           href={`/admin/galeri/${album.slug}`}

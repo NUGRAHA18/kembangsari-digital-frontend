@@ -157,6 +157,7 @@ apa pun di frontend** — cukup satu `PATCH`. Melepas penanda pada satu-satunya 
 | `LAPORAN-BACKEND-3.md` | Laporan putaran ketiga: `500` pada unggahan folder `peta`, model rumah warga, dan login Google — beserta daftar hal yang **tidak** perlu backend kerjakan | internal |
 | `EVALUASI-MONOGRAFI.md` | Pencocokan portal dengan `monografi-idea.md` per bagian, memisahkan yang layak dikerjakan dari yang sengaja tidak dilanjutkan | internal |
 | `JAWABAN-LAPORAN-BACKEND-3.md` | Jawaban putaran ketiga: A-1, B, dan C selesai. **Baca C-4** — `POST /auth/ticket` menjawab `accessToken`, bukan `token` | internal |
+| `LAPORAN-BACKEND-4.md` | Laporan putaran keempat: unggahan gambar gagal karena Node.js di Render di bawah 22, **bukan** karena `SUPABASE_URL` seperti yang disebut pesan galatnya | internal |
 
 Berkas selain dua yang teratas **sengaja tidak ikut di repo publik ini** (lihat `.gitignore`)
 dan dibagikan lewat jalur internal. Semuanya tetap ada di komputer masing-masing anggota tim.
@@ -240,6 +241,27 @@ dari `app/icon.tsx` yang dibangkitkan saat build. Sekarang navbar dan footer mem
 `components/layout/site-logo.tsx` — monogramnya tinggal cadangan saat logo belum diunggah — dan
 ikon tab mengikuti `site_favicon`. Diuji terhadap backend tiruan yang menjawab `GET /settings`
 berisi kedua URL itu.
+
+**Laporan pengelola dikerjakan** (13 Agustus 2026), pada sesi yang sama:
+
+- **Titik tengah cadangan peta meleset 13,6 km.** `getMapView` memakai
+  `-7.79558, 110.16349` — titik data seed, bukan Kembangsari — dan menyebutnya
+  "koordinat Padukuhan Kembangsari" di komentarnya. Setiap kali kolomnya kosong di
+  Pengaturan, peta terbuka di kapanewon lain dan tautan alamat di footer ikut ke sana.
+  Sekarang `-7.690025, 110.228583`, sama dengan `public/data/README.md` dan form rumah.
+  Contoh isian di form Pengaturan ikut dibetulkan — angka contoh yang salah adalah angka
+  yang paling mungkin diketik ulang pengelola.
+- **Batas luar padukuhan sudah tergambar.** `batas-wilayah.geojson` berisi satu polygon
+  `PADUKUHAN` (±7,5 ha). RW dan RT-nya belum.
+- **Catatan rumah ikut tampil di kartu peta**, bukan hanya setelah "Lihat Penghuni",
+  dan kartu rumah akhirnya punya tombol bagikan seperti kartu lokasi.
+- **Tautan media sosial dibetulkan lewat `socialLink`.** Isian tanpa `https://` dibaca
+  peramban sebagai alamat relatif — ikon Instagram membuka `/instagram.com/nama` di
+  portal sendiri lalu 404.
+- **Spinner pada setiap tombol kirim.** `Button` punya `loading`, dan
+  `components/ui/submit-button.tsx` menyatukan pola `useFormStatus` untuk halaman yang
+  seluruhnya Server Component — sembilan belas halaman konfirmasi hapus sebelumnya tidak
+  punya keadaan menunggu sama sekali.
 
 **Belum ada satu pun modul dashboard yang diuji dengan backend hidup** — penyesuaian di atas
 mengikuti kontrak yang sudah backend verifikasi sendiri, tetapi alur tulisnya belum ditekan

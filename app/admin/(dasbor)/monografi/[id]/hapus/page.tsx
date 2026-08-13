@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { Card, CardBody } from "@/components/ui/card";
 import { deleteMonographyAction } from "@/app/admin/(dasbor)/monografi/actions";
 import { fetchAsAdmin } from "@/lib/admin-fetch";
@@ -43,10 +43,10 @@ export default async function DeleteMonographyPage({ params }: Props) {
       <form action={deleteMonographyAction} className="flex flex-wrap gap-3">
         <input type="hidden" name="id" value={stat.id} />
 
-        <Button type="submit" size="lg" className="bg-error hover:brightness-95">
+        <SubmitButton size="lg" pendingLabel="Menghapus…" className="bg-error hover:brightness-95">
           <Trash2 className="size-5" aria-hidden="true" />
           Ya, Hapus
-        </Button>
+        </SubmitButton>
 
         <Link
           href={`/admin/monografi/${stat.id}`}

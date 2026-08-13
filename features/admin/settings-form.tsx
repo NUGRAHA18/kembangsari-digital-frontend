@@ -186,7 +186,7 @@ function SubmitButton() {
   const { pending } = useFormStatus();
 
   return (
-    <Button type="submit" size="lg" disabled={pending}>
+    <Button type="submit" size="lg" loading={pending}>
       {pending ? "Menyimpan…" : "Simpan Pengaturan"}
     </Button>
   );

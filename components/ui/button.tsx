@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Variant = "primary" | "secondary" | "outline" | "ghost";
@@ -34,13 +35,37 @@ export function buttonClasses({
   return cn(BASE, VARIANTS[variant], SIZES[size], className);
 }
 
+/**
+ * `loading` memasang spinner di depan label dan mematikan tombolnya.
+ *
+ * Ada alasannya kenapa spinner, bukan sekadar teks "Menyimpan…": permintaan
+ * tulis ke backend padukuhan sering makan beberapa detik, dan tombol yang hanya
+ * berganti kata terbaca sebagai layar yang membeku. Yang berputar menyatakan
+ * "sedang jalan" tanpa perlu dibaca.
+ *
+ * Ikonnya `aria-hidden`: yang mengumumkan keadaan ke pembaca layar adalah
+ * `aria-busy` beserta label tombol yang ikut berganti, bukan gambarnya.
+ */
 export function Button({
   variant,
   size,
   className,
+  loading = false,
+  disabled,
+  children,
   ...props
-}: React.ComponentProps<"button"> & { variant?: Variant; size?: Size }) {
-  return <button className={buttonClasses({ variant, size, className })} {...props} />;
+}: React.ComponentProps<"button"> & { variant?: Variant; size?: Size; loading?: boolean }) {
+  return (
+    <button
+      className={buttonClasses({ variant, size, className })}
+      disabled={disabled || loading}
+      aria-busy={loading || undefined}
+      {...props}
+    >
+      {loading ? <Loader2 className="size-5 shrink-0 animate-spin" aria-hidden="true" /> : null}
+      {children}
+    </button>
+  );
 }
 
 /** Versi tautan — dipakai kalau aksinya berpindah halaman, bukan menjalankan sesuatu. */

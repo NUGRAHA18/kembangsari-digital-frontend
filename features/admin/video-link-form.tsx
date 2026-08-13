@@ -56,7 +56,7 @@ function VideoButton() {
   const { pending } = useFormStatus();
 
   return (
-    <Button type="submit" variant="outline" disabled={pending}>
+    <Button type="submit" variant="outline" loading={pending}>
       {pending ? "Menyimpan…" : "Tambah Video"}
     </Button>
   );

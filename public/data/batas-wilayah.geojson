@@ -1,5 +1,28 @@
 {
   "type": "FeatureCollection",
-  "catatan": "Batas wilayah Padukuhan Kembangsari beserta jalan dan gang. Cara mengisinya ada di public/data/README.md. Selama features masih kosong, sakelar dan legendanya tidak ditampilkan di halaman peta.",
-  "features": []
+  "catatan": "Batas wilayah Padukuhan Kembangsari beserta jalan dan gang. Cara mengisinya ada di public/data/README.md. Batas luar di bawah ini masih sementara — RW 03, RW 04, dan RT 05-08 belum digambar.",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "nama": "Padukuhan Kembangsari",
+        "tipe": "PADUKUHAN"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [110.2253071, -7.6898113],
+            [110.2258432, -7.6910661],
+            [110.2244629, -7.6910548],
+            [110.2229686, -7.6897887],
+            [110.2231054, -7.687946],
+            [110.2249648, -7.6881608],
+            [110.2254439, -7.6898226],
+            [110.2253071, -7.6898113]
+          ]
+        ]
+      }
+    }
+  ]
 }

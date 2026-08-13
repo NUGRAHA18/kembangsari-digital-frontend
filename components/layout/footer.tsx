@@ -4,7 +4,7 @@ import { SiteLogo } from "@/components/layout/site-logo";
 import { Container } from "@/components/ui/container";
 import { FacebookIcon, InstagramIcon, YoutubeIcon } from "@/components/ui/social-icons";
 import { NAV_ITEMS, isNavGroup } from "@/lib/navigation";
-import { googleMapsPointLink, telLink } from "@/lib/format";
+import { googleMapsPointLink, socialLink, telLink } from "@/lib/format";
 import { getMapView, type SettingsMap } from "@/services/settings";
 
 /**
@@ -13,10 +13,12 @@ import { getMapView, type SettingsMap } from "@/services/settings";
  * disembunyikan kalau key-nya belum diisi, bukan menampilkan baris kosong.
  */
 export function Footer({ settings }: { settings: SettingsMap }) {
+  // `socialLink` membetulkan isian tanpa `https://` — dipasang apa adanya,
+  // "instagram.com/nama" dibaca peramban sebagai alamat relatif di portal ini.
   const socials = [
-    { href: settings.instagram, label: "Instagram", Icon: InstagramIcon },
-    { href: settings.facebook, label: "Facebook", Icon: FacebookIcon },
-    { href: settings.youtube, label: "YouTube", Icon: YoutubeIcon },
+    { href: socialLink(settings.instagram), label: "Instagram", Icon: InstagramIcon },
+    { href: socialLink(settings.facebook), label: "Facebook", Icon: FacebookIcon },
+    { href: socialLink(settings.youtube), label: "YouTube", Icon: YoutubeIcon },
   ].filter((social): social is { href: string; label: string; Icon: typeof InstagramIcon } =>
     Boolean(social.href),
   );
