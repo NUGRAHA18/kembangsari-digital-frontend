@@ -9,6 +9,7 @@ import { FilterChips } from "@/components/ui/filter-chips";
 import { Pagination } from "@/components/ui/pagination";
 import { SearchInput } from "@/components/ui/search-input";
 import { EmptyState, ErrorState } from "@/components/ui/states";
+import { PageHero } from "@/features/admin/page-hero";
 import { PUBLISH_STATUS, readStatus, statusOptions } from "@/features/admin/status-filter";
 import { safeFetch } from "@/lib/api";
 import { fetchAsAdmin } from "@/lib/admin-fetch";
@@ -66,21 +67,19 @@ export default async function AdminNewsPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Berita</h1>
-          <p className="mt-1 text-muted">
-            {status.value === undefined
-              ? `${news.meta.total} berita, termasuk draf yang belum terlihat warga.`
-              : `${news.meta.total} berita ${status.value ? "terbit" : "berupa draf"}.`}
-          </p>
-        </div>
-
+      <PageHero
+        title="Berita"
+        description={
+          status.value === undefined
+            ? `${news.meta.total} berita, termasuk draf yang belum terlihat warga.`
+            : `${news.meta.total} berita ${status.value ? "terbit" : "berupa draf"}.`
+        }
+      >
         <ButtonLink href="/admin/berita/baru">
           <Plus className="size-5" aria-hidden="true" />
           Tulis Berita
         </ButtonLink>
-      </div>
+      </PageHero>
 
       {message ? <Alert tone="success">{message}</Alert> : null}
 
@@ -131,7 +130,7 @@ export default async function AdminNewsPage({
           <ul className="flex flex-col gap-3">
             {news.data.map((item) => (
               <li key={item.id}>
-                <Card>
+                <Card interactive>
                   <CardBody className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center">
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">

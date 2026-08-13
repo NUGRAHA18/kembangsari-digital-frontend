@@ -260,7 +260,7 @@ function SubmitButton({ isEdit }: { isEdit: boolean }) {
   const { pending } = useFormStatus();
 
   return (
-    <Button type="submit" size="lg" disabled={pending}>
+    <Button type="submit" size="lg" loading={pending}>
       {pending ? "Menyimpan…" : isEdit ? "Simpan Perubahan" : "Simpan UMKM"}
     </Button>
   );

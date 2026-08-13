@@ -105,8 +105,16 @@ export const SETTING_GROUPS: SettingGroup[] = [
     description:
       "Titik tengah dan tingkat perbesaran saat halaman peta pertama dibuka. Kalau dikosongkan, dipakai koordinat Padukuhan Kembangsari.",
     fields: [
-      { key: "map_latitude", label: "Lintang (latitude)", kind: "text", placeholder: "-7.79558" },
-      { key: "map_longitude", label: "Bujur (longitude)", kind: "text", placeholder: "110.16349" },
+      // Contohnya koordinat Padukuhan Kembangsari yang sebenarnya. Sebelumnya
+      // di sini tertulis titik data seed yang berjarak 13,6 km — angka contoh
+      // yang salah adalah angka yang paling mungkin diketik ulang pengelola.
+      { key: "map_latitude", label: "Lintang (latitude)", kind: "text", placeholder: "-7.690025" },
+      {
+        key: "map_longitude",
+        label: "Bujur (longitude)",
+        kind: "text",
+        placeholder: "110.228583",
+      },
       {
         key: "map_zoom",
         label: "Tingkat perbesaran",

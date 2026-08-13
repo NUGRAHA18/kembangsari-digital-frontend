@@ -12,7 +12,7 @@ import type { News } from "@/types/api";
  */
 export function NewsCard({ news, priority = false }: { news: News; priority?: boolean }) {
   return (
-    <Card className="group relative flex h-full flex-col transition-shadow hover:shadow-md">
+    <Card interactive className="group relative flex h-full flex-col">
       <Thumbnail
         src={news.thumbnail}
         alt={news.title}

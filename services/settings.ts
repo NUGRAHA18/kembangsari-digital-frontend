@@ -31,6 +31,14 @@ export const SETTINGS_FALLBACK: SettingsMap = {
 /**
  * Titik tengah dan tingkat perbesaran peta, disimpan admin sebagai string.
  * Kalau nilainya kosong atau bukan angka, dipakai koordinat Padukuhan Kembangsari.
+ *
+ * Angka cadangannya pernah salah: `-7.79558, 110.16349` — titik data seed yang
+ * berjarak **13,6 km** dari padukuhan, dan tertulis di sini seolah-olah itu
+ * koordinat Kembangsari. Akibatnya peta terbuka di kapanewon yang sama sekali
+ * lain setiap kali kolom di Pengaturan kosong, dan tautan alamat di footer ikut
+ * mengarah ke sana. Nilai di bawah ini sama dengan yang dipakai
+ * `public/data/README.md` dan form rumah warga — jangan diganti tanpa
+ * mencocokkannya dengan batas wilayah di `public/data/batas-wilayah.geojson`.
  */
 export function getMapView(settings: SettingsMap): { center: [number, number]; zoom: number } {
   const latitude = Number(settings.map_latitude);
@@ -39,8 +47,8 @@ export function getMapView(settings: SettingsMap): { center: [number, number]; z
 
   return {
     center: [
-      Number.isFinite(latitude) && latitude !== 0 ? latitude : -7.79558,
-      Number.isFinite(longitude) && longitude !== 0 ? longitude : 110.16349,
+      Number.isFinite(latitude) && latitude !== 0 ? latitude : -7.690025,
+      Number.isFinite(longitude) && longitude !== 0 ? longitude : 110.228583,
     ],
     zoom: Number.isFinite(zoom) && zoom > 0 ? zoom : 15,
   };

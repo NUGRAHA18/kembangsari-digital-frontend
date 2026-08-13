@@ -157,6 +157,8 @@ apa pun di frontend** — cukup satu `PATCH`. Melepas penanda pada satu-satunya 
 | `LAPORAN-BACKEND-3.md` | Laporan putaran ketiga: `500` pada unggahan folder `peta`, model rumah warga, dan login Google — beserta daftar hal yang **tidak** perlu backend kerjakan | internal |
 | `EVALUASI-MONOGRAFI.md` | Pencocokan portal dengan `monografi-idea.md` per bagian, memisahkan yang layak dikerjakan dari yang sengaja tidak dilanjutkan | internal |
 | `JAWABAN-LAPORAN-BACKEND-3.md` | Jawaban putaran ketiga: A-1, B, dan C selesai. **Baca C-4** — `POST /auth/ticket` menjawab `accessToken`, bukan `token` | internal |
+| `LAPORAN-BACKEND-4.md` | Laporan putaran keempat: unggahan gambar gagal karena Node.js di Render di bawah 22, **bukan** karena `SUPABASE_URL` seperti yang disebut pesan galatnya | internal |
+| `JAWABAN-LAPORAN-BACKEND-4.md` | Jawaban putaran keempat: A-1 selesai sebelum laporannya ditulis (backend memakai `StorageClient`, bukan `createClient`). **Baca bagian C** — login Google di produksi selalu gagal, dan itu bug backend yang sudah diperbaiki; frontend tidak perlu berubah | internal |
 
 Berkas selain dua yang teratas **sengaja tidak ikut di repo publik ini** (lihat `.gitignore`)
 dan dibagikan lewat jalur internal. Semuanya tetap ada di komputer masing-masing anggota tim.
@@ -233,6 +235,59 @@ portal bisa dipasang sebagai aplikasi di layar utama (PWA).
 - **Unggahan gambar** tidak perlu diubah: `500` yang kemarin ternyata `SUPABASE_URL`
   bertanda kutip di Render, bukan folder `peta`. Folder `rumah` sudah ditambahkan backend.
 
+**Logo dan favicon akhirnya terpakai** (13 Agustus 2026). `site_logo` dan `site_favicon` sudah
+bisa diunggah pengelola sejak modul Pengaturan dibuat, tetapi tidak ada satu pun tempat yang
+membacanya: navbar dan footer memasang monogram "KD" apa adanya, dan ikon tab peramban datang
+dari `app/icon.tsx` yang dibangkitkan saat build. Sekarang navbar dan footer memakai
+`components/layout/site-logo.tsx` — monogramnya tinggal cadangan saat logo belum diunggah — dan
+ikon tab mengikuti `site_favicon`. Diuji terhadap backend tiruan yang menjawab `GET /settings`
+berisi kedua URL itu.
+
+**Laporan pengelola dikerjakan** (13 Agustus 2026), pada sesi yang sama:
+
+- **Titik tengah cadangan peta meleset 13,6 km.** `getMapView` memakai
+  `-7.79558, 110.16349` — titik data seed, bukan Kembangsari — dan menyebutnya
+  "koordinat Padukuhan Kembangsari" di komentarnya. Setiap kali kolomnya kosong di
+  Pengaturan, peta terbuka di kapanewon lain dan tautan alamat di footer ikut ke sana.
+  Sekarang `-7.690025, 110.228583`, sama dengan `public/data/README.md` dan form rumah.
+  Contoh isian di form Pengaturan ikut dibetulkan — angka contoh yang salah adalah angka
+  yang paling mungkin diketik ulang pengelola.
+- **Batas luar padukuhan sudah tergambar.** `batas-wilayah.geojson` berisi satu polygon
+  `PADUKUHAN` (±7,5 ha). RW dan RT-nya belum.
+- **Catatan rumah ikut tampil di kartu peta**, bukan hanya setelah "Lihat Penghuni",
+  dan kartu rumah akhirnya punya tombol bagikan seperti kartu lokasi.
+- **Tautan media sosial dibetulkan lewat `socialLink`.** Isian tanpa `https://` dibaca
+  peramban sebagai alamat relatif — ikon Instagram membuka `/instagram.com/nama` di
+  portal sendiri lalu 404.
+- **Spinner pada setiap tombol kirim.** `Button` punya `loading`, dan
+  `components/ui/submit-button.tsx` menyatukan pola `useFormStatus` untuk halaman yang
+  seluruhnya Server Component — sembilan belas halaman konfirmasi hapus sebelumnya tidak
+  punya keadaan menunggu sama sekali.
+
+**Redesign mengikuti `design-idea.md`** (13 Agustus 2026), dua halaman percontohan:
+
+- **Beranda** memakai bagian dokumen yang lintas halaman — tangga radius, bayangan tipis,
+  gaya kartu beserta keadaan sentuhnya, cincin fokus hijau. Hero tanpa foto kini ilustrasi
+  lanskap senja (`features/home/landscape.tsx`), bukan blok hijau polos.
+- **`/admin/peta`** mengikuti spesifikasi halamannya: sidebar terang dengan penanda aktif
+  hijau lembut, hero bergambar, pencarian 48px, kartu angka ringkasan, dan kisi 60/40 antara
+  daftar lokasi dan pratinjau peta.
+- **Seluruh modul dashboard menyusul**: keempat belas halamannya memakai `PageHero`, dan
+  kartu barisnya memakai `<Card interactive>`. Halaman Ringkasan ikut memakai `StatTiles`
+  yang sama, ditambah kartu "Masih draf" — satu-satunya angka di sana yang menuntut tindakan.
+
+**Komponen bersama dashboard** ada di `features/admin/`: `page-hero.tsx` (judul bergambar,
+sudah membawa `print:hidden` sendiri), `stat-tiles.tsx` (kartu angka; `null` tampil sebagai
+"—", bukan 0), dan `marker-card.tsx` sebagai contoh susunan kartu daftar. **Aksi di dalam
+`PageHero` tidak perlu dibungkus sendiri** — komponennya sudah menaruhnya dalam baris flex,
+karena `<ButtonLink>` yang diletakkan langsung sebagai anak kolom flex akan melebar sepanjang
+hero.
+
+Diperiksa dengan tangkapan layar dari build produksi terhadap backend tiruan, pada 1440px
+terang, 1440px gelap, dan 320px. **Chrome headless punya lebar viewport minimum ±500px**,
+jadi 320px hanya bisa diuji lewat iframe — potret `--window-size=320` menghasilkan potongan
+halaman 500px dan terbaca keliru sebagai luapan horizontal.
+
 **Belum ada satu pun modul dashboard yang diuji dengan backend hidup** — penyesuaian di atas
 mengikuti kontrak yang sudah backend verifikasi sendiri, tetapi alur tulisnya belum ditekan
 tombolnya dari sisi ini.
@@ -246,7 +301,9 @@ app/admin/              Dashboard. (dasbor)/ memakai kerangka bersidebar;
                         login/ sengaja di luarnya
 app/layout.tsx          Hanya dokumen: bahasa, font, tema, metadata
 app/manifest.ts         Keterangan pemasangan sebagai aplikasi (PWA)
-app/ikon/[ukuran]/      Ikon aplikasi 192 & 512, dibangkitkan saat build
+app/ikon/[ukuran]/      Seluruh ikon monogram cadangan (32, 180, 192, 512),
+                        dibangkitkan saat build. Yang dipakai ditentukan
+                        `icons` di app/layout.tsx, bukan konvensi berkas
 app/luring/             Halaman saat sambungan putus — DI LUAR (publik)/,
                         karena layout itu memanggil GET /settings
 public/sw.js            Service worker: hanya cadangan luring, tanpa cache halaman
@@ -261,6 +318,9 @@ lib/api.ts              Klien HTTP tunggal
 lib/session.ts          Cookie sesi admin (server saja). `sessionCookie` dipakai
                         dua pemasang: Server Action login, dan Route Handler
                         balikan Google yang menempelkannya ke NextResponse
+features/maps/pin-colors.ts  Warna pin per kategori. Terpisah dari map-view.tsx
+                        karena berkas itu mengimpor Leaflet, dan daftar lokasi
+                        di dashboard yang memakai warna sama adalah Server Component
 lib/coordinates.ts      Pembacaan lintang/bujur, dipakai peta dan rumah warga
 lib/format.ts           Tanggal, angka, tautan WhatsApp/Maps — semuanya locale id-ID
 types/api.ts            Kontrak tipe dari backend
@@ -336,6 +396,37 @@ Jangan "memperbaiki" hal-hal berikut tanpa membaca alasannya dulu:
   diunduh browser warga; `qrcode` hanya dipanggil `lib/qr.ts` dari Server Component dan Route
   Handler, sehingga yang sampai ke ponsel cuma SVG atau PNG jadi. Menulis encoder QR sendiri
   berarti memelihara Reed-Solomon dan masking sendiri — satu bit meleset, QR-nya tidak terbaca.
+- **`design-idea.md` diikuti sebagai sistem desain, tidak sebagai perintah huruf demi huruf.**
+  Empat butirnya sengaja tidak dipakai, dan semuanya karena bertabrakan dengan dokumen itu
+  sendiri atau dengan aturan yang sudah ada di sini:
+  - **Green 600 `#16A34A` sebagai latar tombol** hanya 3,30:1 terhadap teks putih, dan
+    **Muted `#94A3B8`** hanya 2,56:1 di atas putih — keduanya gagal ambang 4,5:1 yang
+    dituntut §26 dokumen yang sama. Nilai lama dipertahankan (5,02:1 dan 4,76:1). Green 600
+    tetap dipakai, tetapi hanya pada cincin fokus yang tidak memikul teks.
+  - **Warna per nama kategori** (§2: "Balai Padukuhan → Blue") tidak dipakai: kategori
+    dikelola pengelola, dan `MapCategory` di backend tidak punya kolom `color`. §28 dokumen
+    itu justru meminta UI berasal dari data. Yang dipakai tetap palet berurutan.
+  - **Menu `⋮` pada kartu** (§27) menuntut JavaScript, sedangkan dashboard ini dirancang
+    tetap bekerja tanpanya. Maksud §27 — hapus jangan jadi tombol utama — tetap terpenuhi:
+    hapus memang tidak ada di kartu, melainkan di halaman ubah.
+  - **Ungu untuk "Disembunyikan"** (§11) diganti abu-abu: kelabu memang arti "belum tampil",
+    dan itu menghemat satu token warna yang tidak punya makna semantik apa pun.
+
+  Yang **tidak** dikerjakan karena butuh backend yang belum ada: Activity Feed (§15–§16),
+  notifikasi, dan pencarian global di bilah atas (§6). Tidak ada log aktivitas di backend.
+- **Ikon peramban dideklarasikan lewat `icons` di `app/layout.tsx`, bukan `app/icon.tsx`.** Logo
+  dan favicon adalah isi Pengaturan, jadi keduanya hanya bisa masuk lewat `generateMetadata`.
+  Konvensi berkas Next.js tidak bisa hidup berdampingan dengannya: resolver metadata menaruh
+  ikon konvensi-berkas **di depan** daftar `icons`, sehingga favicon pengelola dan monogram
+  bawaan sama-sama tercetak sebagai `<link rel="icon">` dan peramban bebas memilih yang mana —
+  itulah sebabnya favicon yang sudah diunggah tetap tidak tampak. Lebih halus lagi: begitu
+  `icons` disetel, seluruh ikon konvensi-berkas justru **dibuang**, termasuk `apple-icon.tsx`
+  yang tidak ada hubungannya. Karena itu `app/icon.tsx` dan `app/apple-icon.tsx` dihapus,
+  monogramnya pindah ke `app/ikon/[ukuran]`, dan `apple` ikut ditulis di `icons` meski isinya
+  tidak berubah-ubah. Jangan menambahkan kembali berkas `icon.tsx`/`apple-icon.tsx`.
+- **Ikon layar utama tetap monogram, tidak mengikuti `site_logo`.** iOS dan peluncur Android
+  memotong sudutnya dan menaruh logo berlatar tembus pandang di atas hitam; lambang yang bagus
+  di navbar belum tentu selamat di sana. Yang mengikuti Pengaturan hanya ikon tab peramban.
 - **Grafik monografi dibuat dari CSS**, bukan pustaka grafik: angkanya tetap terbaca mesin
   pencari dan halaman tidak perlu jadi Client Component.
 - **Agenda dikelompokkan per bulan**, bukan kisi kalender 7 kolom yang tidak terbaca di 320px.
@@ -493,7 +584,7 @@ Modul berita adalah contoh yang diikuti modul berikutnya. Polanya:
   di-slug seperti kategori berita dan potensi: enum itu tidak punya slug di backend, dan
   menambah satu lapis penerjemahan hanya menambah tempat yang bisa meleset.
 - **Warna pin peta berasal dari urutan kategori** (`colorForCategory` di
-  `features/maps/map-view.tsx`), bukan dari kolom `icon`. Menghapus atau menambah kategori
+  `features/maps/pin-colors.ts`), bukan dari kolom `icon`. Menghapus atau menambah kategori
   menggeser warna kategori sesudahnya — halaman kategori dan halaman hapusnya menyebutkan itu.
   Kolom `icon` tetap disunting di form meski belum dipakai portal, supaya nama ikon yang sudah
   tersimpan tidak terhapus diam-diam oleh `PATCH`.
@@ -612,9 +703,16 @@ Modul berita adalah contoh yang diikuti modul berikutnya. Polanya:
   dan sudah di-push, tetapi produksi masih menjawab `404` untuk `/house/*` dan `/auth/google` —
   Render belum menerbitkan versi itu. Seluruh modul rumah warga dan login Google di frontend
   dibangun terhadap `openapi.json`, bukan terhadap backend yang berjalan.
-- **Menunggu pengelola:** `public/data/batas-wilayah.geojson` masih kosong, sepuluh marker di
-  produksi masih data seed yang berjarak ±13,8 km dari padukuhan yang sebenarnya, dan
-  `SUPABASE_URL` di Render masih bertanda kutip (kodenya sudah menambal, nilainya belum).
+- **Menunggu pengelola:** `public/data/batas-wilayah.geojson` baru berisi batas luar
+  padukuhan — RW dan RT-nya belum digambar.
+- **Sebelas baris UMKM & Potensi di produksi masih berkoordinat data seed**, 13,6–13,9 km
+  dari padukuhan (`JAWABAN-LAPORAN-BACKEND-4.md` bagian D). Penanda peta, rumah warga, dan
+  titik tengah peta sudah bersih. **Yang salah di sini bukan pin melainkan tombol "Petunjuk
+  Arah"**: `/umkm/[slug]` dan `/potensi/[slug]` mengubah koordinat itu menjadi tautan
+  `google.com/maps/dir/`, jadi warga yang mengetuknya benar-benar dinavigasikan ke kapanewon
+  lain. Karena `hasCoordinates` menyembunyikan tombolnya saat koordinatnya `null`,
+  **mengosongkan koordinatnya lebih benar daripada menggesernya** — digeser berarti tombol
+  itu tetap ada dan mengarah ke titik karangan di dalam padukuhan, yang justru terbaca sah.
 - Prioritas selanjutnya dan yang sengaja **tidak** dilanjutkan: `EVALUASI-MONOGRAFI.md`.
 - **Belum ada satu pun modul dashboard yang diuji dengan backend hidup.** Yang paling layak
   ditekan tombolnya lebih dulu — bukan lagi karena kontraknya meragukan, melainkan karena

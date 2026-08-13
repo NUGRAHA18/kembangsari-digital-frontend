@@ -41,14 +41,22 @@ export function CardGridSkeleton({ count = 6 }: { count?: number }) {
   );
 }
 
+/**
+ * `children` untuk aksi yang menolong pengelola keluar dari keadaan kosong —
+ * `design-idea.md` §23: keadaan kosong harus membantu mengambil tindakan, bukan
+ * sekadar memberi tahu bahwa datanya nihil. Opsional, karena keadaan kosong di
+ * portal warga memang tidak punya tindakan apa pun untuk ditawarkan.
+ */
 export function EmptyState({
   title = "Belum ada data",
   description,
   className,
+  children,
 }: {
   title?: string;
   description?: string;
   className?: string;
+  children?: React.ReactNode;
 }) {
   return (
     <div
@@ -60,6 +68,7 @@ export function EmptyState({
       <Inbox className="size-8 text-muted" aria-hidden="true" />
       <p className="mt-3 font-medium">{title}</p>
       {description ? <p className="mt-1 max-w-prose text-muted">{description}</p> : null}
+      {children ? <div className="mt-4">{children}</div> : null}
     </div>
   );
 }

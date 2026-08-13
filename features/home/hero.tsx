@@ -2,14 +2,20 @@ import Image from "next/image";
 import { ArrowRight, MapPin } from "lucide-react";
 import { ButtonLink } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
+import { LandscapeBackdrop } from "@/features/home/landscape";
 
 /**
- * Hero beranda: foto panorama padukuhan sebagai latar, judul, dan dua aksi.
+ * Hero beranda: panorama padukuhan sebagai latar, judul, dan dua aksi.
  *
  * `-mt-16` menarik hero ke belakang navbar yang posisinya fixed, sesuai konsep
  * "navbar transparan yang berubah solid saat digulir" di dokumen UI/UX.
  * Tingginya memakai `svh`, bukan `vh`: di ponsel `100vh` mengabaikan bilah
  * alamat sehingga bagian bawah hero selalu terpotong.
+ *
+ * Latarnya dua kemungkinan, dan urutannya disengaja: **foto yang diunggah
+ * pengelola selalu menang**, karena itu foto padukuhan yang sebenarnya.
+ * Ilustrasi lanskap hanya berlaku selama `site_banner` masih kosong —
+ * menggantikan blok hijau polos yang dulu mengisi keadaan itu.
  */
 export function Hero({
   title,
@@ -34,7 +40,7 @@ export function Hero({
           className="object-cover"
         />
       ) : (
-        <div className="absolute inset-0 bg-primary" />
+        <LandscapeBackdrop className="absolute inset-0 size-full" />
       )}
 
       {/*
@@ -45,10 +51,24 @@ export function Hero({
         teks putih tetap di atas 9:1. Alat pemeriksa kontras otomatis tidak bisa
         menilai teks di atas gambar, jadi angka ini dijamin lewat perhitungan,
         bukan lewat pengukuran satu foto tertentu.
+
+        Ilustrasi lanskap tidak perlu selubung sepekat itu: warnanya kita sendiri
+        yang menentukan, dan tidak ada satu pun yang terang. Kalau kepekatan foto
+        dipakai apa adanya, ilustrasinya justru tidak terlihat — jadi lapisannya
+        diringankan, cukup untuk menenangkan bagian bawah tempat teks berada.
+
+        Yang perlu dijaga hanya bagian bawah, dan di sana warna paling terang
+        adalah hijau sawah #15803D: 5.02:1 terhadap teks putih bahkan **sebelum**
+        lapisan gelap ditambahkan, dan lapisan itu hanya menaikkannya. Kuning
+        matahari (1.67:1) berada di sepertiga atas, jauh dari teks mana pun.
       */}
       <div
         aria-hidden="true"
-        className="absolute inset-0 bg-linear-to-t from-slate-950/95 via-slate-950/75 to-slate-950/35"
+        className={
+          imageUrl
+            ? "absolute inset-0 bg-linear-to-t from-slate-950/95 via-slate-950/75 to-slate-950/35"
+            : "absolute inset-0 bg-linear-to-t from-slate-950/75 via-slate-950/35 to-transparent"
+        }
       />
 
       <Container className="relative pt-28 pb-16 md:pb-24">

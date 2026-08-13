@@ -94,7 +94,7 @@ function UploadButton({ count, disabled }: { count: number; disabled: boolean })
 
   return (
     <div className="flex flex-wrap items-center gap-3">
-      <Button type="submit" disabled={pending || disabled}>
+      <Button type="submit" loading={pending} disabled={disabled}>
         {pending ? "Mengunggah…" : "Unggah Gambar"}
       </Button>
 

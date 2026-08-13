@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Trash2 } from "lucide-react";
 import { Alert } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { Card, CardBody } from "@/components/ui/card";
 import { deleteFamilyAction } from "@/app/admin/(dasbor)/rumah/actions";
 import { residentLabel } from "@/features/house/house";
@@ -72,10 +72,10 @@ export default async function DeleteFamilyPage({
         <input type="hidden" name="houseSlug" value={house.slug} />
         <input type="hidden" name="familyId" value={family.id} />
 
-        <Button type="submit" size="lg" className="bg-error hover:brightness-95">
+        <SubmitButton size="lg" pendingLabel="Menghapus…" className="bg-error hover:brightness-95">
           <Trash2 className="size-5" aria-hidden="true" />
           Ya, Hapus
-        </Button>
+        </SubmitButton>
 
         <Link
           href={`/admin/rumah/${house.id}`}

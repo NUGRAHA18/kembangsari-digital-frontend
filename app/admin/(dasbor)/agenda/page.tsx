@@ -8,6 +8,7 @@ import { Card, CardBody } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
 import { SearchInput } from "@/components/ui/search-input";
 import { EmptyState } from "@/components/ui/states";
+import { PageHero } from "@/features/admin/page-hero";
 import { hasAgendaPassed } from "@/features/agenda/status";
 import { fetchAsAdmin } from "@/lib/admin-fetch";
 import { formatDateRange } from "@/lib/format";
@@ -43,19 +44,12 @@ export default async function AdminAgendaPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Agenda</h1>
-          <p className="mt-1 text-muted">
-            {agenda.meta.total} kegiatan, termasuk yang sudah berlalu.
-          </p>
-        </div>
-
+      <PageHero title="Agenda" description={`${agenda.meta.total} kegiatan, termasuk yang sudah berlalu.`}>
         <ButtonLink href="/admin/agenda/baru">
           <Plus className="size-5" aria-hidden="true" />
           Tambah Agenda
         </ButtonLink>
-      </div>
+      </PageHero>
 
       {message ? <Alert tone="success">{message}</Alert> : null}
 
@@ -74,7 +68,7 @@ export default async function AdminAgendaPage({
 
               return (
                 <li key={item.id}>
-                  <Card>
+                  <Card interactive>
                     <CardBody className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center">
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">

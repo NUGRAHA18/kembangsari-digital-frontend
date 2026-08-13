@@ -69,7 +69,7 @@ function SubmitButton() {
   const { pending } = useFormStatus();
 
   return (
-    <Button type="submit" size="lg" disabled={pending} className="mt-2 w-full">
+    <Button type="submit" size="lg" loading={pending} className="mt-2 w-full">
       {pending ? "Memproses…" : "Masuk"}
     </Button>
   );

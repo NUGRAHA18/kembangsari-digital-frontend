@@ -9,6 +9,7 @@ import { FilterChips } from "@/components/ui/filter-chips";
 import { Pagination } from "@/components/ui/pagination";
 import { SearchInput } from "@/components/ui/search-input";
 import { EmptyState } from "@/components/ui/states";
+import { PageHero } from "@/features/admin/page-hero";
 import { readStatus, statusOptions, VISIBILITY_STATUS } from "@/features/admin/status-filter";
 import { compareArea, houseTally } from "@/features/house/house";
 import { fetchAsAdmin } from "@/lib/admin-fetch";
@@ -59,21 +60,19 @@ export default async function AdminHousePage({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Rumah Warga</h1>
-          <p className="mt-1 text-muted text-pretty">
-            {status.value === undefined
-              ? `${houses.meta.total} rumah terdata, termasuk yang tidak ditampilkan di peta warga.`
-              : `${houses.meta.total} rumah ${status.value ? "yang tampil di peta warga" : "yang disembunyikan"}.`}
-          </p>
-        </div>
-
+      <PageHero
+        title="Rumah Warga"
+        description={
+          status.value === undefined
+            ? `${houses.meta.total} rumah terdata, termasuk yang tidak ditampilkan di peta warga.`
+            : `${houses.meta.total} rumah ${status.value ? "yang tampil di peta warga" : "yang disembunyikan"}.`
+        }
+      >
         <ButtonLink href="/admin/rumah/baru">
           <Plus className="size-5" aria-hidden="true" />
           Tambah Rumah
         </ButtonLink>
-      </div>
+      </PageHero>
 
       {message ? <Alert tone="success">{message}</Alert> : null}
 
@@ -123,7 +122,7 @@ export default async function AdminHousePage({
           <ul className="flex flex-col gap-3">
             {houses.data.map((house) => (
               <li key={house.id}>
-                <Card>
+                <Card interactive>
                   <CardBody className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center">
                     <span
                       aria-hidden="true"

@@ -7,6 +7,7 @@ import { Card, CardBody } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
 import { SearchInput } from "@/components/ui/search-input";
 import { EmptyState } from "@/components/ui/states";
+import { PageHero } from "@/features/admin/page-hero";
 import { fetchAsAdmin } from "@/lib/admin-fetch";
 import { readPage, readParam, type RawSearchParams } from "@/lib/page-params";
 import { getGalleryAlbumsAsAdmin } from "@/services/gallery";
@@ -35,19 +36,12 @@ export default async function AdminGalleryPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Galeri</h1>
-          <p className="mt-1 text-muted text-pretty">
-            {albums.meta.total} album. Foto dikelola di dalam albumnya masing-masing.
-          </p>
-        </div>
-
+      <PageHero title="Galeri" description={`${albums.meta.total} album. Foto dikelola di dalam albumnya masing-masing.`}>
         <ButtonLink href="/admin/galeri/baru">
           <Plus className="size-5" aria-hidden="true" />
           Buat Album
         </ButtonLink>
-      </div>
+      </PageHero>
 
       {message ? <Alert tone="success">{message}</Alert> : null}
 

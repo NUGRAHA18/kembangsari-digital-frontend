@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Download } from "lucide-react";
 import { Card, CardBody } from "@/components/ui/card";
+import { PageHero } from "@/features/admin/page-hero";
 import { PrintButton } from "@/features/admin/print-button";
 import { renderQrSvg } from "@/lib/qr";
 import { getSettingsMap } from "@/services/settings";
@@ -23,13 +24,12 @@ export default async function QrCodePage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="print:hidden">
-        <h1 className="text-2xl font-bold tracking-tight">QR Code Monografi</h1>
-        <p className="mt-1 text-muted text-pretty">
-          Cetak dan tempel di balai padukuhan atau papan pengumuman. Warga cukup mengarahkan
-          kamera ponselnya untuk membuka data kependudukan terbaru — tanpa mengetik alamat.
-        </p>
-      </div>
+      {/* PageHero sudah membawa `print:hidden` sendiri — yang tercetak
+          hanya lembar QR-nya. */}
+      <PageHero
+        title="QR Code Monografi"
+        description="Cetak dan tempel di balai padukuhan atau papan pengumuman. Warga cukup mengarahkan kamera ponselnya untuk membuka data kependudukan terbaru — tanpa mengetik alamat."
+      />
 
       <div className="flex flex-wrap gap-3 print:hidden">
         <PrintButton />

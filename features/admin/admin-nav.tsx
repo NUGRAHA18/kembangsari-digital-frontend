@@ -78,9 +78,13 @@ export function AdminNav() {
                 href={href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "inline-flex min-h-11 items-center gap-2 rounded-xl px-3 whitespace-nowrap transition-colors lg:w-full",
+                  "inline-flex min-h-11 items-center gap-2 rounded-lg px-3 whitespace-nowrap transition-colors lg:w-full",
+                  // Halaman aktif memakai hijau lembut, bukan hijau pekat
+                  // berteks putih (`design-idea.md` §5): menu yang setiap
+                  // barisnya bisa menyala penuh membuat sidebar terbaca sebagai
+                  // deretan tombol, bukan sebagai daftar tempat.
                   active
-                    ? "bg-primary text-white"
+                    ? "bg-primary-soft font-medium text-primary-soft-foreground"
                     : "text-foreground hover:bg-surface-muted lg:text-muted",
                 )}
               >

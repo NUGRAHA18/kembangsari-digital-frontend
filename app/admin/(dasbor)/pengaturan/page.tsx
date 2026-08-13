@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Alert } from "@/components/ui/alert";
+import { PageHero } from "@/features/admin/page-hero";
 import { SettingsForm } from "@/features/admin/settings-form";
 import { fetchAsAdmin } from "@/lib/admin-fetch";
 import { readParam, type RawSearchParams } from "@/lib/page-params";
@@ -23,13 +24,10 @@ export default async function SettingsPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Pengaturan</h1>
-        <p className="mt-1 text-muted text-pretty">
-          Identitas situs, kontak, media sosial, dan tampilan awal peta. Perubahannya terlihat
-          di seluruh halaman portal, termasuk navbar dan footer.
-        </p>
-      </div>
+      <PageHero
+        title="Pengaturan"
+        description="Identitas situs, kontak, media sosial, dan tampilan awal peta. Perubahannya terlihat di seluruh halaman portal, termasuk navbar dan footer."
+      />
 
       {message ? <Alert tone="success">{message}</Alert> : null}
 

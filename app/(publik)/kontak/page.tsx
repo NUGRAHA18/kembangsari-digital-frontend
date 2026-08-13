@@ -5,7 +5,7 @@ import { Card, CardBody } from "@/components/ui/card";
 import { Container } from "@/components/ui/container";
 import { PageHeader } from "@/components/ui/page-header";
 import { FacebookIcon, InstagramIcon, YoutubeIcon } from "@/components/ui/social-icons";
-import { googleMapsDirectionsLink, telLink } from "@/lib/format";
+import { googleMapsDirectionsLink, socialLink, telLink } from "@/lib/format";
 import { getMapView, getSettingsMap } from "@/services/settings";
 
 export const metadata: Metadata = {
@@ -18,11 +18,15 @@ export default async function ContactPage() {
   const settings = await getSettingsMap();
   const mapView = getMapView(settings);
 
+  // Sama seperti di footer: isian tanpa `https://` harus dibetulkan lebih dulu,
+  // kalau tidak peramban membacanya sebagai alamat relatif di portal ini.
   const socials = [
-    { href: settings.instagram, label: "Instagram", Icon: InstagramIcon },
-    { href: settings.facebook, label: "Facebook", Icon: FacebookIcon },
-    { href: settings.youtube, label: "YouTube", Icon: YoutubeIcon },
-  ].filter((social) => Boolean(social.href));
+    { href: socialLink(settings.instagram), label: "Instagram", Icon: InstagramIcon },
+    { href: socialLink(settings.facebook), label: "Facebook", Icon: FacebookIcon },
+    { href: socialLink(settings.youtube), label: "YouTube", Icon: YoutubeIcon },
+  ].filter((social): social is { href: string; label: string; Icon: typeof InstagramIcon } =>
+    Boolean(social.href),
+  );
 
   return (
     <>

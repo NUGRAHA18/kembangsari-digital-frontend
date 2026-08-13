@@ -242,6 +242,35 @@ export function telLink(phone: string): string {
   return `tel:${phone.replace(/[^\d+]/g, "")}`;
 }
 
+/**
+ * Tautan media sosial dari Pengaturan, dibetulkan seperlunya.
+ *
+ * Kolomnya diisi tangan, dan yang paling sering diketik pengelola adalah
+ * bentuk yang disalin dari bilah alamat tanpa skema — `instagram.com/nama`
+ * atau bahkan `@nama`. Dipasang apa adanya di `href`, keduanya dibaca peramban
+ * sebagai alamat **relatif**: ikon Instagram di footer akan membuka
+ * `/instagram.com/nama` di portal sendiri dan berakhir 404. Itu terbaca sebagai
+ * "tautannya rusak", bukan sebagai "isian pengaturannya kurang lengkap".
+ *
+ * Mengembalikan `null` untuk isian yang tidak bisa diselamatkan, supaya
+ * pemanggilnya menyembunyikan ikonnya alih-alih memasang tautan yang mati.
+ */
+export function socialLink(value: string | undefined | null): string | null {
+  const trimmed = value?.trim();
+  if (!trimmed) return null;
+
+  // Sudah lengkap — dipakai apa adanya. `mailto:` dan `tel:` sengaja tidak
+  // ikut diterima di sini; kolom media sosial bukan tempatnya.
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+
+  // Isian yang jelas bukan alamat: "@nama", "belum ada", satu kata tanpa titik.
+  // Menambahkan `https://` di depannya hanya menghasilkan tautan yang gagal
+  // dibuka, dan itu lebih buruk daripada ikon yang tidak ditampilkan.
+  if (!/^[\w-]+(\.[\w-]+)+(\/|$)/.test(trimmed)) return null;
+
+  return `https://${trimmed}`;
+}
+
 /** Label kategori dari enum backend (SCREAMING_SNAKE_CASE) menjadi teks yang layak dibaca. */
 export function humanizeEnum(value: string): string {
   return value

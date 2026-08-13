@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Trash2 } from "lucide-react";
 import { Alert } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { Card, CardBody } from "@/components/ui/card";
 import { deleteKknProgramAction } from "@/app/admin/(dasbor)/program-kkn/actions";
 import { SUB_PROGRAM_LABELS } from "@/features/kkn/sub-programs";
@@ -71,10 +71,10 @@ export default async function DeleteKknProgramPage({ params }: Props) {
         <input type="hidden" name="id" value={program.id} />
         <input type="hidden" name="slug" value={program.slug} />
 
-        <Button type="submit" size="lg" className="bg-error hover:brightness-95">
+        <SubmitButton size="lg" pendingLabel="Menghapus…" className="bg-error hover:brightness-95">
           <Trash2 className="size-5" aria-hidden="true" />
           {activityCount > 0 ? `Ya, Hapus Beserta ${activityCount} Kegiatan` : "Ya, Hapus"}
-        </Button>
+        </SubmitButton>
 
         <Link
           href={`/admin/program-kkn/${program.slug}`}

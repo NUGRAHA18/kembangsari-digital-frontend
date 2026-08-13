@@ -9,6 +9,7 @@ import { FilterChips } from "@/components/ui/filter-chips";
 import { Pagination } from "@/components/ui/pagination";
 import { SearchInput } from "@/components/ui/search-input";
 import { EmptyState } from "@/components/ui/states";
+import { PageHero } from "@/features/admin/page-hero";
 import { readStatus, statusOptions, VISIBILITY_STATUS } from "@/features/admin/status-filter";
 import { fetchAsAdmin } from "@/lib/admin-fetch";
 import { excerpt, formatDateShort } from "@/lib/format";
@@ -51,21 +52,19 @@ export default async function AdminAnnouncementPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Pengumuman</h1>
-          <p className="mt-1 text-muted">
-            {status.value === undefined
-              ? `${announcements.meta.total} pengumuman, termasuk yang tidak ditampilkan.`
-              : `${announcements.meta.total} pengumuman ${status.value ? "yang tampil" : "yang disembunyikan"}.`}
-          </p>
-        </div>
-
+      <PageHero
+        title="Pengumuman"
+        description={
+          status.value === undefined
+            ? `${announcements.meta.total} pengumuman, termasuk yang tidak ditampilkan.`
+            : `${announcements.meta.total} pengumuman ${status.value ? "yang tampil" : "yang disembunyikan"}.`
+        }
+      >
         <ButtonLink href="/admin/pengumuman/baru">
           <Plus className="size-5" aria-hidden="true" />
           Tulis Pengumuman
         </ButtonLink>
-      </div>
+      </PageHero>
 
       {message ? <Alert tone="success">{message}</Alert> : null}
 
@@ -93,7 +92,7 @@ export default async function AdminAnnouncementPage({
           <ul className="flex flex-col gap-3">
             {announcements.data.map((item) => (
               <li key={item.id}>
-                <Card>
+                <Card interactive>
                   <CardBody className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center">
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">

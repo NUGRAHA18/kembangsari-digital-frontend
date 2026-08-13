@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { AlertTriangle, Plus, Trash2, UserPlus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardBody } from "@/components/ui/card";
 import { inputClasses } from "@/components/ui/field";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { saveFamilyAction, saveResidentAction } from "@/app/admin/(dasbor)/rumah/actions";
 import {
   FAMILY_RELATION_LABELS,
@@ -67,10 +67,10 @@ export function HouseFamilies({ house }: { house: House }) {
               />
             </div>
 
-            <Button type="submit" variant="outline">
+            <SubmitButton variant="outline" pendingLabel="Menyimpan…">
               <Plus className="size-5" aria-hidden="true" />
               Tambah KK
-            </Button>
+            </SubmitButton>
           </form>
         </CardBody>
       </Card>
@@ -104,9 +104,9 @@ function FamilyCard({ house, family, index }: { house: House; family: Family; in
               className={cn(inputClasses, "w-48")}
             />
 
-            <Button type="submit" variant="outline">
+            <SubmitButton variant="outline" pendingLabel="Menyimpan…">
               Simpan
-            </Button>
+            </SubmitButton>
 
             <Link
               href={`/admin/rumah/${house.id}/kk/${family.id}/hapus`}
@@ -256,7 +256,7 @@ function ResidentFields({
         </select>
       </div>
 
-      <Button type="submit" variant="outline">
+      <SubmitButton variant="outline" pendingLabel="Menyimpan…">
         {resident ? (
           "Simpan"
         ) : (
@@ -265,7 +265,7 @@ function ResidentFields({
             Tambah warga
           </>
         )}
-      </Button>
+      </SubmitButton>
 
       {resident ? (
         <Link

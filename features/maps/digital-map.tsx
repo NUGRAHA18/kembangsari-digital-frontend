@@ -406,6 +406,12 @@ function HouseDetail({ house, onClose }: { house: House; onClose: () => void }) 
           </p>
         ) : null}
 
+        {/* Catatan pendata ikut di kartu, bukan hanya di halaman rumahnya.
+            Isinya sering justru yang paling dicari — "rumah paling ujung",
+            "gang sempit, motor saja" — dan menyembunyikannya di balik satu
+            ketukan lagi membuat catatan itu praktis tidak pernah terbaca. */}
+        {house.note ? <p className="mt-2 text-sm text-muted text-pretty">{house.note}</p> : null}
+
         <div className="mt-4 flex flex-wrap gap-2">
           <Link
             href={`/peta/rumah/${house.slug}`}
@@ -424,6 +430,14 @@ function HouseDetail({ house, onClose }: { house: House; onClose: () => void }) 
             <Navigation className="size-4" aria-hidden="true" />
             Petunjuk Arah
           </a>
+
+          {/* Kartu lokasi sudah punya tombol ini sejak awal; kartu rumah belum,
+              jadi membagikan sebuah rumah menuntut membuka halamannya dulu. */}
+          <ShareButton
+            url={`/peta/rumah/${house.slug}`}
+            title={house.label}
+            text={`${house.label} — RT ${house.rt} / RW ${house.rw}, Padukuhan Kembangsari`}
+          />
         </div>
       </CardBody>
     </Card>

@@ -22,7 +22,7 @@ export default async function PublicLayout({ children }: { children: React.React
         Lewati ke konten utama
       </a>
 
-      <Navbar siteName={settings.site_name ?? "Kembangsari Digital"} />
+      <Navbar siteName={settings.site_name ?? "Kembangsari Digital"} logo={settings.site_logo} />
 
       {/* pt-16 mengganti tinggi navbar yang posisinya fixed. Beranda
           menariknya kembali dengan -mt-16 agar hero berada di baliknya. */}
