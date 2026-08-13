@@ -270,7 +270,17 @@ berisi kedua URL itu.
   lanskap senja (`features/home/landscape.tsx`), bukan blok hijau polos.
 - **`/admin/peta`** mengikuti spesifikasi halamannya: sidebar terang dengan penanda aktif
   hijau lembut, hero bergambar, pencarian 48px, kartu angka ringkasan, dan kisi 60/40 antara
-  daftar lokasi dan pratinjau peta. Halaman ini jadi acuan modul dashboard berikutnya.
+  daftar lokasi dan pratinjau peta.
+- **Seluruh modul dashboard menyusul**: keempat belas halamannya memakai `PageHero`, dan
+  kartu barisnya memakai `<Card interactive>`. Halaman Ringkasan ikut memakai `StatTiles`
+  yang sama, ditambah kartu "Masih draf" — satu-satunya angka di sana yang menuntut tindakan.
+
+**Komponen bersama dashboard** ada di `features/admin/`: `page-hero.tsx` (judul bergambar,
+sudah membawa `print:hidden` sendiri), `stat-tiles.tsx` (kartu angka; `null` tampil sebagai
+"—", bukan 0), dan `marker-card.tsx` sebagai contoh susunan kartu daftar. **Aksi di dalam
+`PageHero` tidak perlu dibungkus sendiri** — komponennya sudah menaruhnya dalam baris flex,
+karena `<ButtonLink>` yang diletakkan langsung sebagai anak kolom flex akan melebar sepanjang
+hero.
 
 Diperiksa dengan tangkapan layar dari build produksi terhadap backend tiruan, pada 1440px
 terang, 1440px gelap, dan 320px. **Chrome headless punya lebar viewport minimum ±500px**,

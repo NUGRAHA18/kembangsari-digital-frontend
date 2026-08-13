@@ -4,9 +4,11 @@ import { CalendarDays, FileText, Megaphone, PenSquare, Plus } from "lucide-react
 import { ButtonLink } from "@/components/ui/button";
 import { Card, CardBody } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/states";
+import { PageHero } from "@/features/admin/page-hero";
+import { StatTiles, type StatTile } from "@/features/admin/stat-tiles";
 import { safeFetch } from "@/lib/api";
 import { fetchAsAdmin } from "@/lib/admin-fetch";
-import { formatDateShort, formatNumber } from "@/lib/format";
+import { formatDateShort } from "@/lib/format";
 import { requireSession } from "@/lib/session";
 import { getUpcomingAgenda } from "@/services/agenda";
 import { getActiveAnnouncements } from "@/services/announcement";
@@ -29,49 +31,52 @@ export default async function DashboardHomePage() {
 
   const draftCount = drafts.meta.total;
 
-  const stats = [
-    { label: "Total berita", value: news.meta.total, Icon: FileText },
+  // Empat kartu, bukan tiga: draf ikut ditampilkan karena itu satu-satunya
+  // angka di halaman ini yang menuntut tindakan — sisanya sekadar kabar.
+  const stats: StatTile[] = [
+    {
+      label: "Total berita",
+      value: news.meta.total,
+      unit: "tulisan",
+      tone: "primary",
+      Icon: FileText,
+    },
+    {
+      label: "Masih draf",
+      value: draftCount,
+      unit: "belum terbit",
+      tone: "neutral",
+      Icon: PenSquare,
+    },
     {
       label: "Agenda mendatang",
       value: agenda.data?.meta.total ?? null,
+      unit: "kegiatan",
+      tone: "info",
       Icon: CalendarDays,
     },
     {
       label: "Pengumuman tampil",
       value: announcements.data?.meta.total ?? null,
+      unit: "sedang berlaku",
+      tone: "secondary",
       Icon: Megaphone,
     },
   ];
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Halo, {user.name}</h1>
-          <p className="mt-1 text-muted text-pretty">
-            Kelola isi portal informasi Padukuhan Kembangsari dari sini.
-          </p>
-        </div>
-
+      <PageHero
+        title={`Halo, ${user.name}`}
+        description="Kelola isi portal informasi Padukuhan Kembangsari dari sini."
+      >
         <ButtonLink href="/admin/berita/baru">
           <Plus className="size-5" aria-hidden="true" />
           Tulis Berita
         </ButtonLink>
-      </div>
+      </PageHero>
 
-      <ul className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-3">
-        {stats.map(({ label, value, Icon }) => (
-          <li key={label}>
-            <Card className="h-full">
-              <CardBody className="p-4">
-                <Icon className="size-6 text-accent" aria-hidden="true" />
-                <p className="mt-3 text-2xl font-bold tracking-tight">{formatNumber(value)}</p>
-                <p className="text-sm text-muted">{label}</p>
-              </CardBody>
-            </Card>
-          </li>
-        ))}
-      </ul>
+      <StatTiles tiles={stats} />
 
       <section aria-labelledby="terbaru">
         <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
@@ -97,7 +102,7 @@ export default async function DashboardHomePage() {
           <ul className="flex flex-col gap-3">
             {news.data.map((item) => (
               <li key={item.id}>
-                <Card>
+                <Card interactive>
                   <CardBody className="flex flex-wrap items-center gap-3 p-4">
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-medium">{item.title}</p>

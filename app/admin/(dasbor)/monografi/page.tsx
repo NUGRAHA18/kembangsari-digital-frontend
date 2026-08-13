@@ -8,6 +8,7 @@ import { Card, CardBody } from "@/components/ui/card";
 import { FilterChips } from "@/components/ui/filter-chips";
 import { Pagination } from "@/components/ui/pagination";
 import { EmptyState } from "@/components/ui/states";
+import { PageHero } from "@/features/admin/page-hero";
 import { PUBLISH_STATUS, readStatus, statusOptions } from "@/features/admin/status-filter";
 import { fetchAsAdmin } from "@/lib/admin-fetch";
 import { formatNumber } from "@/lib/format";
@@ -50,21 +51,19 @@ export default async function AdminMonographyPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Monografi</h1>
-          <p className="mt-1 text-muted text-pretty">
-            {status.value === undefined
-              ? `${monography.meta.total} tahun data kependudukan, termasuk yang belum diterbitkan.`
-              : `${monography.meta.total} tahun data ${status.value ? "yang sudah terbit" : "yang masih draf"}.`}
-          </p>
-        </div>
-
+      <PageHero
+        title="Monografi"
+        description={
+          status.value === undefined
+            ? `${monography.meta.total} tahun data kependudukan, termasuk yang belum diterbitkan.`
+            : `${monography.meta.total} tahun data ${status.value ? "yang sudah terbit" : "yang masih draf"}.`
+        }
+      >
         <ButtonLink href="/admin/monografi/baru">
           <Plus className="size-5" aria-hidden="true" />
           Tambah Tahun
         </ButtonLink>
-      </div>
+      </PageHero>
 
       {message ? <Alert tone="success">{message}</Alert> : null}
 
@@ -82,7 +81,7 @@ export default async function AdminMonographyPage({
           <ul className="flex flex-col gap-3">
             {monography.data.map((stat) => (
               <li key={stat.id}>
-                <Card>
+                <Card interactive>
                   <CardBody className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center">
                     <span
                       aria-hidden="true"

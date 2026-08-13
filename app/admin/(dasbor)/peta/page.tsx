@@ -96,17 +96,15 @@ export default async function AdminMapPage({
         title="Peta Lokasi"
         description="Kelola titik penting Padukuhan Kembangsari — fasilitas umum, rumah perangkat, dan lokasi layanan."
       >
-        <div className="flex flex-wrap gap-2">
-          <ButtonLink href="/admin/peta/baru">
-            <Plus className="size-5" aria-hidden="true" />
-            Tambah Lokasi
-          </ButtonLink>
+        <ButtonLink href="/admin/peta/baru">
+          <Plus className="size-5" aria-hidden="true" />
+          Tambah Lokasi
+        </ButtonLink>
 
-          <ButtonLink href="/admin/peta/kategori" variant="outline-primary">
-            <Tags className="size-5" aria-hidden="true" />
-            Kategori Lokasi
-          </ButtonLink>
-        </div>
+        <ButtonLink href="/admin/peta/kategori" variant="outline-primary">
+          <Tags className="size-5" aria-hidden="true" />
+          Kategori Lokasi
+        </ButtonLink>
       </PageHero>
 
       {message ? <Alert tone="success">{message}</Alert> : null}

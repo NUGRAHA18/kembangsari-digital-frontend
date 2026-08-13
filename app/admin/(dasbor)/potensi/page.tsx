@@ -9,6 +9,7 @@ import { FilterChips } from "@/components/ui/filter-chips";
 import { Pagination } from "@/components/ui/pagination";
 import { SearchInput } from "@/components/ui/search-input";
 import { EmptyState } from "@/components/ui/states";
+import { PageHero } from "@/features/admin/page-hero";
 import { readStatus, statusOptions, VISIBILITY_STATUS } from "@/features/admin/status-filter";
 import {
   POTENTIAL_CATEGORIES,
@@ -58,21 +59,19 @@ export default async function AdminPotentialPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Potensi</h1>
-          <p className="mt-1 text-muted">
-            {status.value === undefined
-              ? `${potentials.meta.total} potensi padukuhan, termasuk yang tidak ditampilkan.`
-              : `${potentials.meta.total} potensi ${status.value ? "yang tampil" : "yang disembunyikan"}.`}
-          </p>
-        </div>
-
+      <PageHero
+        title="Potensi"
+        description={
+          status.value === undefined
+            ? `${potentials.meta.total} potensi padukuhan, termasuk yang tidak ditampilkan.`
+            : `${potentials.meta.total} potensi ${status.value ? "yang tampil" : "yang disembunyikan"}.`
+        }
+      >
         <ButtonLink href="/admin/potensi/baru">
           <Plus className="size-5" aria-hidden="true" />
           Tambah Potensi
         </ButtonLink>
-      </div>
+      </PageHero>
 
       {message ? <Alert tone="success">{message}</Alert> : null}
 
@@ -120,7 +119,7 @@ export default async function AdminPotentialPage({
 
               return (
                 <li key={item.id}>
-                  <Card>
+                  <Card interactive>
                     <CardBody className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center">
                       <span
                         aria-hidden="true"

@@ -5,6 +5,7 @@ import { Alert } from "@/components/ui/alert";
 import { ButtonLink } from "@/components/ui/button";
 import { Card, CardBody } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/states";
+import { PageHero } from "@/features/admin/page-hero";
 import { fetchAsAdmin } from "@/lib/admin-fetch";
 import { excerpt, stripMarkdown } from "@/lib/format";
 import { readParam, type RawSearchParams } from "@/lib/page-params";
@@ -28,21 +29,12 @@ export default async function AdminProfilePage({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Profil</h1>
-          <p className="mt-1 text-muted text-pretty">
-            {profiles.length} halaman profil padukuhan — sejarah, visi misi, letak geografis,
-            dan susunan perangkat. Tidak ada status draf di sini: setiap perubahan langsung
-            terlihat warga.
-          </p>
-        </div>
-
+      <PageHero title="Profil" description={`${profiles.length} halaman profil padukuhan — sejarah, visi misi, letak geografis, dan susunan perangkat. Tidak ada status draf di sini: setiap perubahan langsung terlihat warga.`}>
         <ButtonLink href="/admin/profil/baru">
           <Plus className="size-5" aria-hidden="true" />
           Tambah Halaman
         </ButtonLink>
-      </div>
+      </PageHero>
 
       {message ? <Alert tone="success">{message}</Alert> : null}
 
@@ -52,7 +44,7 @@ export default async function AdminProfilePage({
         <ul className="flex flex-col gap-3">
           {profiles.map((profile) => (
             <li key={profile.id}>
-              <Card>
+              <Card interactive>
                 <CardBody className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center">
                   <span
                     aria-hidden="true"

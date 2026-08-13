@@ -71,7 +71,7 @@ export default async function MapCategoriesPage({
 
               return (
                 <li key={category.id}>
-                  <Card>
+                  <Card interactive>
                     <CardBody className="flex flex-wrap items-center gap-3 p-4">
                       <div className="min-w-0 flex-1">
                         <p className="font-medium">{category.name}</p>

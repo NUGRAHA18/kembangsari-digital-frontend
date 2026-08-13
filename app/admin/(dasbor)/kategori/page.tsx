@@ -4,6 +4,7 @@ import { PenSquare, Trash2 } from "lucide-react";
 import { Alert } from "@/components/ui/alert";
 import { Card, CardBody } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/states";
+import { PageHero } from "@/features/admin/page-hero";
 import { CategoryForm } from "@/features/admin/category-form";
 import { fetchAsAdmin } from "@/lib/admin-fetch";
 import { readParam, type RawSearchParams } from "@/lib/page-params";
@@ -29,13 +30,10 @@ export default async function CategoriesPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Kategori Berita</h1>
-        <p className="mt-1 text-muted text-pretty">
-          Setiap berita wajib punya kategori. Kategori juga menjadi tombol filter di halaman
-          berita yang dilihat warga.
-        </p>
-      </div>
+      <PageHero
+        title="Kategori Berita"
+        description="Setiap berita wajib punya kategori. Kategori juga menjadi tombol filter di halaman berita yang dilihat warga."
+      />
 
       {message ? <Alert tone="success">{message}</Alert> : null}
 
@@ -58,7 +56,7 @@ export default async function CategoriesPage({
 
               return (
                 <li key={category.id}>
-                  <Card>
+                  <Card interactive>
                     <CardBody className="flex flex-wrap items-center gap-3 p-4">
                       <div className="min-w-0 flex-1">
                         <p className="font-medium">{category.name}</p>

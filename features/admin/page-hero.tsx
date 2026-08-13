@@ -27,7 +27,10 @@ export function PageHero({
   children?: React.ReactNode;
 }) {
   return (
-    <section className="relative isolate flex min-h-50 flex-col justify-end overflow-hidden rounded-2xl">
+    // `print:hidden` sepola dengan bilah atas dan sidebar: satu-satunya halaman
+    // yang dicetak adalah lembar QR monografi, dan gambar lanskap sebesar ini
+    // menghabiskan tinta tanpa menambah apa pun di kertas.
+    <section className="relative isolate flex min-h-50 flex-col justify-end overflow-hidden rounded-2xl print:hidden">
       <LandscapeBackdrop className="absolute inset-0 -z-10 size-full" />
       <div
         aria-hidden="true"
@@ -44,7 +47,11 @@ export function PageHero({
           ) : null}
         </div>
 
-        {children}
+        {/* Aksi dibungkus baris tersendiri, bukan diletakkan langsung sebagai
+            anak kolom flex: anak flex meregang mengikuti lebar induknya secara
+            bawaan, dan sebuah `<ButtonLink>` yang ditaruh apa adanya di sini
+            melebar sepanjang hero. Terlihat jelas di halaman Ringkasan. */}
+        {children ? <div className="flex flex-wrap items-center gap-2">{children}</div> : null}
       </div>
     </section>
   );
