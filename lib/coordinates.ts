@@ -50,3 +50,17 @@ export function parseCoordinatePair(value: string): { latitude: string; longitud
 
   return { latitude, longitude };
 }
+
+/**
+ * Lintang-bujur untuk ditampilkan, dipotong enam angka di belakang koma.
+ *
+ * Angka dari backend bertipe `number`, dan menampilkannya apa adanya
+ * memunculkan ekor pembulatan biner — `-7.6915000000000004` benar-benar tampil
+ * seperti itu di kartu lokasi. Enam angka bukan pilihan sembarang: pada garis
+ * lintang ini satu per sejuta derajat ≈ 11 cm, jauh lebih teliti daripada yang
+ * bisa dicapai titik yang ditandai dengan jari di layar ponsel.
+ */
+export function formatCoordinatePair(latitude: number, longitude: number): string {
+  const trim = (value: number) => String(Number(value.toFixed(6)));
+  return `${trim(latitude)}, ${trim(longitude)}`;
+}

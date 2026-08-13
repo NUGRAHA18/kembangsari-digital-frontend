@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import L from "leaflet";
 import { GeoJSON, MapContainer, Marker, Popup, TileLayer, Tooltip, useMap } from "react-leaflet";
 import { boundaryStyle, type BoundaryFeature } from "@/features/maps/boundaries";
+import { colorForCategory } from "@/features/maps/pin-colors";
 import { colorForRt, houseTally } from "@/features/house/house";
 import type { House, MapMarker } from "@/types/api";
 
@@ -17,13 +18,6 @@ import type { House, MapMarker } from "@/types/api";
  * dengan `ssr: false`.
  */
 
-/** Warna pin per kategori; diulang kalau kategorinya lebih banyak dari palet. */
-const PIN_COLORS = ["#15803d", "#f59e0b", "#0ea5e9", "#a855f7", "#ef4444", "#0d9488", "#e11d48"];
-
-export function colorForCategory(categoryId: string, categoryIds: string[]): string {
-  const index = categoryIds.indexOf(categoryId);
-  return PIN_COLORS[(index < 0 ? 0 : index) % PIN_COLORS.length];
-}
 
 /**
  * Ikon dibuat sebagai divIcon berisi SVG, bukan gambar bawaan Leaflet.

@@ -43,13 +43,16 @@ export function SearchInput({
           className="pointer-events-none absolute top-1/2 left-3 size-5 -translate-y-1/2 text-muted"
           aria-hidden="true"
         />
+        {/* 48px, bukan 44px: `design-idea.md` §9 menjadikan pencarian salah satu
+            titik pandang utama halaman, dan meminta 48–52px. Cincin fokusnya
+            sama dengan isian form lain — lihat `inputClasses`. */}
         <input
           type="search"
           name="search"
           defaultValue={defaultValue}
           placeholder={placeholder}
           aria-label={label}
-          className="min-h-11 w-full rounded-xl border border-border bg-surface py-2 pr-3 pl-10 text-foreground placeholder:text-muted"
+          className="min-h-12 w-full rounded-lg border border-border bg-surface py-2 pr-3 pl-10 text-foreground transition-[border-color,box-shadow] duration-150 placeholder:text-muted focus-visible:border-primary focus-visible:shadow-[0_0_0_3px_var(--ring)] focus-visible:outline-none"
         />
       </div>
 

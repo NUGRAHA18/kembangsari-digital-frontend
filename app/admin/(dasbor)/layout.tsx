@@ -77,14 +77,19 @@ export default async function DashboardLayout({ children }: { children: React.Re
         </div>
       </header>
 
-      <div className="mx-auto flex w-full max-w-7xl flex-1 gap-8 px-4 py-6 lg:py-8">
-        <aside className="hidden w-56 shrink-0 lg:block print:hidden">
-          <div className="sticky top-24">
+      {/* Sidebar berlatar `surface` dengan garis pemisah, bukan sekadar kolom
+          kosong di dalam halaman (`design-idea.md` §5). Lebarnya 14rem = 224px,
+          di dalam rentang 220–240px yang diminta §4. */}
+      <div className="flex flex-1">
+        <aside className="hidden w-56 shrink-0 border-r border-border bg-surface lg:block print:hidden">
+          <div className="sticky top-24 px-3 py-6">
             <AdminNav />
           </div>
         </aside>
 
-        <main className="min-w-0 flex-1">{children}</main>
+        <main className="min-w-0 flex-1 px-4 py-6 lg:px-8 lg:py-8">
+          <div className="mx-auto w-full max-w-6xl">{children}</div>
+        </main>
       </div>
     </div>
   );

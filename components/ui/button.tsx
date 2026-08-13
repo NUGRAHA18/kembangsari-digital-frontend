@@ -2,13 +2,17 @@ import Link from "next/link";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type Variant = "primary" | "secondary" | "outline" | "ghost";
+type Variant = "primary" | "secondary" | "outline" | "outline-primary" | "ghost";
 type Size = "sm" | "md" | "lg" | "icon";
 
 const VARIANTS: Record<Variant, string> = {
   primary: "bg-primary text-white hover:bg-primary-hover",
   secondary: "bg-secondary text-slate-900 hover:brightness-95",
   outline: "border border-border bg-surface text-foreground hover:bg-surface-muted",
+  // Tombol pendamping di sebelah tombol utama (`design-idea.md` §7): bertepi
+  // hijau, bukan abu-abu, supaya terbaca sebagai pasangan aksi utamanya —
+  // tetapi tanpa bidang hijau penuh yang akan menyainginya.
+  "outline-primary": "border border-primary bg-surface text-accent hover:bg-primary-soft",
   ghost: "text-foreground hover:bg-surface-muted",
 };
 

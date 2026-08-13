@@ -1,21 +1,22 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { ExternalLink, MapPin, PenSquare, Plus, Tags } from "lucide-react";
+import { Eye, EyeOff, MapPin, Plus, Tags } from "lucide-react";
 import { Alert } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
-import { Card, CardBody } from "@/components/ui/card";
 import { FilterChips } from "@/components/ui/filter-chips";
 import { Pagination } from "@/components/ui/pagination";
 import { SearchInput } from "@/components/ui/search-input";
 import { EmptyState, ErrorState } from "@/components/ui/states";
+import { MapPreviewPanel } from "@/features/admin/map-preview-panel";
+import { MarkerCard } from "@/features/admin/marker-card";
+import { PageHero } from "@/features/admin/page-hero";
+import { StatTiles } from "@/features/admin/stat-tiles";
 import { readStatus, statusOptions, VISIBILITY_STATUS } from "@/features/admin/status-filter";
 import { safeFetch } from "@/lib/api";
 import { fetchAsAdmin } from "@/lib/admin-fetch";
-import { googleMapsPointLink } from "@/lib/format";
 import { readPage, readParam, type RawSearchParams } from "@/lib/page-params";
 import { requireSession } from "@/lib/session";
 import { getAllMarkers, getMapCategoriesUncached } from "@/services/maps";
+import { getMapView, getSettingsMap } from "@/services/settings";
 
 export const metadata: Metadata = { title: "Peta" };
 
@@ -59,6 +60,27 @@ export default async function AdminMapPage({
     ),
   );
 
+  // Angka ringkasan menghitung seluruh titik, bukan yang sedang tersaring —
+  // `markers.meta.total` di atas sudah ikut saringan. Dua permintaan `limit=1`
+  // sudah cukup: yang diambil hanya `meta.total`, isinya tidak diunduh. Yang
+  // disembunyikan dihitung sebagai selisih, jadi tidak perlu permintaan ketiga.
+  //
+  // `safeFetch`, bukan `fetchAsAdmin`: kartu angka yang gagal dimuat menampilkan
+  // "—" dan halamannya tetap berguna. Sesi yang kedaluwarsa tetap tertangkap,
+  // karena daftar utamanya di atas memakai `fetchAsAdmin`.
+  const [allCount, visibleCount, settings] = await Promise.all([
+    safeFetch(getAllMarkers({ page: 1, limit: 1 }, token)),
+    safeFetch(getAllMarkers({ page: 1, limit: 1, isActive: true }, token)),
+    getSettingsMap(),
+  ]);
+
+  const total = allCount.data?.meta.total ?? null;
+  const visible = visibleCount.data?.meta.total ?? null;
+  const hidden = total !== null && visible !== null ? total - visible : null;
+
+  const categoryIds = (categories.data ?? []).map((category) => category.id);
+  const mapView = getMapView(settings);
+
   const activeParams = {
     search,
     kategori: activeCategory?.slug,
@@ -66,45 +88,40 @@ export default async function AdminMapPage({
     page: page > 1 ? String(page) : undefined,
   };
 
+  const isFiltered = Boolean(search || status.param || activeCategory);
+
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Peta</h1>
-          <p className="mt-1 text-muted text-pretty">
-            {status.value === undefined
-              ? `${markers.meta.total} titik lokasi, termasuk yang tidak ditampilkan di peta warga.`
-              : `${markers.meta.total} titik lokasi ${status.value ? "yang tampil di peta warga" : "yang disembunyikan"}.`}
-          </p>
-        </div>
-
+      <PageHero
+        title="Peta Lokasi"
+        description="Kelola titik penting Padukuhan Kembangsari — fasilitas umum, rumah perangkat, dan lokasi layanan."
+      >
         <div className="flex flex-wrap gap-2">
-          <Link
-            href="/admin/peta/kategori"
-            className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-border px-4 transition-colors hover:bg-surface-muted"
-          >
-            <Tags className="size-5" aria-hidden="true" />
-            Kategori
-          </Link>
-
           <ButtonLink href="/admin/peta/baru">
             <Plus className="size-5" aria-hidden="true" />
             Tambah Lokasi
           </ButtonLink>
+
+          <ButtonLink href="/admin/peta/kategori" variant="outline-primary">
+            <Tags className="size-5" aria-hidden="true" />
+            Kategori Lokasi
+          </ButtonLink>
         </div>
-      </div>
+      </PageHero>
 
       {message ? <Alert tone="success">{message}</Alert> : null}
 
-      <div className="flex flex-col gap-4">
-        <SearchInput
-          action="/admin/peta"
-          defaultValue={search}
-          placeholder="Cari nama atau alamat lokasi…"
-          label="Cari titik lokasi"
-          hiddenFields={{ kategori: activeCategory?.slug, status: status.param }}
-        />
+      {/* Urutan di ponsel mengikuti §24: judul, aksi, pencarian, saringan,
+          angka, daftar, lalu peta. */}
+      <SearchInput
+        action="/admin/peta"
+        defaultValue={search}
+        placeholder="Cari nama atau alamat lokasi…"
+        label="Cari titik lokasi"
+        hiddenFields={{ kategori: activeCategory?.slug, status: status.param }}
+      />
 
+      <div className="flex flex-col gap-3">
         <FilterChips
           label="Status titik lokasi"
           basePath="/admin/peta"
@@ -143,83 +160,80 @@ export default async function AdminMapPage({
         />
       ) : null}
 
+      <StatTiles
+        tiles={[
+          { label: "Total lokasi", value: total, unit: "titik", tone: "primary", Icon: MapPin },
+          { label: "Ditampilkan", value: visible, unit: "di peta warga", tone: "info", Icon: Eye },
+          {
+            label: "Disembunyikan",
+            value: hidden,
+            unit: "belum tampil",
+            tone: "neutral",
+            Icon: EyeOff,
+          },
+          {
+            label: "Kategori",
+            value: categories.data?.length ?? null,
+            unit: "kelompok",
+            tone: "secondary",
+            Icon: Tags,
+          },
+        ]}
+      />
+
       {markers.data.length > 0 ? (
-        <>
-          <ul className="flex flex-col gap-3">
-            {markers.data.map((marker) => (
-              <li key={marker.id}>
-                <Card>
-                  <CardBody className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center">
-                    <span
-                      aria-hidden="true"
-                      className="grid size-12 shrink-0 place-items-center rounded-xl bg-surface-muted"
-                    >
-                      <MapPin className="size-5 text-muted" />
-                    </span>
+        // 3:2 — daftar 60%, pratinjau 40%, di dalam rentang §12. Peta menempel
+        // saat daftarnya digulir, jadi keduanya tetap terbaca bersamaan.
+        <div className="grid gap-6 lg:grid-cols-5">
+          <div className="flex flex-col gap-3 lg:col-span-3">
+            <ul className="flex flex-col gap-3">
+              {markers.data.map((marker) => (
+                <li key={marker.id}>
+                  <MarkerCard marker={marker} categoryIds={categoryIds} />
+                </li>
+              ))}
+            </ul>
 
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <Badge tone={marker.isActive ? "primary" : "neutral"}>
-                          {marker.isActive ? "Tampil" : "Disembunyikan"}
-                        </Badge>
-                        {/* `category` selalu disertakan backend, tetapi kartu
-                            ini tetap bertahan kalau suatu saat tidak. */}
-                        <span className="text-sm text-muted">
-                          {marker.category?.name ?? "Tanpa kategori"}
-                        </span>
-                      </div>
+            <Pagination meta={markers.meta} basePath="/admin/peta" searchParams={activeParams} />
+          </div>
 
-                      <p className="mt-1 font-medium text-pretty">{marker.name}</p>
-                      {marker.address ? (
-                        <p className="text-sm text-muted text-pretty">{marker.address}</p>
-                      ) : null}
-                      <p className="text-sm text-muted">
-                        {marker.latitude}, {marker.longitude}
-                      </p>
-                    </div>
-
-                    <div className="flex shrink-0 flex-wrap gap-1">
-                      <Link
-                        href={googleMapsPointLink(marker.latitude, marker.longitude)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-muted transition-colors hover:bg-surface-muted"
-                      >
-                        <ExternalLink className="size-4" aria-hidden="true" />
-                        <span className="sr-only lg:not-sr-only">Periksa titik</span>
-                      </Link>
-
-                      <Link
-                        href={`/admin/peta/${marker.id}`}
-                        className="inline-flex min-h-11 items-center gap-2 rounded-xl px-3 transition-colors hover:bg-surface-muted"
-                      >
-                        <PenSquare className="size-4" aria-hidden="true" />
-                        Ubah
-                      </Link>
-                    </div>
-                  </CardBody>
-                </Card>
-              </li>
-            ))}
-          </ul>
-
-          <Pagination meta={markers.meta} basePath="/admin/peta" searchParams={activeParams} />
-        </>
+          <div className="lg:col-span-2">
+            <div className="lg:sticky lg:top-24">
+              <MapPreviewPanel
+                markers={markers.data}
+                categoryIds={categoryIds}
+                center={mapView.center}
+                zoom={mapView.zoom}
+              />
+            </div>
+          </div>
+        </div>
       ) : (
         <EmptyState
           title={
             search
               ? `Tidak ada lokasi untuk "${search}"`
-              : status.param || activeCategory
+              : isFiltered
                 ? "Tidak ada lokasi yang cocok"
                 : "Belum ada titik lokasi"
           }
           description={
-            search || status.param || activeCategory
+            isFiltered
               ? "Coba ubah kata kunci atau saringannya."
-              : "Tambahkan fasilitas umum atau titik penting yang pertama."
+              : "Tambahkan fasilitas umum atau titik penting yang pertama, misalnya balai padukuhan atau posyandu."
           }
-        />
+        >
+          {isFiltered ? (
+            <ButtonLink href="/admin/peta" variant="outline">
+              Hapus semua saringan
+            </ButtonLink>
+          ) : (
+            <ButtonLink href="/admin/peta/baru">
+              <Plus className="size-5" aria-hidden="true" />
+              Tambah Lokasi
+            </ButtonLink>
+          )}
+        </EmptyState>
       )}
     </div>
   );

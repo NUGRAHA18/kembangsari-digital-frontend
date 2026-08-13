@@ -48,6 +48,13 @@
   --warning: #f97316;
   --error: #ef4444;
 
+  /* `info` melengkapi daftar token semantik di `design-idea.md` §30. Dipakai
+     kartu statistik dashboard, yang §11 minta berlatar lembut — bukan warna
+     pekat. Pasangan `-soft-foreground`-nya yang memikul teks, bukan `--info`. */
+  --info: #0284c7;
+  --info-soft: #e0f2fe;
+  --info-soft-foreground: #075985;
+
   --glass: rgb(255 255 255 / 0.72);
   --glass-border: rgb(226 232 240 / 0.9);
 }
@@ -75,6 +82,10 @@
   --secondary-soft: #451a03;
   --secondary-soft-foreground: #fde68a;
 
+  --info: #38bdf8;
+  --info-soft: #0c4a6e;
+  --info-soft-foreground: #bae6fd;
+
   --glass: rgb(15 23 42 / 0.72);
   --glass-border: rgb(30 41 59 / 0.9);
 }
@@ -101,6 +112,9 @@
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-error: var(--error);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-info-soft-foreground: var(--info-soft-foreground);
 
   --font-sans: var(--font-geist-sans);
 

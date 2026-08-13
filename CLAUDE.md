@@ -263,6 +263,20 @@ berisi kedua URL itu.
   seluruhnya Server Component — sembilan belas halaman konfirmasi hapus sebelumnya tidak
   punya keadaan menunggu sama sekali.
 
+**Redesign mengikuti `design-idea.md`** (13 Agustus 2026), dua halaman percontohan:
+
+- **Beranda** memakai bagian dokumen yang lintas halaman — tangga radius, bayangan tipis,
+  gaya kartu beserta keadaan sentuhnya, cincin fokus hijau. Hero tanpa foto kini ilustrasi
+  lanskap senja (`features/home/landscape.tsx`), bukan blok hijau polos.
+- **`/admin/peta`** mengikuti spesifikasi halamannya: sidebar terang dengan penanda aktif
+  hijau lembut, hero bergambar, pencarian 48px, kartu angka ringkasan, dan kisi 60/40 antara
+  daftar lokasi dan pratinjau peta. Halaman ini jadi acuan modul dashboard berikutnya.
+
+Diperiksa dengan tangkapan layar dari build produksi terhadap backend tiruan, pada 1440px
+terang, 1440px gelap, dan 320px. **Chrome headless punya lebar viewport minimum ±500px**,
+jadi 320px hanya bisa diuji lewat iframe — potret `--window-size=320` menghasilkan potongan
+halaman 500px dan terbaca keliru sebagai luapan horizontal.
+
 **Belum ada satu pun modul dashboard yang diuji dengan backend hidup** — penyesuaian di atas
 mengikuti kontrak yang sudah backend verifikasi sendiri, tetapi alur tulisnya belum ditekan
 tombolnya dari sisi ini.
@@ -293,6 +307,9 @@ lib/api.ts              Klien HTTP tunggal
 lib/session.ts          Cookie sesi admin (server saja). `sessionCookie` dipakai
                         dua pemasang: Server Action login, dan Route Handler
                         balikan Google yang menempelkannya ke NextResponse
+features/maps/pin-colors.ts  Warna pin per kategori. Terpisah dari map-view.tsx
+                        karena berkas itu mengimpor Leaflet, dan daftar lokasi
+                        di dashboard yang memakai warna sama adalah Server Component
 lib/coordinates.ts      Pembacaan lintang/bujur, dipakai peta dan rumah warga
 lib/format.ts           Tanggal, angka, tautan WhatsApp/Maps — semuanya locale id-ID
 types/api.ts            Kontrak tipe dari backend
@@ -368,6 +385,24 @@ Jangan "memperbaiki" hal-hal berikut tanpa membaca alasannya dulu:
   diunduh browser warga; `qrcode` hanya dipanggil `lib/qr.ts` dari Server Component dan Route
   Handler, sehingga yang sampai ke ponsel cuma SVG atau PNG jadi. Menulis encoder QR sendiri
   berarti memelihara Reed-Solomon dan masking sendiri — satu bit meleset, QR-nya tidak terbaca.
+- **`design-idea.md` diikuti sebagai sistem desain, tidak sebagai perintah huruf demi huruf.**
+  Empat butirnya sengaja tidak dipakai, dan semuanya karena bertabrakan dengan dokumen itu
+  sendiri atau dengan aturan yang sudah ada di sini:
+  - **Green 600 `#16A34A` sebagai latar tombol** hanya 3,30:1 terhadap teks putih, dan
+    **Muted `#94A3B8`** hanya 2,56:1 di atas putih — keduanya gagal ambang 4,5:1 yang
+    dituntut §26 dokumen yang sama. Nilai lama dipertahankan (5,02:1 dan 4,76:1). Green 600
+    tetap dipakai, tetapi hanya pada cincin fokus yang tidak memikul teks.
+  - **Warna per nama kategori** (§2: "Balai Padukuhan → Blue") tidak dipakai: kategori
+    dikelola pengelola, dan `MapCategory` di backend tidak punya kolom `color`. §28 dokumen
+    itu justru meminta UI berasal dari data. Yang dipakai tetap palet berurutan.
+  - **Menu `⋮` pada kartu** (§27) menuntut JavaScript, sedangkan dashboard ini dirancang
+    tetap bekerja tanpanya. Maksud §27 — hapus jangan jadi tombol utama — tetap terpenuhi:
+    hapus memang tidak ada di kartu, melainkan di halaman ubah.
+  - **Ungu untuk "Disembunyikan"** (§11) diganti abu-abu: kelabu memang arti "belum tampil",
+    dan itu menghemat satu token warna yang tidak punya makna semantik apa pun.
+
+  Yang **tidak** dikerjakan karena butuh backend yang belum ada: Activity Feed (§15–§16),
+  notifikasi, dan pencarian global di bilah atas (§6). Tidak ada log aktivitas di backend.
 - **Ikon peramban dideklarasikan lewat `icons` di `app/layout.tsx`, bukan `app/icon.tsx`.** Logo
   dan favicon adalah isi Pengaturan, jadi keduanya hanya bisa masuk lewat `generateMetadata`.
   Konvensi berkas Next.js tidak bisa hidup berdampingan dengannya: resolver metadata menaruh
@@ -538,7 +573,7 @@ Modul berita adalah contoh yang diikuti modul berikutnya. Polanya:
   di-slug seperti kategori berita dan potensi: enum itu tidak punya slug di backend, dan
   menambah satu lapis penerjemahan hanya menambah tempat yang bisa meleset.
 - **Warna pin peta berasal dari urutan kategori** (`colorForCategory` di
-  `features/maps/map-view.tsx`), bukan dari kolom `icon`. Menghapus atau menambah kategori
+  `features/maps/pin-colors.ts`), bukan dari kolom `icon`. Menghapus atau menambah kategori
   menggeser warna kategori sesudahnya — halaman kategori dan halaman hapusnya menyebutkan itu.
   Kolom `icon` tetap disunting di form meski belum dipakai portal, supaya nama ikon yang sudah
   tersimpan tidak terhapus diam-diam oleh `PATCH`.
