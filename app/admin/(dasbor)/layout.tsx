@@ -73,7 +73,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
         {/* Menu ikut menempel di ponsel, dan pindah ke sidebar mulai lg. */}
         <div className="px-4 pb-2 lg:hidden">
-          <AdminNav />
+          <AdminNav role={user.role} />
         </div>
       </header>
 
@@ -83,7 +83,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <div className="flex flex-1">
         <aside className="hidden w-56 shrink-0 border-r border-border bg-surface lg:block print:hidden">
           <div className="sticky top-24 px-3 py-6">
-            <AdminNav />
+            <AdminNav role={user.role} />
           </div>
         </aside>
 

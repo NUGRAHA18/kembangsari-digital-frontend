@@ -64,3 +64,6 @@ next-env.d.ts
 /jalan.json
 /batas_padukuhan.json
 /EVALUASI-MONOGRAFI.md
+
+# Kontrak fitur dari backend, dibagikan lewat jalur internal.
+/FITUR-KELOLA-PENGELOLA.md

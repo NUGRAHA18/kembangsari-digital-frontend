@@ -158,6 +158,7 @@ apa pun di frontend** — cukup satu `PATCH`. Melepas penanda pada satu-satunya 
 | `EVALUASI-MONOGRAFI.md` | Pencocokan portal dengan `monografi-idea.md` per bagian, memisahkan yang layak dikerjakan dari yang sengaja tidak dilanjutkan | internal |
 | `JAWABAN-LAPORAN-BACKEND-3.md` | Jawaban putaran ketiga: A-1, B, dan C selesai. **Baca C-4** — `POST /auth/ticket` menjawab `accessToken`, bukan `token` | internal |
 | `LAPORAN-BACKEND-4.md` | Laporan putaran keempat: unggahan gambar gagal karena Node.js di Render di bawah 22, **bukan** karena `SUPABASE_URL` seperti yang disebut pesan galatnya | internal |
+| `FITUR-KELOLA-PENGELOLA.md` | Kontrak lima endpoint `/user` — dasar modul `/admin/pengelola` | internal |
 | `JAWABAN-LAPORAN-BACKEND-4.md` | Jawaban putaran keempat: A-1 selesai sebelum laporannya ditulis (backend memakai `StorageClient`, bukan `createClient`). **Baca bagian C** — login Google di produksi selalu gagal, dan itu bug backend yang sudah diperbaiki; frontend tidak perlu berubah | internal |
 
 Berkas selain dua yang teratas **sengaja tidak ikut di repo publik ini** (lihat `.gitignore`)
@@ -288,6 +289,11 @@ terang, 1440px gelap, dan 320px. **Chrome headless punya lebar viewport minimum 
 jadi 320px hanya bisa diuji lewat iframe — potret `--window-size=320` menghasilkan potongan
 halaman 500px dan terbaca keliru sebagai luapan horizontal.
 
+**Modul kelola pengelola ditambahkan** (14 Agustus 2026, `FITUR-KELOLA-PENGELOLA.md`):
+`/admin/pengelola` beserta tambah, ubah, dan hapus. Khusus ADMIN — menunya disembunyikan dari
+EDITOR dan `requireAdmin` memantulkannya ke ringkasan dengan keterangan. Menambah pengelola
+tidak lagi menuntut skrip dari mesin yang punya kredensial database.
+
 **Belum ada satu pun modul dashboard yang diuji dengan backend hidup** — penyesuaian di atas
 mengikuti kontrak yang sudah backend verifikasi sendiri, tetapi alur tulisnya belum ditekan
 tombolnya dari sisi ini.
@@ -315,7 +321,10 @@ components/layout/      Navbar, Footer, penyedia tema
 features/<modul>/       Komponen khusus satu modul, termasuk features/admin/
 services/<modul>.ts     Satu berkas per modul backend — semua pemanggilan API lewat sini
 lib/api.ts              Klien HTTP tunggal
-lib/session.ts          Cookie sesi admin (server saja). `sessionCookie` dipakai
+features/admin/roles.ts Peran pengelola beserta keterangannya; bebas React karena
+                        Server Action mengimpornya
+lib/session.ts          Cookie sesi admin (server saja). `requireAdmin` menjaga
+                        halaman khusus ADMIN. `sessionCookie` dipakai
                         dua pemasang: Server Action login, dan Route Handler
                         balikan Google yang menempelkannya ke NextResponse
 features/maps/pin-colors.ts  Warna pin per kategori. Terpisah dari map-view.tsx
@@ -686,6 +695,23 @@ Modul berita adalah contoh yang diikuti modul berikutnya. Polanya:
   balikan Google dipantulkan ke form masuk dan tiketnya hangus tanpa pernah ditukar.
 - **`POST /auth/ticket` menjawab `accessToken`, bukan `token`** — sengaja sama persis dengan
   `POST /auth/login`, sehingga `sessionCookie` yang sama dipakai kedua alur.
+- **Peran pengelola tidak punya nilai bawaan, di mana pun.** Form `/admin/pengelola` memakai
+  radio tanpa satu pun `checked`, bukan `<select>` — opsi pertama sebuah `<select>` selalu
+  terlihat seperti sudah dipilih. Backend menolak `POST /user` tanpa `role`, dan alasannya sama:
+  yang paling berbahaya adalah seseorang menjadi ADMIN karena satu kolom terlewat.
+- **Akun baru dibuat tanpa kata sandi secara bawaan.** Centang "Cukup masuk lewat akun Google"
+  menyala sejak awal; akun tanpa kata sandi hanya bisa masuk lewat Google dengan email yang sama.
+  Kolom kata sandinya **tetap ada di DOM meski tersembunyi**, supaya formnya bekerja tanpa
+  JavaScript — di sana centang itu tidak menyembunyikan apa pun, dan Server Action yang
+  menentukan artinya. Kombinasi "centang menyala + kata sandi terisi" ditolak dengan kalimat,
+  bukan diabaikan diam-diam.
+- **Email pengelola tidak bisa diubah.** Di form ubah ia teks biasa, **bukan input yang
+  dinonaktifkan**: input abu-abu mengundang orang mencari cara mengaktifkannya. Email adalah
+  satu-satunya penghubung ke akun Google; alamat yang salah dibereskan dengan hapus lalu buat baru.
+- **Tombol hapus tidak dirender pada baris sendiri.** Backend menolak menghapus dan menurunkan
+  akun sendiri, ADMIN terakhir, serta pengelola yang masih penulis berita — keempatnya `400`
+  dengan kalimat yang sudah layak dibaca, jadi **diteruskan apa adanya**, tidak diterjemahkan
+  ulang. Dua yang terakhir tidak bisa diketahui frontend lebih dulu dan ditangani saat muncul.
 - **Batas ukuran unggahan datang dari Server Action, bukan dari backend.** Seluruh unggahan
   gambar dashboard menumpang Server Action, dan Vercel menolak badan permintaan di atas
   **4,5 MB** di lapisan platformnya — jauh sebelum Next.js sempat membacanya. `bodySizeLimit`

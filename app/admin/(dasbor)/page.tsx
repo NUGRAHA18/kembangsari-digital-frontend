@@ -6,9 +6,11 @@ import { Card, CardBody } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/states";
 import { PageHero } from "@/features/admin/page-hero";
 import { StatTiles, type StatTile } from "@/features/admin/stat-tiles";
+import { Alert } from "@/components/ui/alert";
 import { safeFetch } from "@/lib/api";
 import { fetchAsAdmin } from "@/lib/admin-fetch";
 import { formatDateShort } from "@/lib/format";
+import { readParam, type RawSearchParams } from "@/lib/page-params";
 import { requireSession } from "@/lib/session";
 import { getUpcomingAgenda } from "@/services/agenda";
 import { getActiveAnnouncements } from "@/services/announcement";
@@ -16,8 +18,17 @@ import { getAllNews } from "@/services/news";
 
 export const metadata: Metadata = { title: "Ringkasan" };
 
-export default async function DashboardHomePage() {
+export default async function DashboardHomePage({
+  searchParams,
+}: {
+  searchParams: Promise<RawSearchParams>;
+}) {
   const { token, user } = await requireSession();
+
+  // `requireAdmin` memantulkan EDITOR ke sini saat ia membuka halaman khusus
+  // ADMIN. Dipantulkan dengan keterangan, bukan diam-diam: halaman yang tiba-tiba
+  // berganti tanpa sebab terbaca sebagai portal yang rusak.
+  const butuhAdmin = readParam(await searchParams, "pesan") === "butuh-admin";
 
   // Yang diambil untuk angka saja cukup satu baris: `meta.total` sudah ikut
   // menyesuaikan saringannya, jadi `?published=false&limit=1` menghitung
@@ -75,6 +86,13 @@ export default async function DashboardHomePage() {
           Tulis Berita
         </ButtonLink>
       </PageHero>
+
+      {butuhAdmin ? (
+        <Alert tone="warning">
+          Halaman Pengelola hanya bisa dibuka Admin. Peran Anda saat ini Editor — mintakan ke Admin
+          portal kalau memang perlu.
+        </Alert>
+      ) : null}
 
       <StatTiles tiles={stats} />
 
