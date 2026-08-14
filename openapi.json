@@ -87,31 +87,25 @@
         "operationId": "AuthController_googleCallback_v1",
         "parameters": [
           {
-            "name": "code",
+            "name": "error",
             "required": false,
             "in": "query",
-            "description": "Kode otorisasi dari Google",
-            "schema": {
-              "type": "string"
-            }
+            "description": "Terisi bila pengelola menekan \"Batal\" di layar Google",
+            "schema": {}
           },
           {
             "name": "state",
             "required": false,
             "in": "query",
             "description": "`state` yang dikirim balik Google",
-            "schema": {
-              "type": "string"
-            }
+            "schema": {}
           },
           {
-            "name": "error",
+            "name": "code",
             "required": false,
             "in": "query",
-            "description": "Terisi bila pengelola menekan \"Batal\" di layar Google",
-            "schema": {
-              "type": "string"
-            }
+            "description": "Kode otorisasi dari Google",
+            "schema": {}
           }
         ],
         "responses": {
@@ -5570,6 +5564,356 @@
           "KKN"
         ]
       }
+    },
+    "/api/v1/user": {
+      "post": {
+        "description": "Email disimpan huruf kecil semua. `password` boleh dikosongkan — akun tanpa kata sandi hanya bisa masuk lewat akun Google dengan alamat yang sama.",
+        "operationId": "UserController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserEntity"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Token sah tapi perannya EDITOR, bukan ADMIN.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorEntity"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Email sudah dipakai pengelola lain",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorEntity"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tambah pengelola baru",
+        "tags": [
+          "User"
+        ]
+      },
+      "get": {
+        "description": "Diurutkan ADMIN lebih dulu, lalu dari yang paling lama bergabung.",
+        "operationId": "UserController_findAll_v1",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Halaman yang diminta, dimulai dari 1",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Jumlah data per halaman (maksimal 100)",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Kata kunci pencarian (tidak membedakan huruf besar/kecil)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "role",
+            "required": false,
+            "in": "query",
+            "description": "Saring berdasarkan peran. Tanpa ini, keduanya ikut.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ADMIN",
+                "EDITOR"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/UserEntity"
+                      }
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMetaDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Token sah tapi perannya EDITOR, bukan ADMIN.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorEntity"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Daftar pengelola",
+        "tags": [
+          "User"
+        ]
+      }
+    },
+    "/api/v1/user/{id}": {
+      "get": {
+        "operationId": "UserController_findById_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserEntity"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Token sah tapi perannya EDITOR, bukan ADMIN.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorEntity"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorEntity"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Detail satu pengelola",
+        "tags": [
+          "User"
+        ]
+      },
+      "patch": {
+        "description": "Email tidak bisa diubah. Peran sendiri juga tidak — lihat 400 di bawah.",
+        "operationId": "UserController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserEntity"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Mengubah peran sendiri, atau menurunkan peran ADMIN terakhir yang tersisa.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorEntity"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Token sah tapi perannya EDITOR, bukan ADMIN.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorEntity"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorEntity"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Ubah nama, peran, atau kata sandi pengelola",
+        "tags": [
+          "User"
+        ]
+      },
+      "delete": {
+        "operationId": "UserController_remove_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserEntity"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Menghapus akun sendiri, menghapus ADMIN terakhir, atau menghapus pengelola yang masih tercatat sebagai penulis berita.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorEntity"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Token sah tapi perannya EDITOR, bukan ADMIN.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorEntity"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorEntity"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Hapus pengelola",
+        "tags": [
+          "User"
+        ]
+      }
     }
   },
   "info": {
@@ -9296,6 +9640,102 @@
             "type": "string",
             "description": "id program induk, harus sudah ada",
             "example": "clx8f2k9a000fqw3h9o0p1a2s"
+          }
+        }
+      },
+      "CreateUserDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "Alamat email pengelola. Disimpan dalam huruf kecil semua — pencocokan saat masuk, termasuk lewat akun Google, memakai bentuk itu.",
+            "example": "editor@kembangsari.id"
+          },
+          "name": {
+            "type": "string",
+            "example": "Sri Lestari"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "ADMIN",
+              "EDITOR"
+            ],
+            "description": "Wajib dipilih, tidak ada nilai bawaan. ADMIN bisa menghapus record, mengubah pengaturan situs, dan mengelola pengelola lain; EDITOR hanya membuat dan mengubah konten.",
+            "example": "EDITOR"
+          },
+          "password": {
+            "type": "string",
+            "description": "Kata sandi awal. Boleh dikosongkan: tanpa ini akun hanya bisa masuk lewat \"Masuk dengan Google\", dan kata sandi bisa ditambahkan kapan saja lewat PATCH.",
+            "minLength": 8,
+            "example": "RahasiaEditor123"
+          }
+        },
+        "required": [
+          "email",
+          "name",
+          "role"
+        ]
+      },
+      "UserEntity": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "clx8f2k9a0004qw3h5g6h7j8k"
+          },
+          "name": {
+            "type": "string",
+            "example": "Sri Lestari"
+          },
+          "email": {
+            "type": "string",
+            "example": "editor@kembangsari.id"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "ADMIN",
+              "EDITOR"
+            ],
+            "example": "EDITOR"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "email",
+          "role",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "UpdateUserDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Sri Lestari"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "ADMIN",
+              "EDITOR"
+            ]
+          },
+          "password": {
+            "type": "string",
+            "description": "Kata sandi baru. Yang lama tidak perlu disertakan — hanya ADMIN yang bisa memanggil endpoint ini.",
+            "minLength": 8
           }
         }
       }

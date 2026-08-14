@@ -41,6 +41,19 @@ Konsekuensinya: mengubah batas wilayah berarti menyunting berkas ini lalu
 Menggambarnya tidak perlu presisi meteran. Yang dibaca warga adalah "rumah saya
 masuk RT mana" dan "gang ini yang mana", bukan patok batas resmi.
 
+## Dua hal yang sering terjadi saat menggambar
+
+**Batas yang digambar dalam dua kali duduk berakhir sebagai dua garis.** Itu
+bukan dua batas — ujung yang satu menyambung ke ujung yang lain. Sebelum
+dipakai, keduanya harus disambung menjadi satu `Polygon` dan cincinnya ditutup
+dengan mengulang titik pertama di akhir. Batas padukuhan yang sekarang berasal
+dari dua busur seperti itu; ujungnya bertemu dengan selisih di bawah 4 meter.
+
+**Klik ganda meninggalkan ruas sepanjang nol.** Dua titik yang menumpuk di
+tempat yang sama tergambar sebagai noktah menggantung di tengah peta. Dari
+tujuh ruas jalan yang digambar, dua di antaranya ternyata seperti ini dan
+dibuang. Periksa panjang tiap ruas sebelum memasukkannya.
+
 ## Kolom `properties`
 
 | Kolom   | Wajib | Isi                                                                    |
@@ -59,6 +72,11 @@ masuk RT mana" dan "gang ini yang mana", bukan patok batas resmi.
 | `RT`          | `Polygon`    | Garis tipis, isian sedikit lebih terlihat  |
 | `JALAN`       | `LineString` | Garis lebar, tanpa isian                   |
 | `GANG`        | `LineString` | Garis lebih ramping dari jalan             |
+
+Jalan dan gang boleh digabung menjadi satu `MultiLineString` — beberapa ruas
+dalam satu bentuk. Itu yang dipakai sekarang, dan gunanya legenda: tujuh ruas
+terpisah menghasilkan tujuh baris legenda tanpa nama yang berarti, sedangkan
+satu `MultiLineString` bernama "Jalan" cukup satu baris.
 
 Wilayah tanpa `nama` diabaikan diam-diam — begitu pula seluruh berkas yang
 gagal dibaca. Batas wilayah adalah lapisan pelengkap; peta harus tetap berguna

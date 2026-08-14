@@ -240,6 +240,53 @@ export interface ExchangeTicketRequest {
 export type ExchangeTicketResponse = LoginResponse;
 
 // ============================================================
+// PENGELOLA PORTAL (khusus ADMIN)
+// ============================================================
+// Endpoint /user memakai bentuk `User` di atas sebagai respons — tanpa
+// `password`, yang memang tidak pernah dibaca dari database.
+
+/**
+ * Badan `POST /user`.
+ *
+ * `role` wajib dipilih dan tidak punya nilai bawaan — supaya tidak ada
+ * pengelola yang tanpa sengaja menjadi ADMIN karena satu field terlewat.
+ *
+ * `password` boleh dikosongkan. Akun tanpa kata sandi hanya bisa masuk
+ * lewat "Masuk dengan Google" dengan alamat email yang sama, dan kata
+ * sandi bisa ditambahkan kapan saja lewat PATCH.
+ */
+export interface CreateUserRequest {
+  email: string;
+  name: string;
+  role: Role;
+  password?: string;
+}
+
+/**
+ * Badan `PATCH /user/:id`. Semua field opsional; yang tidak dikirim tidak
+ * ikut berubah.
+ *
+ * `email` sengaja tidak ada di sini — email adalah satu-satunya penghubung
+ * ke akun Google, jadi mengubahnya berarti memindahkan seluruh akses satu
+ * akun ke alamat lain dalam satu permintaan. Kalau alamatnya salah, hapus
+ * lalu buat baru.
+ */
+export interface UpdateUserRequest {
+  name?: string;
+  role?: Role;
+  password?: string;
+}
+
+/** Query string `GET /user`. */
+export interface UserListQuery {
+  page?: number;
+  limit?: number;
+  /** Cocok dengan nama (tidak peka huruf besar) atau email. */
+  search?: string;
+  role?: Role;
+}
+
+// ============================================================
 // BERITA
 // ============================================================
 

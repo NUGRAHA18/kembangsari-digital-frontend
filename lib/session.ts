@@ -102,3 +102,20 @@ export async function requireSession(): Promise<Session> {
   if (!session) redirect(LOGIN_PATH);
   return session;
 }
+
+/**
+ * Halaman yang hanya boleh dibuka ADMIN.
+ *
+ * Backend tetap yang menjaganya — `POST/PATCH/DELETE /user` menjawab `403`
+ * untuk EDITOR apa pun yang terjadi di sini. Pemeriksaan ini ada supaya EDITOR
+ * yang mengetik alamatnya langsung mendapat kalimat yang menjelaskan, bukan
+ * halaman yang memuat lalu gagal di setiap tombol.
+ *
+ * Dipantulkan ke ringkasan dashboard, bukan ke form masuk: sesinya sah, yang
+ * kurang perannya — dan memaksa masuk ulang tidak akan mengubah apa pun.
+ */
+export async function requireAdmin(): Promise<Session> {
+  const session = await requireSession();
+  if (session.user.role !== "ADMIN") redirect(`${ADMIN_HOME}?pesan=butuh-admin`);
+  return session;
+}

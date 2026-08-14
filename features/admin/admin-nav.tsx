@@ -18,14 +18,18 @@ import {
   Store,
   Tags,
   UserRound,
+  Users,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { Role } from "@/types/api";
 
 export interface AdminNavItem {
   label: string;
   href: string;
   Icon: LucideIcon;
+  /** Hanya tampil untuk ADMIN. EDITOR yang mengetik alamatnya dipantulkan oleh `requireAdmin`. */
+  adminOnly?: boolean;
 }
 
 /**
@@ -50,6 +54,7 @@ export const ADMIN_NAV: AdminNavItem[] = [
   { label: "QR Code", href: "/admin/qr-code", Icon: QrCode },
   { label: "Profil", href: "/admin/profil", Icon: UserRound },
   { label: "Pengaturan", href: "/admin/pengaturan", Icon: Settings },
+  { label: "Pengelola", href: "/admin/pengelola", Icon: Users, adminOnly: true },
 ];
 
 /** `/admin` hanya aktif kalau persis dibuka; menu lain juga aktif di halaman turunannya. */
@@ -63,13 +68,18 @@ function isActive(pathname: string, href: string) {
  * satu ketukan untuk setiap perpindahan. Di layar lebar deretan yang sama
  * ditumpuk menjadi sidebar.
  */
-export function AdminNav() {
+export function AdminNav({ role }: { role: Role }) {
   const pathname = usePathname();
+
+  // Menu yang tampil tetapi selalu memantulkan begitu diketuk lebih buruk
+  // daripada menu yang tidak ada. Penjagaan sesungguhnya tetap di
+  // `requireAdmin` dan di backend.
+  const items = ADMIN_NAV.filter((item) => !item.adminOnly || role === "ADMIN");
 
   return (
     <nav aria-label="Menu dashboard">
       <ul className="flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">
-        {ADMIN_NAV.map(({ label, href, Icon }) => {
+        {items.map(({ label, href, Icon }) => {
           const active = isActive(pathname, href);
 
           return (

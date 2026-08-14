@@ -1,7 +1,7 @@
 import { AlertTriangle, CheckCircle2, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type Tone = "info" | "success" | "error";
+type Tone = "info" | "success" | "warning" | "error";
 
 /**
  * Pesan singkat hasil sebuah aksi — dipakai dashboard untuk memberitahu bahwa
@@ -18,12 +18,22 @@ const TONES: Record<Tone, { className: string; Icon: typeof Info; label: string 
     Icon: CheckCircle2,
     label: "Berhasil",
   },
+  // Peringatan, bukan galat: tidak ada yang gagal, tetapi ada yang perlu
+  // diketahui sebelum bertindak — misalnya bahwa menurunkan peran sendiri tidak
+  // bisa dibatalkan sendiri. Dipisahkan dari `error` supaya kalimat yang bukan
+  // kegagalan tidak ikut diumumkan pembaca layar sebagai galat.
+  warning: {
+    className: "border-warning/40 bg-warning/10",
+    Icon: AlertTriangle,
+    label: "Perhatian",
+  },
   error: { className: "border-error/40 bg-error/5", Icon: AlertTriangle, label: "Galat" },
 };
 
 const ICON_COLORS: Record<Tone, string> = {
   info: "text-muted",
   success: "text-success",
+  warning: "text-warning",
   error: "text-error",
 };
 

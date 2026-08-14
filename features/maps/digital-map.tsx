@@ -280,9 +280,16 @@ function BoundaryLegend({
         <ul className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted">
           {boundaries.map((feature, index) => (
             <li key={`${feature.properties.nama}-${index}`} className="flex items-center gap-1.5">
+              {/* Cincin tipis di sekeliling contoh warna. Warna garis di peta
+                  boleh sangat gelap — jalan digambar hitam, dan ubin peta
+                  selalu terang jadi di sana ia terbaca. Tetapi legenda ini
+                  mengikuti tema halaman: tanpa cincinnya, contoh warna hitam
+                  menghilang sama sekali di mode gelap. Memakai `foreground`
+                  beropasitas rendah, jadi ia gelap di tema terang dan terang di
+                  tema gelap — berlaku untuk warna apa pun, bukan hanya hitam. */}
               <span
                 aria-hidden="true"
-                className="inline-block h-0.5 w-5 rounded-full"
+                className="inline-block h-0.5 w-5 rounded-full ring-1 ring-foreground/25"
                 style={{ backgroundColor: boundaryColor(feature, index) }}
               />
               {feature.properties.nama}

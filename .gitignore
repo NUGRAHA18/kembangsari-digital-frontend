@@ -57,4 +57,13 @@ next-env.d.ts
 /FRONTEND_GUIDE.md
 /monografi-idea.md
 /design-idea.md
+
+# Berkas kerja dari geojson.io. Yang terbit hanya hasil susunannya,
+# public/data/batas-wilayah.geojson — kedua berkas ini mentahannya dan
+# sengaja tidak ikut.
+/jalan.json
+/batas_padukuhan.json
 /EVALUASI-MONOGRAFI.md
+
+# Kontrak fitur dari backend, dibagikan lewat jalur internal.
+/FITUR-KELOLA-PENGELOLA.md
