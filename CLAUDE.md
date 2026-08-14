@@ -703,8 +703,10 @@ Modul berita adalah contoh yang diikuti modul berikutnya. Polanya:
   dan sudah di-push, tetapi produksi masih menjawab `404` untuk `/house/*` dan `/auth/google` —
   Render belum menerbitkan versi itu. Seluruh modul rumah warga dan login Google di frontend
   dibangun terhadap `openapi.json`, bukan terhadap backend yang berjalan.
-- **Menunggu pengelola:** `public/data/batas-wilayah.geojson` baru berisi batas luar
-  padukuhan — RW dan RT-nya belum digambar.
+- **Menunggu pengelola:** `public/data/batas-wilayah.geojson` berisi batas luar padukuhan
+  (146 titik, ±64,8 ha) dan lima ruas jalan — **RW dan RT-nya belum digambar.** Mentahan dari
+  geojson.io (`jalan.json`, `batas_padukuhan.json`) sengaja tidak ikut ke repo; yang terbit
+  hanya hasil susunannya.
 - **Sebelas baris UMKM & Potensi di produksi masih berkoordinat data seed**, 13,6–13,9 km
   dari padukuhan (`JAWABAN-LAPORAN-BACKEND-4.md` bagian D). Penanda peta, rumah warga, dan
   titik tengah peta sudah bersih. **Yang salah di sini bukan pin melainkan tombol "Petunjuk
