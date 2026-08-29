@@ -103,13 +103,12 @@ Penghapusan berkas **bukan tugas frontend**. Backend membuang objek di bucket be
 
 ### 5. Endpoint list versi lengkap sekarang milik admin
 
-`GET /news`, `/announcement`, `/monography`, `/umkm`, `/potential`, `/kkn/program`, dan
-`/maps/marker` menjawab **`401` tanpa token**. Halaman publik memakai versi tersaringnya:
+`GET /news`, `/announcement`, `/monography`, `/umkm`, `/potential`, dan `/maps/marker`
+menjawab **`401` tanpa token**. Halaman publik memakai versi tersaringnya:
 
 ```
 /news/published        /potential/active      /maps/marker/active
 /announcement/active   /umkm/active           /monography/published
-/kkn/program/active
 ```
 
 Endpoint detail tetap terbuka tanpa token, tetapi record tersembunyi (`published: false`,
@@ -122,7 +121,7 @@ bukan diabaikan diam-diam seperti dulu. Cek `openapi.json` sebelum menambah quer
 ### 6. Saringan status hanya ada di daftar bertoken
 
 `GET /news` dan `/monography` menerima `?published=`; `/announcement`, `/umkm`, `/potential`,
-`/kkn/program`, dan `/maps/marker` menerima `?isActive=`. Tidak dikirim berarti "semua", dan
+dan `/maps/marker` menerima `?isActive=`. Tidak dikirim berarti "semua", dan
 `meta.total` ikut menyesuaikan — jadi `?published=false&limit=1` cukup untuk sekadar
 menghitung draf tanpa mengunduh isinya.
 
@@ -130,10 +129,9 @@ Mengirimnya ke versi tersaring (`/news/published`, `/umkm/active`, …) dijawab 
 sana parameternya memang tidak punya arti. Itu sebabnya tipe query publik dan admin dipisah
 di `types/api.ts` (`NewsQuery` vs `AdminNewsQuery`), bukan disatukan dengan field opsional.
 
-`/maps/marker` juga menerima `?categoryId=` dan `/kkn/program` menerima `?subProgram=`, dan
-keduanya bisa digabung dengan saringan status — itulah yang tidak bisa dilakukan
-`/maps/marker/category/:id` maupun `/kkn/program/sub/:sub`, sehingga kedua endpoint terpisah
-itu tidak dipakai dashboard.
+`/maps/marker` juga menerima `?categoryId=`, dan itu bisa digabung dengan saringan status —
+hal yang tidak bisa dilakukan `/maps/marker/category/:id`, sehingga endpoint terpisah itu
+tidak dipakai dashboard.
 
 ### 7. Gambar utama dijaga backend
 
@@ -159,6 +157,8 @@ apa pun di frontend** — cukup satu `PATCH`. Melepas penanda pada satu-satunya 
 | `JAWABAN-LAPORAN-BACKEND-3.md` | Jawaban putaran ketiga: A-1, B, dan C selesai. **Baca C-4** — `POST /auth/ticket` menjawab `accessToken`, bukan `token` | internal |
 | `LAPORAN-BACKEND-4.md` | Laporan putaran keempat: unggahan gambar gagal karena Node.js di Render di bawah 22, **bukan** karena `SUPABASE_URL` seperti yang disebut pesan galatnya | internal |
 | `FITUR-KELOLA-PENGELOLA.md` | Kontrak lima endpoint `/user` — dasar modul `/admin/pengelola` | internal |
+| `PERUBAHAN-PETA-FRONTEND.md` | Daftar kerja pembuangan rumah warga dan katalog ikon peta. **`openapi.json` di repo belum ikut diperbarui**, jadi untuk `/maps/*` dokumen inilah kontraknya | internal |
+| `PERUBAHAN-HAPUS-KKN-FRONTEND.md` | Daftar kerja pembuangan fitur Program KKN — 16 berkas dihapus, jejaknya dilepas dari tujuh berkas. Sudah dikerjakan | internal |
 | `JAWABAN-LAPORAN-BACKEND-4.md` | Jawaban putaran keempat: A-1 selesai sebelum laporannya ditulis (backend memakai `StorageClient`, bukan `createClient`). **Baca bagian C** — login Google di produksi selalu gagal, dan itu bug backend yang sudah diperbaiki; frontend tidak perlu berubah | internal |
 
 Berkas selain dua yang teratas **sengaja tidak ikut di repo publik ini** (lihat `.gitignore`)
@@ -294,6 +294,37 @@ halaman 500px dan terbaca keliru sebagai luapan horizontal.
 EDITOR dan `requireAdmin` memantulkannya ke ringkasan dengan keterangan. Menambah pengelola
 tidak lagi menuntut skrip dari mesin yang punya kredensial database.
 
+**Rumah warga dibuang, peta menjadi peta titik penting** (24 Agustus 2026,
+`PERUBAHAN-PETA-FRONTEND.md`). Backend menghapus seluruh `/house/*` beserta tabelnya, dan
+menggantinya dengan katalog ikon yang divalidasi:
+
+- **18 berkas dihapus** — `/peta/rumah/[slug]`, seluruh `/admin/rumah`, `features/house/`,
+  `services/house.ts`, dan dua komponen form rumah di `features/admin/`. Layer rumah ikut
+  dibuang dari `digital-map.tsx` dan `map-view.tsx`; `types/api.ts` sudah bersih.
+- **Pemilih ikon** menggantikan input teks bebas di form kategori, dan form titik lokasi
+  dapat kolom `icon` baru yang opsional. Keduanya `<select>` ber-`<optgroup>` yang diisi
+  `GET /maps/icon` lewat `features/admin/icon-select.tsx`.
+- **Ikonnya benar-benar digambar di dalam pin**, bukan hanya tersimpan. Dengan tujuh belas
+  kategori dan tujuh warna, dua kategori pasti berwarna kembar — ikon sekarang pembeda
+  pertamanya, dan warna pembeda kedua. Daftar lokasi di sebelah peta memakai ikon yang sama.
+
+**Fitur Program KKN dibuang seluruhnya** (29 Agustus 2026,
+`PERUBAHAN-HAPUS-KKN-FRONTEND.md`). Backend menghapus `/kkn/*` beserta kedua tabelnya, dan
+folder unggahan `kkn` tidak lagi diterima `/upload`. Isinya dokumentasi kegiatan mahasiswa
+yang selesai bersama masa KKN-nya, sedangkan pengelola harus merawat menu dan formnya seumur
+hidup situs; kegiatan yang datang dan pergi memang tempatnya di Berita dan Galeri:
+
+- **16 berkas dihapus** — `/program-kkn` beserta `[slug]`-nya, seluruh `/admin/program-kkn`,
+  `features/kkn/`, `services/kkn.ts`, dan dua komponen form di `features/admin/`.
+  Rutenya sengaja dibiarkan 404, tanpa `redirects` — tidak ada halaman pengganti yang sepadan.
+- **Jejaknya dilepas dari tujuh berkas** — menu dashboard, menu publik, beranda, `stats.tsx`
+  (empat kartu angka menjadi tiga, `lg:grid-cols-4` → `3`), `sitemap.ts`, dan `types/api.ts`.
+  `toDateInput`/`fromDateInput` di `lib/format.ts` ikut dihapus karena kedua pemanggilnya
+  hanya form KKN; `toDateTimeLocal`/`fromDateTimeLocal` milik Agenda tetap.
+- **Selang-seling latar beranda digeser.** Bagian Program KKN dulu memisahkan Agenda dan
+  Galeri yang sama-sama `bg-surface`; tanpa pemisah itu keduanya menyatu jadi satu blok tinta
+  panjang, jadi Galeri kembali ke latar halaman.
+
 **Belum ada satu pun modul dashboard yang diuji dengan backend hidup** — penyesuaian di atas
 mengikuti kontrak yang sudah backend verifikasi sendiri, tetapi alur tulisnya belum ditekan
 tombolnya dari sisi ini.
@@ -330,7 +361,12 @@ lib/session.ts          Cookie sesi admin (server saja). `requireAdmin` menjaga
 features/maps/pin-colors.ts  Warna pin per kategori. Terpisah dari map-view.tsx
                         karena berkas itu mengimpor Leaflet, dan daftar lokasi
                         di dashboard yang memakai warna sama adalah Server Component
-lib/coordinates.ts      Pembacaan lintang/bujur, dipakai peta dan rumah warga
+features/maps/pin-icons.ts   Ikon di dalam pin: urutan bacanya, ikon cadangan,
+                        dan transform yang memasukkannya ke kepala pin. Bebas
+                        React & Leaflet dengan alasan sama seperti pin-colors.ts
+lib/material-symbol.ts  Membaca gambar ikon dari @material-symbols/svg-400 —
+                        SERVER SAJA, dan disebut di outputFileTracingIncludes
+lib/coordinates.ts      Pembacaan lintang/bujur di form peta
 lib/format.ts           Tanggal, angka, tautan WhatsApp/Maps — semuanya locale id-ID
 types/api.ts            Kontrak tipe dari backend
 ```
@@ -360,6 +396,29 @@ Jangan "memperbaiki" hal-hal berikut tanpa membaca alasannya dulu:
 
 - **Peta memakai Leaflet + OpenStreetMap**, bukan Google Maps: tanpa API key dan tanpa billing.
   Tombol "Petunjuk Arah" tetap mengarah ke Google Maps karena aplikasi itu yang ada di ponsel warga.
+- **Ikon Material Symbols dibaca di server sebagai SVG, bukan dimuat sebagai webfont.**
+  `lib/material-symbol.ts` mengambil satu `<path d>` dari `@material-symbols/svg-400` lalu
+  Server Component menurunkannya sebagai prop — yang sampai ke browser hanya ikon yang
+  benar-benar dipakai halaman itu, sekitar 200 byte masing-masing, tanpa satu pun berkas
+  tambahan. Tiga jalan lain sengaja ditolak: **webfont penuh** ±3,5 MB, mustahil di jaringan
+  padukuhan; **webfont ter-subset dari fonts.gstatic.com** hanya ±3 KB tetapi menaruh
+  permintaan ke host luar di jalur pembukaan peta, padahal portal ini dipasang sebagai
+  aplikasi dan punya halaman luring; **memetakan nama ke ikon Lucide** berarti tabel yang
+  harus dijaga tangan, dan ikon baru dari backend akan diam-diam jatuh ke cadangan.
+  Paketnya 13 MB tetapi tidak pernah ikut ke bundel browser — ia dibaca `readFileSync`, dan
+  justru karena itu `outputFileTracingIncludes` di `next.config.ts` **wajib menyebutkannya**:
+  penelusuran berkas Next.js hanya mengikuti `import`, sehingga tanpa baris itu ikonnya
+  hilang di produksi sementara di komputer sendiri semuanya tampak benar.
+
+  **`npm run build` memang mengeluarkan satu peringatan Turbopack** di berkas itu — "file
+  pattern … matches 15596 files". Sudah diperiksa: **tidak satu pun berkas SVG benar-benar
+  ikut ke `.next/`**, jadi peringatannya soal apa yang *mungkin* dibundel, bukan apa yang
+  terjadi. Turbopack melipat `process.cwd()` menjadi akar proyek dan membaca `readFileSync`
+  yang jalurnya bisa ditebak sebagai pola berkas; membuatnya diam menuntut jalur yang
+  sengaja dikaburkan, dan itu lebih buruk daripada peringatannya sendiri. Jangan
+  mengejarnya. `require.resolve` juga **tidak boleh dipakai kembali di sini**: Turbopack
+  menggantinya dengan id modul berupa angka, dan `dirname()` melempar `ERR_INVALID_ARG_TYPE`
+  saat build mengumpulkan data halaman.
 - **Batas wilayah, jalan, dan gang adalah berkas statis**, bukan data backend:
   `public/data/batas-wilayah.geojson`, petunjuk pengisiannya di `public/data/README.md`.
   Ketiganya berubah sekali dalam sepuluh tahun, sedangkan penyunting polygon di dashboard
@@ -541,16 +600,8 @@ Modul berita adalah contoh yang diikuti modul berikutnya. Polanya:
   bila kosong — itu sebabnya penanda utama tetap penting meski sampulnya terpisah.
 - **Kategori potensi divalidasi di Server Action**, bukan hanya di `<select>`. Nilainya enum
   huruf besar, dan yang di luar daftar dijawab backend `400` dengan pesan yang tidak
-  menjelaskan apa pun. Daftar sahnya satu-satunya ada di `features/potential/categories.ts`.
-  Hal yang sama berlaku untuk sub-program KKN di `features/kkn/sub-programs.ts` — label dan
-  daftarnya sengaja dipisah dari `kkn-card.tsx` supaya Server Action tidak ikut menarik React.
-- **Menghapus program KKN ikut menghapus kegiatannya**, berantai dalam satu transaksi seperti
-  gambar UMKM. Halaman konfirmasinya memperingatkan berapa kegiatan yang ikut hilang, bukan
-  memblokir; Server Action-nya tidak memeriksa apa pun lebih dulu.
-- **Tanggal tanpa jam** (`KKNActivity.date`) memakai `toDateInput`/`fromDateInput` di
-  `lib/format.ts`, sepasang dengan `toDateTimeLocal`/`fromDateTimeLocal`. Penguncian ke WIB
-  tetap perlu meski jamnya dibuang: yang tersimpan tetap sebuah momen, dan tanpa itu tanggal
-  yang diketik bisa terbaca mundur sehari saat formulirnya dibuka kembali.
+  menjelaskan apa pun. Daftar sahnya satu-satunya ada di `features/potential/categories.ts`,
+  sengaja dipisah dari komponen kartunya supaya Server Action tidak ikut menarik React.
 - **Pembersihan berkas di bucket bukan urusan frontend.** Menghapus record — dan mengganti
   gambarnya lewat `PATCH` — membuat backend ikut membuang berkasnya. `DELETE /upload` tinggal
   untuk satu keadaan: berkas yang terlanjur terunggah lalu batal dipakai. Jangan memanggilnya
@@ -569,7 +620,6 @@ Modul berita adalah contoh yang diikuti modul berikutnya. Polanya:
   | `MapCategory` | `markers` | marker ikut terhapus — peringatkan |
   | `GalleryAlbum` | `items` | item ikut terhapus — peringatkan |
   | `UMKM`, `Potential` | `images` | gambar ikut terhapus — peringatkan |
-  | `KKNProgram` | `activities` | kegiatan ikut terhapus — peringatkan |
 - **`_count.markers` pada kategori peta dipakai untuk memperingatkan, bukan mematikan tombol.**
   Ia datang langsung dari `GET /maps/category` dan sudah menghitung marker yang disembunyikan.
   Jangan menghitungnya sendiri dari daftar marker — `getEveryMarker` yang dulu melakukan itu
@@ -589,9 +639,6 @@ Modul berita adalah contoh yang diikuti modul berikutnya. Polanya:
   "semua", tidak diteruskan ke backend — `published` yang bukan true/false dijawab `400`, dan
   halaman daftar tidak boleh runtuh karena salah ketik di alamat. Berkas itu sengaja bebas
   React karena diimpor Server Component.
-- **Sub-program KKN memakai nilai enum apa adanya di URL** (`?sub=RUMAH_BELAJAR`), tidak
-  di-slug seperti kategori berita dan potensi: enum itu tidak punya slug di backend, dan
-  menambah satu lapis penerjemahan hanya menambah tempat yang bisa meleset.
 - **Warna pin peta berasal dari urutan kategori** (`colorForCategory` di
   `features/maps/pin-colors.ts`), bukan dari kolom `icon`. Menghapus atau menambah kategori
   menggeser warna kategori sesudahnya — halaman kategori dan halaman hapusnya menyebutkan itu.
@@ -658,33 +705,22 @@ Modul berita adalah contoh yang diikuti modul berikutnya. Polanya:
 - **`print:hidden` di bilah atas dan sidebar** (`app/admin/(dasbor)/layout.tsx`) supaya yang
   tercetak hanya lembar QR-nya. Koreksi galatnya **Q** (pulih 25%), bukan `M` bawaan: kertas
   yang ditempel di balai padukuhan akan kotor dan tersenggol.
-- **Rumah warga: `birthYear`, bukan umur; `dataVerifiedAt`, bukan `updatedAt`.** Yang
-  tersimpan tahun lahir dan umurnya dihitung `ageFromBirthYear` saat menggambar — menyimpan
-  umur membuat seluruh data salah setahun kemudian. `dataVerifiedAt` menyatakan kapan pendata
-  terakhir memeriksanya, sedangkan `updatedAt` ikut berubah setiap salah ketik dibetulkan;
-  yang ditampilkan sebagai "Data diverifikasi …" adalah yang pertama.
-- **Kepala keluarga dijaga backend, jangan ikut menjaganya** — persis seperti `isPrimary` pada
-  gambar UMKM. Warga pertama sebuah KK otomatis menjadi kepala keluarga, menyetel yang baru
-  melepas penanda yang lama, dan menghapusnya mengangkat penghuni teratas menurut `order`.
-  **`LAINNYA` bukan sekadar salah satu pilihan**: itu yang disetel backend pada kepala
-  keluarga lama, dan artinya "hubungan aslinya menunggu dibetulkan pendata". Karena itu
-  `needsRelationReview` menampilkannya sebagai peringatan, bukan keterangan biasa yang mudah
-  terlewat.
-- **KK dan penghuni memakai form server biasa**, sama alasannya dengan kartu gambar UMKM: satu
-  rumah bisa berisi beberapa KK dan belasan warga, masing-masing dengan formnya sendiri.
-  Akibatnya galat dibawa lewat `?galat=` pada alamat halaman rumahnya, bukan dikembalikan
-  sebagai state — dan `redirect()` di dalamnya **wajib berada di luar blok `try`**, karena ia
-  bekerja dengan melempar dan akan tertangkap `catch`-nya sendiri.
-- **`DELETE` rumah, KK, dan warga menuntut peran `ADMIN`**, bukan sekadar token yang sah.
-  `403` diterjemahkan menjadi kalimat yang menyebut apa yang harus dilakukan pengelola, bukan
-  diteruskan apa adanya.
-- **`GET /house/active` dan `GET /house/summary` ARRAY POLOS.** Ringkasan per RT selalu
-  diambil dari `/house/summary`, tidak pernah dijumlahkan sendiri dari daftar rumah: yang
-  pertama hanya menghitung rumah aktif dan urutannya numerik, dan angkanya harus sama dengan
-  yang dipakai halaman monografi.
-- **Warna ikon rumah berasal dari urutan RT yang benar-benar ada** (`colorForRt`), bukan dari
-  angkanya. RT Kembangsari bernomor 05–08; memetakan "05" ke indeks 5 akan menyisakan lima
-  warna pertama tidak terpakai sementara RT-nya berdesakan di ujung palet.
+- **Ikon pin berasal dari katalog backend, dan digambar sungguhan.** Urutan bacanya
+  `marker.icon ?? marker.category?.icon ?? "place"` — ada di `iconNameFor`
+  (`features/maps/pin-icons.ts`), jangan ditulis ulang di tempat lain. Nilainya nama
+  Material Symbols yang **divalidasi backend**: nama di luar `GET /maps/icon` dijawab
+  `400`, baik pada kategori maupun pada titik. Karena itu kedua form memakai `<select>`
+  yang diisi katalog itu, bukan input teks — dan Server Action-nya memeriksa ulang, karena
+  form dashboard tetap terkirim tanpa JavaScript dan nilainya bisa dipalsukan.
+- **Katalog ikon di-cache walau dipakai Server Action**, berbeda dari kategori. Isinya
+  ditetapkan kode backend, bukan disunting pengelola, jadi tidak ada padanan
+  `getMapIconsUncached` — dan tidak perlu ada. Alasan `getMapCategoriesUncached` tidak
+  berlaku di sini.
+- **Jangan menulis daftar ikon di frontend.** Katalognya sengaja ditaruh di backend supaya
+  satu daftar saja yang perlu dijaga; ikon yang ditambahkan di sana langsung muncul di
+  pemilihnya tanpa rilis frontend. Yang ada di `pin-icons.ts` hanya SATU nama cadangan
+  (`location_on`, kanoniknya `place`) — itu bukan tabel terjemahan, dan jangan
+  menumbuhkannya menjadi tabel.
 - **Masuk dengan Google berakhir di Route Handler, bukan halaman.** `/admin/login/google`
   menukar tiket sekali pakai lalu menyetel cookie — dan Server Component memang tidak boleh
   menyetel cookie. Ini **tidak** melanggar aturan "tidak ada `GET` yang menyentuh sesi": rute
@@ -725,17 +761,23 @@ Modul berita adalah contoh yang diikuti modul berikutnya. Polanya:
 ## Yang belum dikerjakan
 
 - Seluruh daftar kebutuhan sudah tergarap, termasuk QR Code monografi (FR-052).
-- **Menunggu deploy backend.** Kode putaran ketiga sudah ada di `feat/phase2-modules-and-deploy`
-  dan sudah di-push, tetapi produksi masih menjawab `404` untuk `/house/*` dan `/auth/google` —
-  Render belum menerbitkan versi itu. Seluruh modul rumah warga dan login Google di frontend
-  dibangun terhadap `openapi.json`, bukan terhadap backend yang berjalan.
+- **`openapi.json` dan `FRONTEND_GUIDE.md` di repo ini basi.** Keduanya masih memuat seluruh
+  `/house/*` dan `/kkn/*`, dan `openapi.json` belum punya `GET /maps/icon` — jadi untuk peta
+  dan untuk KKN keduanya **bukan** lagi sumber kebenaran seperti biasanya. `types/api.ts`
+  sudah disesuaikan tangan dua kali. Salin ulang ketiganya dari paket handoff begitu tersedia
+  — jangan menyunting `openapi.json` sendiri, dan jangan ikut menyalin `CLAUDE.md`-nya.
+- **Pemilih dan penggambar ikon belum pernah bertemu `GET /maps/icon` yang sungguhan.**
+  Bentuk responsnya diambil dari `PERUBAHAN-PETA-FRONTEND.md`. Dua hal yang baru ketahuan
+  saat backend hidup: apakah katalognya memakai nama alias (`place`, `group`) yang tidak ada
+  di `@material-symbols/svg-400` — kalau ya, pin-nya jatuh ke bulatan putih, bukan rusak —
+  dan apakah endpoint itu benar bebas token.
 - **Menunggu pengelola:** `public/data/batas-wilayah.geojson` berisi batas luar padukuhan
   (146 titik, ±64,8 ha) dan lima ruas jalan — **RW dan RT-nya belum digambar.** Mentahan dari
   geojson.io (`jalan.json`, `batas_padukuhan.json`) sengaja tidak ikut ke repo; yang terbit
   hanya hasil susunannya.
 - **Sebelas baris UMKM & Potensi di produksi masih berkoordinat data seed**, 13,6–13,9 km
-  dari padukuhan (`JAWABAN-LAPORAN-BACKEND-4.md` bagian D). Penanda peta, rumah warga, dan
-  titik tengah peta sudah bersih. **Yang salah di sini bukan pin melainkan tombol "Petunjuk
+  dari padukuhan (`JAWABAN-LAPORAN-BACKEND-4.md` bagian D). Penanda peta dan titik tengah
+  peta sudah bersih. **Yang salah di sini bukan pin melainkan tombol "Petunjuk
   Arah"**: `/umkm/[slug]` dan `/potensi/[slug]` mengubah koordinat itu menjadi tautan
   `google.com/maps/dir/`, jadi warga yang mengetuknya benar-benar dinavigasikan ke kapanewon
   lain. Karena `hasCoordinates` menyembunyikan tombolnya saat koordinatnya `null`,
@@ -746,10 +788,11 @@ Modul berita adalah contoh yang diikuti modul berikutnya. Polanya:
   ditekan tombolnya lebih dulu — bukan lagi karena kontraknya meragukan, melainkan karena
   butir yang bergantung pada transaksi memang perlu dijalankan:
   - alur gambar UMKM/potensi setelah penjagaan `isPrimary` dilepas ke backend;
-  - hapus kategori peta dan hapus program KKN, yang kini berantai;
-  - saringan status di ketujuh daftar (nilai boolean dikirim sebagai `"true"`/`"false"`
+  - hapus kategori peta, yang kini berantai;
+  - saringan status di keenam daftar (nilai boolean dikirim sebagai `"true"`/`"false"`
     lewat query string oleh `buildUrl`);
-  - simpan profil setelah penandanya berpindah dari `id` ke slug.
+  - simpan profil setelah penandanya berpindah dari `id` ke slug;
+  - simpan kategori dan titik peta dengan ikon terpilih, sekarang katalognya divalidasi.
 - **Untuk tim backend:** frontend **tidak pernah** mengirim `?search=` ke `/monography`.
   `AdminMonographyQuery` di paket handoff masih memuatnya, tetapi `services/monography.ts`
   menyempitkannya dengan `Omit<…, "search">` di kedua fungsinya. Jadi parameter itu aman

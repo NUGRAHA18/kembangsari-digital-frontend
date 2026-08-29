@@ -37,7 +37,7 @@ export const SETTINGS_FALLBACK: SettingsMap = {
  * koordinat Kembangsari. Akibatnya peta terbuka di kapanewon yang sama sekali
  * lain setiap kali kolom di Pengaturan kosong, dan tautan alamat di footer ikut
  * mengarah ke sana. Nilai di bawah ini sama dengan yang dipakai
- * `public/data/README.md` dan form rumah warga — jangan diganti tanpa
+ * `public/data/README.md` — jangan diganti tanpa
  * mencocokkannya dengan batas wilayah di `public/data/batas-wilayah.geojson`.
  */
 export function getMapView(settings: SettingsMap): { center: [number, number]; zoom: number } {

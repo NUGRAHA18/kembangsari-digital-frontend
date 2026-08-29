@@ -5,8 +5,9 @@ import dynamic from "next/dynamic";
 import { Hand } from "lucide-react";
 import { Skeleton } from "@/components/ui/states";
 import type { BoundaryFeature } from "@/features/maps/boundaries";
+import type { PinGlyphs } from "@/features/maps/pin-icons";
 import { cn } from "@/lib/utils";
-import type { House, MapMarker } from "@/types/api";
+import type { MapMarker } from "@/types/api";
 
 /**
  * Pembungkus peta.
@@ -28,10 +29,7 @@ export function MapCanvas({
   focusedMarker = null,
   onMarkerSelect,
   boundaries,
-  houses,
-  rtOrder,
-  focusedHouseId,
-  onHouseSelect,
+  glyphs,
   className,
 }: {
   markers: MapMarker[];
@@ -41,10 +39,7 @@ export function MapCanvas({
   focusedMarker?: MapMarker | null;
   onMarkerSelect?: (marker: MapMarker) => void;
   boundaries?: BoundaryFeature[];
-  houses?: House[];
-  rtOrder?: string[];
-  focusedHouseId?: string | null;
-  onHouseSelect?: (house: House) => void;
+  glyphs?: PinGlyphs;
   className?: string;
 }) {
   const [isInteractive, setIsInteractive] = useState(false);
@@ -68,10 +63,7 @@ export function MapCanvas({
         focusedMarker={focusedMarker}
         onMarkerSelect={onMarkerSelect}
         boundaries={boundaries}
-        houses={houses}
-        rtOrder={rtOrder}
-        focusedHouseId={focusedHouseId}
-        onHouseSelect={onHouseSelect}
+        glyphs={glyphs}
       />
 
       {!isInteractive ? (

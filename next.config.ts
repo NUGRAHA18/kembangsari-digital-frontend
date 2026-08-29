@@ -29,6 +29,20 @@ const nextConfig: NextConfig = {
     },
   },
 
+  // Ikon pin peta dibaca dari `@material-symbols/svg-400` saat merender di
+  // server (`lib/material-symbol.ts`), lewat `readFileSync` — bukan `import`.
+  // Penelusuran berkas Next.js hanya mengikuti `import`, jadi tanpa baris ini
+  // berkas SVG-nya tidak ikut ter-deploy: di komputer sendiri semuanya tampak
+  // benar karena node_modules memang ada di sana, sementara di produksi setiap
+  // pin kehilangan ikonnya dan jatuh ke bulatan putih.
+  //
+  // Disebut per rute, bukan global: hanya empat halaman ini yang menggambar pin.
+  outputFileTracingIncludes: {
+    "/": ["./node_modules/@material-symbols/svg-400/outlined/**"],
+    "/peta": ["./node_modules/@material-symbols/svg-400/outlined/**"],
+    "/admin/peta": ["./node_modules/@material-symbols/svg-400/outlined/**"],
+  },
+
   images: {
     // Backend menyimpan gambar sebagai URL, bukan berkas. Dua sumber yang mungkin:
     // Supabase Storage (unggahan asli) dan picsum.photos (data seed).

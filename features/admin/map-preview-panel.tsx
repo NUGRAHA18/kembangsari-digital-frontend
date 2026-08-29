@@ -4,6 +4,7 @@ import { ButtonLink } from "@/components/ui/button";
 import { LazyMount } from "@/components/ui/lazy-mount";
 import { Skeleton } from "@/components/ui/states";
 import { MapCanvas } from "@/features/maps/map-canvas";
+import type { PinGlyphs } from "@/features/maps/pin-icons";
 import type { MapMarker } from "@/types/api";
 
 /**
@@ -28,11 +29,13 @@ export function MapPreviewPanel({
   categoryIds,
   center,
   zoom,
+  glyphs,
 }: {
   markers: MapMarker[];
   categoryIds: string[];
   center: [number, number];
   zoom: number;
+  glyphs?: PinGlyphs;
 }) {
   return (
     <div className="flex flex-col gap-3">
@@ -42,6 +45,7 @@ export function MapPreviewPanel({
           categoryIds={categoryIds}
           center={center}
           zoom={zoom}
+          glyphs={glyphs}
           className="h-72"
         />
       </LazyMount>

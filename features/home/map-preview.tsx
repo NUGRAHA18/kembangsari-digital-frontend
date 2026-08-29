@@ -4,6 +4,7 @@ import { ButtonLink } from "@/components/ui/button";
 import { LazyMount } from "@/components/ui/lazy-mount";
 import { Skeleton } from "@/components/ui/states";
 import { MapCanvas } from "@/features/maps/map-canvas";
+import type { PinGlyphs } from "@/features/maps/pin-icons";
 import type { MapMarker } from "@/types/api";
 
 /**
@@ -18,11 +19,13 @@ export function HomeMapPreview({
   categoryIds,
   center,
   zoom,
+  glyphs,
 }: {
   markers: MapMarker[];
   categoryIds: string[];
   center: [number, number];
   zoom: number;
+  glyphs?: PinGlyphs;
 }) {
   return (
     <div>
@@ -32,6 +35,7 @@ export function HomeMapPreview({
           categoryIds={categoryIds}
           center={center}
           zoom={zoom}
+          glyphs={glyphs}
           className="h-[18rem] md:h-[24rem]"
         />
       </LazyMount>

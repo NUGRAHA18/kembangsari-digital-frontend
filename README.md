@@ -52,7 +52,7 @@ Frontend tidak menyimpan kredensial Supabase apa pun; semua akses data lewat bac
 
 | Rute | Isi |
 |------|-----|
-| `/` | Hero, pintasan, statistik, pengumuman, berita, agenda, program KKN, galeri, pratinjau peta |
+| `/` | Hero, pintasan, statistik, pengumuman, berita, agenda, galeri, pratinjau peta |
 | `/profil`, `/profil/[slug]` | Sejarah, visi misi, struktur organisasi |
 | `/berita`, `/berita/[slug]` | Daftar berita dengan pencarian & filter kategori |
 | `/agenda` | Agenda dikelompokkan per bulan |
@@ -62,7 +62,6 @@ Frontend tidak menyimpan kredensial Supabase apa pun; semua akses data lewat bac
 | `/peta` | Peta digital Leaflet + daftar lokasi + petunjuk arah |
 | `/umkm`, `/umkm/[slug]` | Direktori usaha warga dengan tombol WhatsApp |
 | `/potensi`, `/potensi/[slug]` | Potensi pertanian, peternakan, kerajinan, wisata |
-| `/program-kkn`, `/program-kkn/[slug]` | Empat program KKN beserta dokumentasi kegiatan |
 | `/kontak` | Kontak resmi padukuhan |
 
 ## Stack

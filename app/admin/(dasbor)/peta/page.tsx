@@ -11,8 +11,10 @@ import { MarkerCard } from "@/features/admin/marker-card";
 import { PageHero } from "@/features/admin/page-hero";
 import { StatTiles } from "@/features/admin/stat-tiles";
 import { readStatus, statusOptions, VISIBILITY_STATUS } from "@/features/admin/status-filter";
+import { iconNamesFor } from "@/features/maps/pin-icons";
 import { safeFetch } from "@/lib/api";
 import { fetchAsAdmin } from "@/lib/admin-fetch";
+import { materialSymbolPaths } from "@/lib/material-symbol";
 import { readPage, readParam, type RawSearchParams } from "@/lib/page-params";
 import { requireSession } from "@/lib/session";
 import { getAllMarkers, getMapCategoriesUncached } from "@/services/maps";
@@ -80,6 +82,10 @@ export default async function AdminMapPage({
 
   const categoryIds = (categories.data ?? []).map((category) => category.id);
   const mapView = getMapView(settings);
+
+  // Pratinjau di sini menggambar pin yang sama dengan peta warga, jadi ikonnya
+  // pun disiapkan dengan cara yang sama.
+  const glyphs = materialSymbolPaths(iconNamesFor(markers.data, categories.data ?? []));
 
   const activeParams = {
     search,
@@ -202,6 +208,7 @@ export default async function AdminMapPage({
                 categoryIds={categoryIds}
                 center={mapView.center}
                 zoom={mapView.zoom}
+                glyphs={glyphs}
               />
             </div>
           </div>

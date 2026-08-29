@@ -4,8 +4,7 @@ import type { Role } from "@/types/api";
  * Peran pengelola beserta keterangannya.
  *
  * Sengaja bebas React: Server Action mengimpornya untuk memvalidasi nilai yang
- * masuk, sepola dengan `features/potential/categories.ts` dan
- * `features/kkn/sub-programs.ts`.
+ * masuk, sepola dengan `features/potential/categories.ts`.
  *
  * Bedanya kedua peran **wajib dijelaskan di layar**, bukan hanya jadi dua
  * pilihan di dropdown: pengelola padukuhan tidak bisa diharapkan menebak apa

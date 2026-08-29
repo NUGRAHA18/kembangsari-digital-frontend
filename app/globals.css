@@ -200,7 +200,7 @@
   }
 }
 
-/* Isi Markdown dari backend (profil, program KKN). */
+/* Isi Markdown dari backend (profil). */
 .prose-kembangsari {
   --tw-prose-body: var(--foreground);
   --tw-prose-headings: var(--foreground);

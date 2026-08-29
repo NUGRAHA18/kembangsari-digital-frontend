@@ -7,8 +7,8 @@ import L from "leaflet";
 import { GeoJSON, MapContainer, Marker, Popup, TileLayer, Tooltip, useMap } from "react-leaflet";
 import { boundaryStyle, type BoundaryFeature } from "@/features/maps/boundaries";
 import { colorForCategory } from "@/features/maps/pin-colors";
-import { colorForRt, houseTally } from "@/features/house/house";
-import type { House, MapMarker } from "@/types/api";
+import { GLYPH_TRANSFORM, iconNameFor, type PinGlyphs } from "@/features/maps/pin-icons";
+import type { MapMarker } from "@/types/api";
 
 /**
  * Peta OpenStreetMap.
@@ -18,50 +18,32 @@ import type { House, MapMarker } from "@/types/api";
  * dengan `ssr: false`.
  */
 
-
 /**
  * Ikon dibuat sebagai divIcon berisi SVG, bukan gambar bawaan Leaflet.
  * Ikon bawaan merujuk berkas PNG lewat jalur relatif yang rusak setelah
  * di-bundle, dan pendekatan ini sekaligus memungkinkan pin diwarnai per kategori.
+ *
+ * Isi kepalanya adalah ikon Material Symbols yang dipilih pengelola, digambar
+ * putih di atas warna kategorinya. `glyph` sudah berupa jalur gambar yang
+ * disiapkan di server (`lib/material-symbol.ts`); yang tidak tersedia jatuh ke
+ * bulatan putih seperti sebelumnya, sehingga pin tetap terbaca sebagai pin.
  */
-function createPinIcon(color: string, isActive: boolean) {
+function createPinIcon(color: string, isActive: boolean, glyph: string | null) {
+  const size = isActive ? 40 : 30;
+
+  const head = glyph
+    ? `<path d="${glyph}" transform="${GLYPH_TRANSFORM}" fill="white" stroke="none"/>`
+    : `<circle cx="12" cy="10" r="2.6" fill="white" stroke="none"/>`;
+
   return L.divIcon({
     className: "",
-    html: `<svg width="${isActive ? 40 : 30}" height="${isActive ? 40 : 30}" viewBox="0 0 24 24" fill="${color}" stroke="white" stroke-width="1.5" aria-hidden="true" style="filter:drop-shadow(0 1px 2px rgba(0,0,0,.4))">
+    html: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="${color}" stroke="white" stroke-width="1.5" aria-hidden="true" style="filter:drop-shadow(0 1px 2px rgba(0,0,0,.4))">
         <path d="M12 22s7-6.5 7-12A7 7 0 0 0 5 10c0 5.5 7 12 7 12z"/>
-        <circle cx="12" cy="10" r="2.6" fill="white" stroke="none"/>
-      </svg>`,
-    iconSize: isActive ? [40, 40] : [30, 30],
-    iconAnchor: isActive ? [20, 40] : [15, 30],
-    popupAnchor: [0, isActive ? -38 : -28],
-  });
-}
-
-/**
- * Ikon rumah warga.
- *
- * Sengaja berbentuk rumah, bukan pin bulat seperti fasilitas umum: dengan
- * tujuh puluh rumah di layar, bentuknyalah yang membedakan keduanya sekilas —
- * warna saja tidak cukup, karena warna di sini sudah dipakai membedakan RT.
- *
- * Ukurannya lebih kecil daripada pin kategori. Rumah warga jumlahnya berkali
- * lipat, dan pada zoom kampung ikon sebesar pin akan saling menimpa sampai
- * jalan di bawahnya tidak terbaca lagi.
- */
-function createHouseIcon(color: string, isActive: boolean) {
-  const size = isActive ? 32 : 22;
-
-  return L.divIcon({
-    className: "",
-    html: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="${color}" stroke="white" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true" style="filter:drop-shadow(0 1px 2px rgba(0,0,0,.4))">
-        <path d="M12 3 2.5 10.5V21h19V10.5z"/>
-        <path d="M9.5 21v-5.5h5V21" fill="white" stroke="none"/>
+        ${head}
       </svg>`,
     iconSize: [size, size],
-    // Ikon rumah ditambatkan di tengah, bukan di ujung bawah seperti pin:
-    // bentuknya memang menandai bidang, bukan menunjuk satu titik.
-    iconAnchor: [size / 2, size / 2],
-    popupAnchor: [0, -size / 2],
+    iconAnchor: [size / 2, size],
+    popupAnchor: [0, isActive ? -38 : -28],
   });
 }
 
@@ -186,10 +168,7 @@ export default function MapView({
   focusedMarker,
   onMarkerSelect,
   boundaries = [],
-  houses = [],
-  rtOrder = [],
-  focusedHouseId = null,
-  onHouseSelect,
+  glyphs = {},
 }: {
   markers: MapMarker[];
   categoryIds: string[];
@@ -199,11 +178,8 @@ export default function MapView({
   focusedMarker: MapMarker | null;
   onMarkerSelect?: (marker: MapMarker) => void;
   boundaries?: BoundaryFeature[];
-  houses?: House[];
-  /** Urutan RT yang menentukan warna ikon rumah. Lihat `colorForRt`. */
-  rtOrder?: string[];
-  focusedHouseId?: string | null;
-  onHouseSelect?: (house: House) => void;
+  /** Nama ikon → jalur gambarnya, disiapkan Server Component pemanggilnya. */
+  glyphs?: PinGlyphs;
 }) {
   // Koordinat yang bukan angka membuat Leaflet melempar saat menggambar pin,
   // dan yang runtuh bukan satu pin itu melainkan seluruh peta. Titik seperti
@@ -212,14 +188,9 @@ export default function MapView({
     Number.isFinite(point.latitude) && Number.isFinite(point.longitude);
 
   const drawable = markers.filter(hasCoordinates);
-  const drawableHouses = houses.filter(hasCoordinates);
 
-  // Rumah warga ikut menentukan bidang yang dipaskan AutoFit. Tanpa itu, peta
-  // yang hanya berisi rumah — belum ada satu pun fasilitas umum terdata —
-  // akan jatuh ke titik tengah pengaturan dan tampak kosong.
-  const points = [...drawable, ...drawableHouses];
-  const latitudes = points.map((point) => point.latitude);
-  const longitudes = points.map((point) => point.longitude);
+  const latitudes = drawable.map((point) => point.latitude);
+  const longitudes = drawable.map((point) => point.longitude);
 
   return (
     <MapContainer
@@ -253,27 +224,6 @@ export default function MapView({
 
       <BoundaryLayers boundaries={boundaries} />
 
-      {/* Rumah digambar lebih dulu supaya pin fasilitas umum berada di atasnya
-          ketika keduanya berimpit — yang dicari orang di peta padukuhan
-          hampir selalu balai atau posyandu, bukan rumah yang kebetulan
-          bersebelahan dengannya. */}
-      {drawableHouses.map((house) => (
-        <Marker
-          key={house.id}
-          position={[house.latitude, house.longitude]}
-          icon={createHouseIcon(colorForRt(house.rt, rtOrder), focusedHouseId === house.id)}
-          eventHandlers={{ click: () => onHouseSelect?.(house) }}
-        >
-          <Popup>
-            <span className="block font-semibold">{house.label}</span>
-            <span className="block text-slate-500">
-              RT {house.rt} / RW {house.rw}
-            </span>
-            <span className="mt-1 block">{houseTally(house)}</span>
-          </Popup>
-        </Marker>
-      ))}
-
       {drawable.map((marker) => (
         <Marker
           key={marker.id}
@@ -281,6 +231,7 @@ export default function MapView({
           icon={createPinIcon(
             colorForCategory(marker.categoryId, categoryIds),
             focusedMarker?.id === marker.id,
+            glyphs[iconNameFor(marker)] ?? null,
           )}
           eventHandlers={{ click: () => onMarkerSelect?.(marker) }}
         >

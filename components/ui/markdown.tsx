@@ -3,7 +3,7 @@ import remarkGfm from "remark-gfm";
 import { cn } from "@/lib/utils";
 
 /**
- * Isi `content` pada Profil dan Program KKN berupa Markdown.
+ * Isi `content` pada Profil berupa Markdown.
  *
  * Lebar dibatasi 68ch supaya baris teks tinggal 65–75 karakter. Di ponsel lebar
  * layar sudah membatasi sendiri, jadi aturan ini praktis hanya bekerja di

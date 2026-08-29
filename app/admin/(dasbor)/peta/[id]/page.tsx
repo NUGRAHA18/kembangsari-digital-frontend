@@ -6,7 +6,7 @@ import { MarkerForm } from "@/features/admin/marker-form";
 import { fetchAsAdmin } from "@/lib/admin-fetch";
 import { formatDate, googleMapsPointLink } from "@/lib/format";
 import { requireSession } from "@/lib/session";
-import { getMapCategoriesUncached, getMarkerById } from "@/services/maps";
+import { getMapCategoriesUncached, getMapIcons, getMarkerById } from "@/services/maps";
 
 export const metadata: Metadata = { title: "Ubah Lokasi" };
 
@@ -16,11 +16,12 @@ export default async function EditMarkerPage({ params }: Props) {
   const { token } = await requireSession();
   const { id } = await params;
 
-  const [marker, categories] = await Promise.all([
+  const [marker, categories, iconGroups] = await Promise.all([
     // Tanpa token, marker yang disembunyikan tidak terbaca — halaman ini justru
     // harus bisa menampilkannya kembali.
     fetchAsAdmin(getMarkerById(id, token)),
     fetchAsAdmin(getMapCategoriesUncached()),
+    fetchAsAdmin(getMapIcons()),
   ]);
 
   return (
@@ -65,7 +66,7 @@ export default async function EditMarkerPage({ params }: Props) {
         </div>
       </div>
 
-      <MarkerForm marker={marker} categories={categories} />
+      <MarkerForm marker={marker} categories={categories} iconGroups={iconGroups} />
     </div>
   );
 }

@@ -8,6 +8,7 @@ import { slugify } from "@/lib/slug";
 import {
   createMapCategory,
   deleteMapCategory,
+  getMapIconNames,
   updateMapCategory,
   type MapCategoryInput,
 } from "@/services/maps";
@@ -58,6 +59,27 @@ export async function saveMapCategoryAction(
   if (!name) return { error: "Nama kategori wajib diisi.", values };
   if (!slug) {
     return { error: "Slug tidak bisa dibentuk dari nama itu. Isi slug secara manual.", values };
+  }
+
+  // Ikon datang dari `<select>`, tetapi form ini tetap terkirim tanpa
+  // JavaScript dan nilainya bisa dipalsukan. Katalognya divalidasi backend, dan
+  // `400` dari sana hanya menyebut nama ikonnya — bukan apa yang harus
+  // dilakukan pengelola.
+  if (icon) {
+    try {
+      const names = await getMapIconNames();
+      if (!names.includes(icon)) {
+        return {
+          error: `Ikon "${icon}" tidak ada di katalog. Pilih salah satu ikon dari daftarnya.`,
+          values,
+        };
+      }
+    } catch (error) {
+      if (error instanceof ApiRequestError && error.isUnauthorized) {
+        redirect(SESSION_EXPIRED_PATH);
+      }
+      return { error: `Gagal memeriksa katalog ikon. ${toMessage(error)}`, values };
+    }
   }
 
   // `icon` opsional: dikosongkan berarti `null`, bukan dihilangkan dari payload
