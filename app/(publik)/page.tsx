@@ -7,6 +7,7 @@ import { AnnouncementCard } from "@/features/announcement/announcement-card";
 import { GalleryGrid } from "@/features/gallery/gallery-grid";
 import { Hero } from "@/features/home/hero";
 import { HomeMapPreview } from "@/features/home/map-preview";
+import { MonographyGlance } from "@/features/home/monography-glance";
 import { QuickAccess } from "@/features/home/quick-access";
 import { HomeStats } from "@/features/home/stats";
 import { iconNamesFor } from "@/features/maps/pin-icons";
@@ -16,7 +17,9 @@ import { getActiveAnnouncements } from "@/services/announcement";
 import { getFeaturedGalleryItems } from "@/services/gallery";
 import { getActiveMarkers, getMapCategories } from "@/services/maps";
 import { getPublishedMonography } from "@/services/monography";
+import { getActiveUmkm } from "@/services/umkm";
 import { getNewsList } from "@/services/news";
+import { getActivePotentials } from "@/services/potential";
 import { getMapView, getSettingsMap } from "@/services/settings";
 
 export default async function HomePage() {
@@ -25,18 +28,31 @@ export default async function HomePage() {
   // Setiap bagian diambil terpisah lewat safeFetch: kalau satu endpoint gagal,
   // bagian lain tetap tampil dan yang gagal menampilkan pesannya sendiri.
   // Semua permintaan dimulai bersamaan, bukan berantai satu per satu.
-  const [announcements, news, agenda, gallery, monography, markers, mapCategories] =
-    await Promise.all([
-      safeFetch(getActiveAnnouncements({ limit: 3 })),
-      safeFetch(getNewsList({ limit: 3 })),
-      safeFetch(getUpcomingAgenda({ limit: 3 })),
-      safeFetch(getFeaturedGalleryItems({ limit: 8 })),
-      safeFetch(getPublishedMonography({ limit: 1 })),
-      safeFetch(getActiveMarkers()),
-      safeFetch(getMapCategories()),
-    ]);
+  // UMKM dan potensi diminta `limit: 1` — yang dipakai hanya `meta.total`.
+  const [
+    announcements,
+    news,
+    agenda,
+    gallery,
+    monography,
+    markers,
+    mapCategories,
+    umkm,
+    potentials,
+  ] = await Promise.all([
+    safeFetch(getActiveAnnouncements({ limit: 3 })),
+    safeFetch(getNewsList({ limit: 3 })),
+    safeFetch(getUpcomingAgenda({ limit: 3 })),
+    safeFetch(getFeaturedGalleryItems({ limit: 8 })),
+    safeFetch(getPublishedMonography({ limit: 1 })),
+    safeFetch(getActiveMarkers()),
+    safeFetch(getMapCategories()),
+    safeFetch(getActiveUmkm({ limit: 1 })),
+    safeFetch(getActivePotentials({ limit: 1 })),
+  ]);
 
   const mapView = getMapView(settings);
+  const latestStat = monography.data?.data[0] ?? null;
 
   // Ikon pin dibaca di server; hanya yang dipakai yang ikut ke browser.
   const glyphs = materialSymbolPaths(iconNamesFor(markers.data ?? [], mapCategories.data ?? []));
@@ -52,7 +68,12 @@ export default async function HomePage() {
       <QuickAccess />
 
       <Section className="pt-10 pb-0 md:pt-14 md:pb-0">
-        <HomeStats stat={monography.data?.data[0] ?? null} />
+        <HomeStats
+          stat={latestStat}
+          umkmCount={umkm.data?.meta.total ?? null}
+          potentialCount={potentials.data?.meta.total ?? null}
+          markerCount={markers.data?.length ?? null}
+        />
       </Section>
 
       {announcements.data && announcements.data.data.length > 0 ? (
@@ -96,6 +117,18 @@ export default async function HomePage() {
           />
         )}
       </Section>
+
+      {latestStat ? (
+        <Section className="pt-0 md:pt-0 lg:pt-0">
+          <SectionHeading
+            title="Potret Warga"
+            description={`Gambaran penduduk Padukuhan Kembangsari menurut data monografi tahun ${latestStat.year}.`}
+            href="/monografi"
+            hrefLabel="Lihat monografi"
+          />
+          <MonographyGlance stat={latestStat} />
+        </Section>
+      ) : null}
 
       <Section className="bg-surface">
         <SectionHeading

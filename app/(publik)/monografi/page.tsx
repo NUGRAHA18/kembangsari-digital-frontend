@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
-import { Home, Landmark, Users, UsersRound } from "lucide-react";
+import { Home, Landmark, Map, Users, UsersRound } from "lucide-react";
 import { Card, CardBody } from "@/components/ui/card";
 import { Container } from "@/components/ui/container";
 import { FilterChips } from "@/components/ui/filter-chips";
 import { PageHeader } from "@/components/ui/page-header";
 import { EmptyState, ErrorState } from "@/components/ui/states";
 import { toEmploymentItems } from "@/features/monography/employment";
+import { educationBands, monographyInsights, religionShares } from "@/features/monography/insights";
+import { DonutShare, PopulationTrend, StackedShare } from "@/features/monography/share-charts";
 import { StatBars } from "@/features/monography/stat-bars";
 import { StatTable } from "@/features/monography/stat-table";
 import { safeFetch } from "@/lib/api";
@@ -66,7 +68,7 @@ export default async function MonographyPage({
               />
             ) : null}
 
-            <MonographyContent stat={stat} />
+            <MonographyContent stat={stat} years={years} />
           </>
         )}
       </Container>
@@ -74,16 +76,20 @@ export default async function MonographyPage({
   );
 }
 
-function MonographyContent({ stat }: { stat: PopulationStat }) {
+function MonographyContent({ stat, years }: { stat: PopulationStat; years: PopulationStat[] }) {
   const summary = [
     { label: "Jumlah Penduduk", value: stat.totalPopulation, Icon: Users },
     { label: "Kepala Keluarga", value: stat.familyHeadCount, Icon: Home },
     { label: "Jumlah Keluarga", value: stat.familyCount, Icon: UsersRound },
     { label: "Rukun Tetangga", value: stat.rtCount, Icon: Landmark },
+    { label: "Rukun Warga", value: stat.rwCount, Icon: Map },
   ].filter((item) => item.value !== null && item.value !== undefined);
 
   const genderTotal = stat.maleCount + stat.femaleCount;
   const employment = toEmploymentItems(stat.employmentData);
+  const insights = monographyInsights(stat);
+  const education = educationBands(stat);
+  const religion = religionShares(stat);
 
   return (
     <div className="mt-8 flex flex-col gap-10 md:gap-14">
@@ -91,7 +97,7 @@ function MonographyContent({ stat }: { stat: PopulationStat }) {
         <h2 id="ringkasan" className="sr-only">
           Ringkasan data tahun {stat.year}
         </h2>
-        <ul className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-4">
+        <ul className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 lg:grid-cols-5">
           {summary.map(({ label, value, Icon }) => (
             <li key={label}>
               <Card className="h-full">
@@ -107,6 +113,48 @@ function MonographyContent({ stat }: { stat: PopulationStat }) {
           ))}
         </ul>
       </section>
+
+      {insights.length > 0 ? (
+        <section aria-labelledby="sekilas">
+          <h2 id="sekilas" className="mb-4 text-xl font-semibold tracking-tight md:text-2xl">
+            Sekilas Angka
+          </h2>
+          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4 lg:grid-cols-4">
+            {insights.map((insight) => (
+              <li key={insight.label}>
+                <Card className="h-full">
+                  <CardBody className="p-4">
+                    <p className="text-sm text-muted">{insight.label}</p>
+                    <p className="mt-1 text-2xl font-bold tracking-tight text-accent">
+                      {insight.value}
+                    </p>
+                    <p className="mt-1 text-sm text-muted">{insight.hint}</p>
+                  </CardBody>
+                </Card>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
+      {years.length > 1 ? (
+        <section aria-labelledby="tren">
+          <h2 id="tren" className="mb-4 text-xl font-semibold tracking-tight md:text-2xl">
+            Perkembangan Jumlah Penduduk
+          </h2>
+          <Card>
+            <CardBody>
+              <PopulationTrend
+                activeYear={stat.year}
+                points={years.map((item) => ({
+                  year: item.year,
+                  value: item.totalPopulation,
+                }))}
+              />
+            </CardBody>
+          </Card>
+        </section>
+      ) : null}
 
       <section aria-labelledby="jenis-kelamin">
         <h2 id="jenis-kelamin" className="mb-4 text-xl font-semibold tracking-tight md:text-2xl">
@@ -136,11 +184,15 @@ function MonographyContent({ stat }: { stat: PopulationStat }) {
             >
               <div
                 className="bg-primary"
-                style={{ width: `${(stat.maleCount / (genderTotal || 1)) * 100}%` }}
+                style={{
+                  width: `${(stat.maleCount / (genderTotal || 1)) * 100}%`,
+                }}
               />
               <div
                 className="bg-secondary"
-                style={{ width: `${(stat.femaleCount / (genderTotal || 1)) * 100}%` }}
+                style={{
+                  width: `${(stat.femaleCount / (genderTotal || 1)) * 100}%`,
+                }}
               />
             </div>
           </CardBody>
@@ -151,22 +203,35 @@ function MonographyContent({ stat }: { stat: PopulationStat }) {
         <h2 id="pendidikan" className="mb-4 text-xl font-semibold tracking-tight md:text-2xl">
           Tingkat Pendidikan
         </h2>
-        <Card>
-          <CardBody>
-            <StatBars
-              items={[
-                { label: "Tidak/Belum Sekolah", value: stat.educationNoSchool },
-                { label: "SD/Sederajat", value: stat.educationSD },
-                { label: "SLTP/Sederajat", value: stat.educationSLTP },
-                { label: "SLTA/Sederajat", value: stat.educationSLTA },
-                { label: "Diploma (D1–D3)", value: stat.educationD1_D3 },
-                { label: "Sarjana (S1)", value: stat.educationS1 },
-                { label: "Magister (S2)", value: stat.educationS2 },
-                { label: "Doktor (S3)", value: stat.educationS3 },
-              ]}
-            />
-          </CardBody>
-        </Card>
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
+          {education.length > 0 ? (
+            <Card className="lg:col-span-2">
+              <CardBody>
+                <h3 className="mb-4 font-semibold">Menurut jenjang</h3>
+                <StackedShare items={education} />
+              </CardBody>
+            </Card>
+          ) : null}
+          <Card className={education.length > 0 ? "lg:col-span-3" : "lg:col-span-5"}>
+            <CardBody>
+              <StatBars
+                items={[
+                  {
+                    label: "Tidak/Belum Sekolah",
+                    value: stat.educationNoSchool,
+                  },
+                  { label: "SD/Sederajat", value: stat.educationSD },
+                  { label: "SLTP/Sederajat", value: stat.educationSLTP },
+                  { label: "SLTA/Sederajat", value: stat.educationSLTA },
+                  { label: "Diploma (D1–D3)", value: stat.educationD1_D3 },
+                  { label: "Sarjana (S1)", value: stat.educationS1 },
+                  { label: "Magister (S2)", value: stat.educationS2 },
+                  { label: "Doktor (S3)", value: stat.educationS3 },
+                ]}
+              />
+            </CardBody>
+          </Card>
+        </div>
       </section>
 
       <section aria-labelledby="pekerjaan">
@@ -192,18 +257,7 @@ function MonographyContent({ stat }: { stat: PopulationStat }) {
         </h2>
         <Card>
           <CardBody>
-            <StatBars
-              tone="secondary"
-              items={[
-                { label: "Islam", value: stat.religionIslam },
-                { label: "Kristen Protestan", value: stat.religionProtestant },
-                { label: "Katolik", value: stat.religionCatholic },
-                { label: "Hindu", value: stat.religionHindu },
-                { label: "Buddha", value: stat.religionBuddha },
-                { label: "Konghucu", value: stat.religionKonghucu },
-                { label: "Lainnya", value: stat.religionOther },
-              ]}
-            />
+            <DonutShare items={religion} centerLabel="jiwa terdata" />
           </CardBody>
         </Card>
       </section>
