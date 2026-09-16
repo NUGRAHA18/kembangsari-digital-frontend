@@ -3,14 +3,18 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { MarkerForm } from "@/features/admin/marker-form";
 import { fetchAsAdmin } from "@/lib/admin-fetch";
-import { getMapCategoriesUncached } from "@/services/maps";
+import { getMapCategoriesUncached, getMapIcons } from "@/services/maps";
 
 export const metadata: Metadata = { title: "Tambah Lokasi" };
 
 export default async function NewMarkerPage() {
   // Kategori diambil di server, bukan di form: daftarnya dipakai juga oleh
-  // Server Action untuk memeriksa id kategori yang dikirim.
-  const categories = await fetchAsAdmin(getMapCategoriesUncached());
+  // Server Action untuk memeriksa id kategori yang dikirim. Katalog ikon sama
+  // — bedanya ia di-cache, karena isinya ditetapkan kode backend.
+  const [categories, iconGroups] = await Promise.all([
+    fetchAsAdmin(getMapCategoriesUncached()),
+    fetchAsAdmin(getMapIcons()),
+  ]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -26,7 +30,7 @@ export default async function NewMarkerPage() {
         <h1 className="mt-2 text-2xl font-bold tracking-tight">Tambah Titik Lokasi</h1>
       </div>
 
-      <MarkerForm categories={categories} />
+      <MarkerForm categories={categories} iconGroups={iconGroups} />
     </div>
   );
 }

@@ -1,7 +1,7 @@
 /**
  * Struktur navigasi, diturunkan dari dokumen Information Architecture.
  *
- * Ada 11 halaman publik — terlalu banyak untuk satu baris menu di laptop, jadi
+ * Ada 10 halaman publik — terlalu banyak untuk satu baris menu di laptop, jadi
  * yang saling berkerabat dikelompokkan. Di ponsel pengelompokan ini tampil
  * sebagai judul bagian di dalam drawer, bukan menu bertingkat yang harus
  * diketuk dua kali.
@@ -43,7 +43,6 @@ export const NAV_ITEMS: NavItem[] = [
       { label: "Potensi Padukuhan", href: "/potensi", description: "Pertanian, peternakan, wisata" },
     ],
   },
-  { label: "Program KKN", href: "/program-kkn", description: "Empat program kerja KKN" },
   { label: "Monografi", href: "/monografi", description: "Statistik kependudukan" },
   { label: "Kontak", href: "/kontak", description: "Hubungi perangkat padukuhan" },
 ];

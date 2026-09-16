@@ -67,3 +67,7 @@ next-env.d.ts
 
 # Kontrak fitur dari backend, dibagikan lewat jalur internal.
 /FITUR-KELOLA-PENGELOLA.md
+
+# Daftar kerja perubahan kontrak dari backend, dibagikan lewat jalur internal.
+/PERUBAHAN-PETA-FRONTEND.md
+/PERUBAHAN-HAPUS-KKN-FRONTEND.md

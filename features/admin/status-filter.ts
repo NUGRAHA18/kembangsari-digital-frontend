@@ -5,7 +5,7 @@ import { readParam, type RawSearchParams } from "@/lib/page-params";
  * Saringan status untuk daftar dashboard.
  *
  * Daftar bertoken menerima `?published=` (berita, monografi) atau `?isActive=`
- * (pengumuman, UMKM, potensi, program KKN, peta). Tidak dikirim berarti semua,
+ * (pengumuman, UMKM, potensi, peta). Tidak dikirim berarti semua,
  * dan `meta.total` ikut menyesuaikan — itulah bedanya dengan menyaring sendiri
  * satu halaman hasil, yang membuat jumlahnya menyesatkan.
  *

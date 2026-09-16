@@ -5,7 +5,8 @@ import { redirect } from "next/navigation";
 import { ApiRequestError, ApiUnreachableError } from "@/lib/api";
 // Koordinat marker wajib diisi, tidak seperti pada potensi dan UMKM: tanpa
 // keduanya pin ini tidak punya tempat di peta sama sekali. Pembacaannya
-// dipakai bersama rumah warga, jadi tinggal di `lib/`.
+// tinggal di `lib/` karena berkas `"use server"` hanya boleh mengekspor
+// fungsi async.
 import { parseCoordinate, parseCoordinatePair } from "@/lib/coordinates";
 import { validateImage } from "@/lib/image";
 import { requireSession, SESSION_EXPIRED_PATH } from "@/lib/session";
@@ -13,6 +14,7 @@ import {
   createMarker,
   deleteMarker,
   getMapCategoriesUncached,
+  getMapIconNames,
   updateMarker,
   type MarkerInput,
 } from "@/services/maps";
@@ -61,6 +63,7 @@ export async function saveMarkerAction(
   const categoryId = read("categoryId");
   const address = read("address");
   const phone = read("phone");
+  const icon = read("icon");
   // Menekan lama di Google Maps menyalin kedua angka sekaligus, dan
   // menempelkannya utuh ke kolom lintang adalah salah tempel yang paling
   // sering terjadi. Kalau itu yang terkirim, angkanya dipisah di sini alih-alih
@@ -76,6 +79,7 @@ export async function saveMarkerAction(
     categoryId,
     address,
     phone,
+    icon,
     latitude: rawLatitude,
     longitude: rawLongitude,
   };
@@ -94,6 +98,23 @@ export async function saveMarkerAction(
   } catch (error) {
     redirectIfExpired(error);
     return { error: `Gagal memeriksa kategori. ${toMessage(error)}`, values };
+  }
+
+  // Ikon diperiksa dengan alasan yang sama, dan hanya kalau diisi: kosong
+  // berarti "ikut ikon kategori", bukan sebuah nama yang perlu dicocokkan.
+  if (icon) {
+    try {
+      const names = await getMapIconNames();
+      if (!names.includes(icon)) {
+        return {
+          error: `Ikon "${icon}" tidak ada di katalog. Pilih salah satu ikon dari daftarnya, atau biarkan mengikuti ikon kategori.`,
+          values,
+        };
+      }
+    } catch (error) {
+      redirectIfExpired(error);
+      return { error: `Gagal memeriksa katalog ikon. ${toMessage(error)}`, values };
+    }
   }
 
   const latitude = parseCoordinate(rawLatitude, "Lintang (latitude)", 90);
@@ -131,6 +152,10 @@ export async function saveMarkerAction(
     address: address || null,
     phone: phone || null,
     image,
+    // Kosong dikirim `null`, bukan dihilangkan: pengelola yang mengembalikan
+    // sebuah titik ke ikon kategorinya harus benar-benar terhapus, bukan
+    // dibiarkan memegang ikon lamanya karena PATCH tidak menyentuh field itu.
+    icon: icon || null,
     isActive,
   };
 

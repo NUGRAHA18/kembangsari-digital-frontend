@@ -57,6 +57,22 @@
 
   --glass: rgb(255 255 255 / 0.72);
   --glass-border: rgb(226 232 240 / 0.9);
+
+  /* Warna grafik monografi. Diperiksa dengan validator palet (pita kecerahan,
+     pemisahan buta warna protan/deutan, kontras terhadap `surface`) di kedua
+     mode — jangan menukar urutannya: urutan itulah yang menjaga dua irisan
+     bersebelahan tetap terbedakan. `chart-N` untuk kategori tanpa urutan
+     (agama); `chart-step-N` untuk jenjang berurutan (pendidikan), satu hue
+     dari terang ke gelap. */
+  --chart-1: #15803d;
+  --chart-2: #0284c7;
+  --chart-3: #d97706;
+  --chart-4: #db2777;
+  --chart-5: #7c3aed;
+  --chart-step-1: #22c55e;
+  --chart-step-2: #16a34a;
+  --chart-step-3: #15803d;
+  --chart-step-4: #14532d;
 }
 
 .dark {
@@ -88,6 +104,19 @@
 
   --glass: rgb(15 23 42 / 0.72);
   --glass-border: rgb(30 41 59 / 0.9);
+
+  /* Dipilih ulang untuk latar gelap, bukan dibalik otomatis. Jenjang di sini
+     makin terang makin tinggi, karena di atas latar gelap yang menonjol adalah
+     yang terang. */
+  --chart-1: #16a34a;
+  --chart-2: #0284c7;
+  --chart-3: #d97706;
+  --chart-4: #ec4899;
+  --chart-5: #8b5cf6;
+  --chart-step-1: #166534;
+  --chart-step-2: #16a34a;
+  --chart-step-3: #4ade80;
+  --chart-step-4: #bbf7d0;
 }
 
 @theme inline {
@@ -115,6 +144,16 @@
   --color-info: var(--info);
   --color-info-soft: var(--info-soft);
   --color-info-soft-foreground: var(--info-soft-foreground);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-chart-step-1: var(--chart-step-1);
+  --color-chart-step-2: var(--chart-step-2);
+  --color-chart-step-3: var(--chart-step-3);
+  --color-chart-step-4: var(--chart-step-4);
 
   --font-sans: var(--font-geist-sans);
 
@@ -200,7 +239,7 @@
   }
 }
 
-/* Isi Markdown dari backend (profil, program KKN). */
+/* Isi Markdown dari backend (profil). */
 .prose-kembangsari {
   --tw-prose-body: var(--foreground);
   --tw-prose-headings: var(--foreground);

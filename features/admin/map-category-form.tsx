@@ -10,8 +10,9 @@ import {
   saveMapCategoryAction,
   type MapCategoryFormState,
 } from "@/app/admin/(dasbor)/peta/kategori/actions";
+import { IconSelect } from "@/features/admin/icon-select";
 import { slugify } from "@/lib/slug";
-import type { MapCategory } from "@/types/api";
+import type { MapCategory, MapIconGroup } from "@/types/api";
 
 const INITIAL: MapCategoryFormState = {};
 
@@ -19,7 +20,13 @@ const INITIAL: MapCategoryFormState = {};
  * Form kategori lokasi peta — dipakai untuk menambah (di halaman daftar)
  * maupun mengubah (di halamannya sendiri), sama seperti kategori berita.
  */
-export function MapCategoryForm({ category }: { category?: MapCategory }) {
+export function MapCategoryForm({
+  category,
+  iconGroups,
+}: {
+  category?: MapCategory;
+  iconGroups: MapIconGroup[];
+}) {
   const [state, formAction] = useActionState(saveMapCategoryAction, INITIAL);
 
   const initial = { ...category, ...state.values };
@@ -63,24 +70,12 @@ export function MapCategoryForm({ category }: { category?: MapCategory }) {
         />
       </Field>
 
-      {/* Kolom `icon` disediakan backend, tetapi peta di portal belum
-          memakainya: pin diwarnai berdasarkan urutan kategori, bukan digambar
-          dari nama ikon. Kolomnya tetap ada supaya nama ikon yang sudah
-          terlanjur tersimpan tidak terhapus diam-diam saat kategori disunting. */}
-      <Field
-        label="Nama ikon"
-        htmlFor="icon"
-        hint="Opsional. Belum dipakai peta di portal — pin masih diwarnai menurut urutan kategori."
-      >
-        <input
-          id="icon"
-          name="icon"
-          maxLength={40}
-          defaultValue={initial.icon ?? ""}
-          placeholder="Misalnya: home"
-          className={inputClasses}
-        />
-      </Field>
+      <IconSelect
+        groups={iconGroups}
+        defaultValue={initial.icon ?? ""}
+        emptyLabel="Tanpa ikon — pin polos"
+        hint="Digambar di dalam pin setiap titik kategori ini yang tidak memasang ikonnya sendiri."
+      />
 
       <div className="flex flex-wrap gap-3">
         <SubmitButton isEdit={Boolean(category)} />

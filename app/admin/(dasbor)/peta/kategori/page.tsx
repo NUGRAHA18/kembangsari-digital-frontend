@@ -8,7 +8,7 @@ import { MapCategoryForm } from "@/features/admin/map-category-form";
 import { fetchAsAdmin } from "@/lib/admin-fetch";
 import { readParam, type RawSearchParams } from "@/lib/page-params";
 import { requireSession } from "@/lib/session";
-import { getMapCategoriesUncached } from "@/services/maps";
+import { getMapCategoriesUncached, getMapIcons } from "@/services/maps";
 
 export const metadata: Metadata = { title: "Kategori Lokasi" };
 
@@ -28,7 +28,10 @@ export default async function MapCategoriesPage({
 
   // `_count.markers` datang langsung dari backend dan sudah menghitung marker
   // yang disembunyikan.
-  const categories = await fetchAsAdmin(getMapCategoriesUncached());
+  const [categories, iconGroups] = await Promise.all([
+    fetchAsAdmin(getMapCategoriesUncached()),
+    fetchAsAdmin(getMapIcons()),
+  ]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -55,7 +58,7 @@ export default async function MapCategoriesPage({
       <Card>
         <CardBody className="flex flex-col gap-4">
           <h2 className="font-semibold">Tambah Kategori</h2>
-          <MapCategoryForm />
+          <MapCategoryForm iconGroups={iconGroups} />
         </CardBody>
       </Card>
 

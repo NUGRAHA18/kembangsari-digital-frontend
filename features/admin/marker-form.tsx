@@ -8,9 +8,10 @@ import { Button, ButtonLink } from "@/components/ui/button";
 import { Card, CardBody } from "@/components/ui/card";
 import { Field, inputClasses } from "@/components/ui/field";
 import { saveMarkerAction, type MarkerFormState } from "@/app/admin/(dasbor)/peta/actions";
+import { IconSelect } from "@/features/admin/icon-select";
 import { IMAGE_MAX_LABEL, validateImage } from "@/lib/image";
 import { cn } from "@/lib/utils";
-import type { MapCategory, MapMarker } from "@/types/api";
+import type { MapCategory, MapIconGroup, MapMarker } from "@/types/api";
 
 const INITIAL: MarkerFormState = {};
 
@@ -24,9 +25,11 @@ const INITIAL: MarkerFormState = {};
 export function MarkerForm({
   marker,
   categories,
+  iconGroups,
 }: {
   marker?: MapMarker;
   categories: MapCategory[];
+  iconGroups: MapIconGroup[];
 }) {
   const [state, formAction] = useActionState(saveMarkerAction, INITIAL);
 
@@ -113,7 +116,7 @@ export function MarkerForm({
             label="Kategori"
             htmlFor="categoryId"
             required
-            hint="Menentukan warna pin dan letaknya pada saringan di halaman peta."
+            hint="Menentukan warna pin, ikon bawaannya, dan letaknya pada saringan di halaman peta."
           >
             <select
               id="categoryId"
@@ -132,6 +135,18 @@ export function MarkerForm({
               ))}
             </select>
           </Field>
+
+          {/* Bawaannya "ikut ikon kategori", bukan sebuah ikon: sebagian besar
+              titik memang tidak perlu dibedakan dari kategorinya, dan pilihan
+              bawaan yang berupa ikon akan membuat setiap titik baru diam-diam
+              menyimpang dari kategorinya. */}
+          <IconSelect
+            groups={iconGroups}
+            defaultValue={String(initial("icon"))}
+            emptyLabel="Ikut ikon kategori"
+            label="Ikon titik"
+            hint="Digambar di dalam pin. Isi hanya kalau titik ini perlu dibedakan dari kategorinya."
+          />
 
           <Field
             label="Keterangan"

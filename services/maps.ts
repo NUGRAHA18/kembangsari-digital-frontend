@@ -1,5 +1,36 @@
 import { del, getList, getOne, getPaginated, patch, post } from "@/lib/api";
-import type { AdminMarkerQuery, MapCategory, MapMarker } from "@/types/api";
+import type { AdminMarkerQuery, MapCategory, MapIconGroup, MapMarker } from "@/types/api";
+
+/**
+ * Katalog ikon peta — ARRAY POLOS berisi kelompok, siap jadi `<optgroup>`.
+ *
+ * Ini satu-satunya daftar ikon yang sah: backend menjawab `400` untuk nama di
+ * luar katalog, baik pada kategori maupun pada titik. Karena itu daftarnya
+ * **tidak boleh ditulis ulang di frontend** — cukup diambil apa adanya, supaya
+ * ikon yang ditambahkan backend langsung muncul di pemilihnya tanpa rilis
+ * frontend.
+ *
+ * Berbeda dari kategori, katalog ini di-cache **juga saat dipakai Server
+ * Action**: isinya ditetapkan di kode backend, bukan disunting pengelola, jadi
+ * tidak ada `getMapIconsUncached` yang perlu menemani. Cache sehari; nilai yang
+ * sudah tersimpan tetap sah walau daftarnya bertambah.
+ */
+export function getMapIcons() {
+  return getList<MapIconGroup>("/maps/icon", {}, { revalidate: 86_400 });
+}
+
+/**
+ * Nama ikon yang sah, sudah rata — dipakai Server Action untuk memeriksa
+ * kiriman form sebelum menembak backend.
+ *
+ * Form ini tetap terkirim tanpa JavaScript dan nilainya bisa dipalsukan;
+ * `400` dari backend hanya menyebut nama ikonnya, bukan apa yang harus
+ * dilakukan pengelola.
+ */
+export async function getMapIconNames(): Promise<string[]> {
+  const groups = await getMapIcons();
+  return groups.flatMap((group) => group.icons.map((icon) => icon.name));
+}
 
 /**
  * ARRAY POLOS dan sengaja tidak dipaginasi: peta harus menggambar semua pin
@@ -75,6 +106,12 @@ export interface MarkerInput {
   address?: string | null;
   phone?: string | null;
   image?: string | null;
+  /**
+   * Ikon khusus titik ini. `null` berarti "ikut ikon kategori" — dan itu yang
+   * dikirim saat pengelola mengosongkannya, bukan field yang dihilangkan.
+   * Divalidasi backend terhadap `GET /maps/icon`.
+   */
+  icon?: string | null;
   isActive?: boolean;
 }
 
@@ -93,7 +130,11 @@ export function deleteMarker(id: string, token: string) {
 export interface MapCategoryInput {
   name: string;
   slug: string;
-  /** Nama ikon, bukan URL — lihat catatan di form kategori peta. */
+  /**
+   * Nama ikon Material Symbols, bukan URL, dan divalidasi backend terhadap
+   * `GET /maps/icon`. Ikon inilah yang digambar di dalam pin setiap titik yang
+   * tidak memasang ikonnya sendiri.
+   */
   icon?: string | null;
 }
 

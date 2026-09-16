@@ -1,16 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Sejak Next.js 16, dev server menolak permintaan ke /_next/* yang datang dari
-  // origin selain localhost dengan 403. Halaman tetap tampil karena HTML-nya
-  // dilayani seperti biasa, tapi seluruh bundel klien ditolak sehingga React
-  // tidak pernah hydrate — semua tombol mati tanpa pesan galat apa pun.
-  //
-  // Portal ini wajib diuji langsung di ponsel (hampir semua warga membukanya
-  // dari HP), jadi alamat LAN harus diizinkan. Pola ditulis per subnet supaya
-  // tetap berlaku ketika router memberi IP baru lewat DHCP.
-  //
-  // Hanya berpengaruh pada `next dev`; build produksi mengabaikannya.
   allowedDevOrigins: ["192.168.0.*", "192.168.1.*", "10.0.0.*", "172.20.10.*"],
 
   experimental: {
@@ -27,6 +17,20 @@ const nextConfig: NextConfig = {
       // ini untuk memberi ruang bagi kolom form lain dan pembatas multipart.
       bodySizeLimit: "4mb",
     },
+  },
+
+  // Ikon pin peta dibaca dari `@material-symbols/svg-400` saat merender di
+  // server (`lib/material-symbol.ts`), lewat `readFileSync` — bukan `import`.
+  // Penelusuran berkas Next.js hanya mengikuti `import`, jadi tanpa baris ini
+  // berkas SVG-nya tidak ikut ter-deploy: di komputer sendiri semuanya tampak
+  // benar karena node_modules memang ada di sana, sementara di produksi setiap
+  // pin kehilangan ikonnya dan jatuh ke bulatan putih.
+  //
+  // Disebut per rute, bukan global: hanya empat halaman ini yang menggambar pin.
+  outputFileTracingIncludes: {
+    "/": ["./node_modules/@material-symbols/svg-400/outlined/**"],
+    "/peta": ["./node_modules/@material-symbols/svg-400/outlined/**"],
+    "/admin/peta": ["./node_modules/@material-symbols/svg-400/outlined/**"],
   },
 
   images: {

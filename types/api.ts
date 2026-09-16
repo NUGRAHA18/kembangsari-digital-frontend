@@ -72,11 +72,6 @@ export interface PotentialQuery extends PaginationQuery {
 /** Query untuk GET /gallery/album, /gallery/item/*, /agenda, /umkm/active, /announcement/active. */
 export type SimpleListQuery = PaginationQuery;
 
-/** Query untuk GET /kkn/program/active (publik). */
-export interface KKNProgramQuery extends PaginationQuery {
-  subProgram?: KKNSubProgram;
-}
-
 // ------------------------------------------------------------
 // Query khusus daftar bertoken (dashboard)
 //
@@ -117,15 +112,6 @@ export interface AdminUmkmQuery extends PaginationQuery {
 
 /** Query untuk GET /potential (bertoken). */
 export interface AdminPotentialQuery extends PotentialQuery {
-  isActive?: boolean;
-}
-
-/**
- * Query untuk GET /kkn/program (bertoken).
- * Menggantikan GET /kkn/program/sub/:subProgram untuk kebutuhan dashboard:
- * di sini saringan sub-program bisa digabung dengan saringan status.
- */
-export interface AdminKKNProgramQuery extends KKNProgramQuery {
   isActive?: boolean;
 }
 
@@ -181,15 +167,6 @@ export type PotentialCategory =
   | 'WISATA'
   | 'KULINER'
   | 'LAINNYA';
-
-export type KKNSubProgram =
-  | 'RUMAH_BELAJAR'
-  | 'PEKARANGAN_PRODUKTIF'
-  | 'PENGELOLAAN_SAMPAH'
-  | 'PENERANGAN_JALAN';
-
-/** Dipakai `Resident.gender`. */
-export type Gender = 'LAKI_LAKI' | 'PEREMPUAN';
 
 /**
  * Skema backend juga mendeklarasikan enum EducationLevel,
@@ -417,11 +394,38 @@ export interface PopulationStat {
 // PETA DIGITAL
 // ============================================================
 
+/**
+ * Satu kelompok pada katalog ikon, dari `GET /maps/icon` — ARRAY POLOS dan
+ * bebas token.
+ *
+ * Bentuknya sudah siap dipakai sebagai `<optgroup>`: `group` adalah judul
+ * kelompoknya, `label` teks Indonesia yang dibaca pengelola, dan `name` nama
+ * ikon Material Symbols yang benar-benar dikirim ke backend.
+ *
+ * Katalognya statis dan **divalidasi backend**: nama di luar daftar ini
+ * dijawab `400`, baik pada kategori maupun pada titik. Karena itu daftarnya
+ * tidak boleh ditulis ulang di frontend — cukup diambil apa adanya.
+ */
+export interface MapIcon {
+  /** Nama ikon Material Symbols, mis. "holiday_village". */
+  name: string;
+  /** Nama yang dibaca pengelola, mis. "Balai / rumah warga". */
+  label: string;
+}
+
+export interface MapIconGroup {
+  group: string;
+  icons: MapIcon[];
+}
+
 export interface MapCategory {
   id: string;
   name: string;
   slug: string;
-  /** Nama ikon, bukan URL. Contoh: "home", "mosque". */
+  /**
+   * Nama ikon Material Symbols, bukan URL. Contoh: "holiday_village",
+   * "water_drop". Divalidasi backend terhadap `GET /maps/icon`.
+   */
   icon: string | null;
   createdAt: string;
   updatedAt: string;
@@ -444,6 +448,16 @@ export interface MapMarker {
   address: string | null;
   phone: string | null;
   image: string | null;
+  /**
+   * Ikon khusus titik ini, menimpa ikon kategorinya. `null` berarti "ikut
+   * ikon kategori" — urutan bacanya:
+   *
+   *   marker.icon ?? marker.category?.icon ?? 'place'
+   *
+   * Nilainya nama Material Symbols dan divalidasi backend, sama seperti
+   * `MapCategory.icon`.
+   */
+  icon: string | null;
   isActive: boolean;
   categoryId: string;
   createdAt: string;
@@ -569,39 +583,6 @@ export interface Potential {
 }
 
 // ============================================================
-// PROGRAM KKN
-// ============================================================
-
-export interface KKNActivity {
-  id: string;
-  title: string;
-  description: string | null;
-  date: string | null;
-  image: string | null;
-  programId: string;
-  createdAt: string;
-  updatedAt: string;
-  program?: KKNProgram;
-}
-
-export interface KKNProgram {
-  id: string;
-  subProgram: KKNSubProgram;
-  title: string;
-  slug: string;
-  description: string;
-  thumbnail: string | null;
-  /** Berisi Markdown. */
-  content: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-  _count?: { activities: number };
-  /** Hadir pada GET /kkn/program/:slug (detail). */
-  activities?: KKNActivity[];
-}
-
-// ============================================================
 // PENGATURAN SITUS
 // ============================================================
 
@@ -652,96 +633,6 @@ export type SettingKey =
   | 'map_zoom';
 
 // ============================================================
-// RUMAH WARGA (PETA DIGITAL)
-// ============================================================
-
-export type FamilyRelation =
-  | 'KEPALA_KELUARGA'
-  | 'ISTRI'
-  | 'SUAMI'
-  | 'ANAK'
-  | 'MENANTU'
-  | 'CUCU'
-  | 'ORANG_TUA'
-  | 'FAMILI_LAIN'
-  | 'LAINNYA';
-
-export interface Resident {
-  id: string;
-  name: string;
-  /**
-   * TAHUN lahir, bukan umur dan bukan tanggal. Umur dihitung sendiri di
-   * frontend saat menggambar — menyimpan umur akan membuat seluruh data
-   * salah setahun kemudian.
-   */
-  birthYear: number | null;
-  gender: Gender | null;
-  /**
-   * Yang ditebalkan di kartu rumah adalah penghuni ber-`KEPALA_KELUARGA`.
-   * Tepat satu per KK, dijaga backend — frontend tidak perlu menambalnya.
-   */
-  relation: FamilyRelation;
-  order: number;
-  familyId: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Family {
-  id: string;
-  kkNumber: string | null;
-  order: number;
-  houseId: string;
-  /** Ikut pada `GET /house/:idOrSlug` dan respons create/update KK. */
-  residents?: Resident[];
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface HouseCount {
-  families: number;
-  residents: number;
-}
-
-export interface House {
-  id: string;
-  /** Dibuat backend dari `label`; tidak berubah walau `label` diperbaiki. */
-  slug: string;
-  label: string;
-  /** Teks, bukan angka — ada RT "6A" di beberapa padukuhan. */
-  rt: string;
-  rw: string;
-  latitude: number;
-  longitude: number;
-  address: string | null;
-  /** URL hasil `POST /upload?folder=rumah`. */
-  photo: string | null;
-  note: string | null;
-  /**
-   * Kapan datanya terakhir dicek pendata — inilah yang ditampilkan sebagai
-   * "Data diverifikasi 3 Agustus 2026". BUKAN `updatedAt`, yang ikut
-   * berubah setiap kali salah ketik dibetulkan.
-   */
-  dataVerifiedAt: string | null;
-  isActive: boolean;
-  /** Ikut pada GET /house, /house/active, dan /house/:idOrSlug. */
-  _count?: HouseCount;
-  /** Hanya pada `GET /house/:idOrSlug`. */
-  families?: Family[];
-  createdAt: string;
-  updatedAt: string;
-}
-
-/** Satu baris per RT, dari `GET /house/summary`. Hanya rumah aktif. */
-export interface HouseSummary {
-  rw: string;
-  rt: string;
-  houses: number;
-  families: number;
-  residents: number;
-}
-
-// ============================================================
 // UPLOAD
 // ============================================================
 
@@ -750,12 +641,9 @@ export type UploadFolder =
   | 'galeri'
   | 'umkm'
   | 'potensi'
-  | 'kkn'
   | 'peta'
   | 'profil'
   | 'pengaturan'
-  /** Foto rumah warga, ditambahkan pada putaran perbaikan ketiga. */
-  | 'rumah'
   | 'umum';
 
 /**
@@ -798,10 +686,7 @@ export type GalleryItemListResponse = Paginated<GalleryItem>;
 export type UMKMListResponse = Paginated<UMKM>;
 export type PotentialListResponse = Paginated<Potential>;
 export type MapMarkerListResponse = Paginated<MapMarker>;
-export type KKNProgramListResponse = Paginated<KKNProgram>;
-export type KKNActivityListResponse = Paginated<KKNActivity>;
 export type PopulationStatListResponse = Paginated<PopulationStat>;
-export type HouseListResponse = Paginated<House>;
 
 /**
  * Endpoint yang mengembalikan ARRAY POLOS, bukan { data, meta }.
@@ -809,8 +694,7 @@ export type HouseListResponse = Paginated<House>;
  *
  *   GET /maps/marker/active           -> MapMarker[]
  *   GET /maps/category                -> MapCategory[]
- *   GET /house/active                 -> House[]
- *   GET /house/summary                -> HouseSummary[]
+ *   GET /maps/icon                    -> MapIconGroup[]
  *   GET /news/category/all            -> Category[]
  *   GET /profile                      -> Profile[]
  *   GET /settings                     -> Setting[]

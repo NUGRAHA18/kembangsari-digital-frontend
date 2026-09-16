@@ -1,7 +1,7 @@
 /**
  * Pembacaan lintang dan bujur dari isian yang diketik tangan.
  *
- * Dipakai bersama Server Action peta dan rumah warga. Berdiri sendiri karena
+ * Dipakai Server Action peta. Berdiri sendiri karena
  * berkas `"use server"` hanya boleh mengekspor fungsi async — pembantu seperti
  * ini ditolak saat kompilasi kalau ditaruh di dalamnya.
  */
@@ -12,7 +12,7 @@ export interface ParsedCoordinate {
 }
 
 /**
- * Koordinat wajib diisi pada marker peta dan rumah warga: tanpa keduanya,
+ * Koordinat wajib diisi pada marker peta: tanpa keduanya,
  * titik itu tersimpan tanpa pernah tampil di peta — dan pengelola tidak punya
  * cara mengetahuinya.
  */

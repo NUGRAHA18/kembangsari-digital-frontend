@@ -3,8 +3,9 @@ import { Container } from "@/components/ui/container";
 import { PageHeader } from "@/components/ui/page-header";
 import { EmptyState, ErrorState } from "@/components/ui/states";
 import { DigitalMap } from "@/features/maps/digital-map";
+import { iconNamesFor } from "@/features/maps/pin-icons";
 import { safeFetch } from "@/lib/api";
-import { getActiveHouses, getHouseSummary } from "@/services/house";
+import { materialSymbolPaths } from "@/lib/material-symbol";
 import { getActiveMarkers, getMapCategories } from "@/services/maps";
 import { getMapView, getSettingsMap } from "@/services/settings";
 
@@ -15,19 +16,19 @@ export const metadata: Metadata = {
 };
 
 export default async function MapPage() {
-  const [settings, markers, categories, houses, summary] = await Promise.all([
+  const [settings, markers, categories] = await Promise.all([
     getSettingsMap(),
     // ARRAY POLOS dan tidak dipaginasi — peta harus menggambar semua pin sekaligus.
     safeFetch(getActiveMarkers()),
     safeFetch(getMapCategories()),
-    // Sama: ARRAY POLOS. Rumah warga digambar seluruhnya sekaligus.
-    safeFetch(getActiveHouses()),
-    // Ringkasan per RT datang jadi dari backend, bukan dihitung dari daftar di
-    // atas — angkanya sama persis dengan yang dipakai halaman monografi.
-    safeFetch(getHouseSummary()),
   ]);
 
   const mapView = getMapView(settings);
+
+  // Gambar ikonnya dibaca di server dan diturunkan sebagai prop — hanya ikon
+  // yang benar-benar dipakai halaman ini yang ikut ke browser. Lihat
+  // `lib/material-symbol.ts` untuk alasannya tidak memakai webfont.
+  const glyphs = materialSymbolPaths(iconNamesFor(markers.data ?? [], categories.data ?? []));
 
   return (
     <>
@@ -40,14 +41,13 @@ export default async function MapPage() {
       <Container className="py-8 md:py-12">
         {markers.error ? (
           <ErrorState message={markers.error} />
-        ) : (markers.data && markers.data.length > 0) || (houses.data && houses.data.length > 0) ? (
+        ) : markers.data && markers.data.length > 0 ? (
           <DigitalMap
-            markers={markers.data ?? []}
+            markers={markers.data}
             categories={categories.data ?? []}
-            houses={houses.data ?? []}
-            summary={summary.data ?? []}
             center={mapView.center}
             zoom={mapView.zoom}
+            glyphs={glyphs}
           />
         ) : (
           <EmptyState
