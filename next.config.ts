@@ -1,16 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Sejak Next.js 16, dev server menolak permintaan ke /_next/* yang datang dari
-  // origin selain localhost dengan 403. Halaman tetap tampil karena HTML-nya
-  // dilayani seperti biasa, tapi seluruh bundel klien ditolak sehingga React
-  // tidak pernah hydrate — semua tombol mati tanpa pesan galat apa pun.
-  //
-  // Portal ini wajib diuji langsung di ponsel (hampir semua warga membukanya
-  // dari HP), jadi alamat LAN harus diizinkan. Pola ditulis per subnet supaya
-  // tetap berlaku ketika router memberi IP baru lewat DHCP.
-  //
-  // Hanya berpengaruh pada `next dev`; build produksi mengabaikannya.
   allowedDevOrigins: ["192.168.0.*", "192.168.1.*", "10.0.0.*", "172.20.10.*"],
 
   experimental: {
